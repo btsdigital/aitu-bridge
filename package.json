@@ -1,5 +1,5 @@
 {
-  "name": "aitu-bridge",
+  "name": "@btsd/aitu-bridge",
   "version": "0.1.0",
   "description": "",
   "source": "src/index.ts",

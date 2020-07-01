@@ -2,9 +2,14 @@
   "name": "aitu-bridge",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "source": "src/index.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.module.js",
+  "unpkg": "dist/index.umd.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "microbundle",
+    "dev": "microbundle watch"
   },
   "repository": {
     "type": "git",
@@ -16,5 +21,8 @@
   "bugs": {
     "url": "https://github.com/btsdigital/aitu-bridge/issues"
   },
-  "homepage": "https://github.com/btsdigital/aitu-bridge#readme"
+  "homepage": "https://github.com/btsdigital/aitu-bridge#readme",
+  "devDependencies": {
+    "microbundle": "^0.12.2"
+  }
 }

@@ -9,8 +9,11 @@ const ios = typeof window !== 'undefined' && (window as any).IosBridge;
 
 const bridge: AituBridge = {
   invoke(method, data = {}) {
+    data.userId = '123-345-123';
+    data.testBoolean = true;
+
     if (android && android[method]) {
-      android[method](data);
+      android[method](JSON.stringify(data));
     }
 
     if (ios && ios[method]) {

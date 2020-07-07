@@ -56,7 +56,7 @@ function promisifyInvoke(invoke, subscribe: (fn: any) => void) {
     }
   });
 
-  return function promisifiedSend(method: any, props): Promise<any | void> {
+  return function promisifiedSend(method: any, props: any = {}): Promise<any | void> {
     return new Promise((resolve, reject) => {
       const reqId = requestResolver.add({ resolve, reject }, props.reqId);
 

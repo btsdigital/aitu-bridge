@@ -15,7 +15,7 @@ const ios = typeof window !== 'undefined' && (window as any).IosBridge;
 const buildBridge = (): AituBridge => {
   const subs = [];
 
-  if (window) {
+  if (typeof window !== 'undefined') {
     window.addEventListener('aituEvents', (e: any) => {
       const dataStr = JSON.stringify(e.detail);
       console.log('subs_data', dataStr);

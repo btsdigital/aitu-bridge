@@ -51,7 +51,7 @@ function promisifyInvoke(invoke, subscribe: (fn: any) => void) {
       const { reqId, data } = event.detail;
 
       if (reqId) {
-        requestResolver.resolve(reqId, data, (data) => !('error' in event.detail));
+        requestResolver.resolve(reqId, data, (data) => !('error' in event.detail && event.detail.error));
       }
     }
   });

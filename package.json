@@ -16,8 +16,14 @@
     "url": "git+https://github.com/btsdigital/aitu-bridge.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Aitu",
+  "contributors": [
+    {
+      "name": "Gordey Levchenko",
+      "email": "gordey.levchenko@btsdigital.kz"
+    }
+  ],
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/btsdigital/aitu-bridge/issues"
   },

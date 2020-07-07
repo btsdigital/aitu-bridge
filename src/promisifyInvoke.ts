@@ -23,14 +23,14 @@ function createRequestResolver() {
       return id;
     },
 
-    resolve<T>(reqId: number | string, data: T, isSuccess: (data: T) => boolean) {
+    resolve<T>(reqId: number | string, data: T, isSuccess: (data: T) => boolean, error: any) {
       const requestPromise = promiseControllers[reqId];
 
       if (requestPromise) {
-        if (isSuccess(data)) {
+        if (isSuccess(error)) {
           requestPromise.resolve(data);
         } else {
-          requestPromise.reject(data);
+          requestPromise.reject(error);
         }
 
         promiseControllers[reqId] = null;
@@ -48,10 +48,10 @@ function promisifyInvoke(invoke, subscribe: (fn: any) => void) {
     }
 
     if ('reqId' in event.detail) {
-      const { reqId, data } = event.detail;
+      const { reqId, data, error } = event.detail;
 
       if (reqId) {
-        requestResolver.resolve(reqId, data, (data) => !('error' in event.detail && event.detail.error));
+        requestResolver.resolve(reqId, data, (error) => !(error), error);
       }
     }
   });

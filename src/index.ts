@@ -23,13 +23,13 @@ const buildBridge = (): AituBridge => {
     })
   }
 
-  const invoke = (req1, method, data = {}) => {
+  const invoke = (reqId, method, data = {}) => {
     if (android && android[invokeMethod]) {
-      android[invokeMethod](req1, method, JSON.stringify(data));
+      android[invokeMethod](reqId, method, JSON.stringify(data));
     }
 
     if (ios && ios[invokeMethod]) {
-      ios[invokeMethod].postMessage(req1, method, data);
+      ios[invokeMethod].postMessage({ reqId, method, data });
     }
 
     console.log('=----------------------=');

@@ -10,7 +10,7 @@ interface AituBridge {
 const invokeMethod = 'invoke';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
-const ios = typeof window !== 'undefined' && (window as any).IosBridge;
+const ios = typeof window !== 'undefined' && (window as any).webkit.messageHandlers;
 
 const buildBridge = (): AituBridge => {
   const subs = [];

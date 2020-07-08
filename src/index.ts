@@ -24,17 +24,20 @@ const buildBridge = (): AituBridge => {
   }
 
   const invoke = (reqId, method, data = {}) => {
+    console.log('start_____INVOKE');
+    console.log('reqId: ', reqId);
+    console.log('method: ', method);
+    console.log('data: ', data);
     if (android && android[invokeMethod]) {
       android[invokeMethod](reqId, method, JSON.stringify(data));
     }
 
+    console.log('----before ios PostMessage');
     if (ios && ios[invokeMethod]) {
+      console.log('----INSIDE if - GO ios PostMessage');
       ios[invokeMethod].postMessage({ reqId, method, data });
     }
-
-    console.log('=----------------------=');
-    console.log('invoke method: ', method);
-    console.log('params: ', data);
+    console.log('----after ios PostMessage');
   };
 
   const sub = (listener: any) => {

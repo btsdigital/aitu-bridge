@@ -24,7 +24,7 @@ const buildBridge = (): AituBridge => {
   }
 
   const invoke = (reqId, method, data = {}) => {
-    console.log('start_____INVOKE');
+    console.log('_start_____INVOKE');
     console.log('reqId: ', reqId);
     console.log('method: ', method);
     console.log('data: ', data);

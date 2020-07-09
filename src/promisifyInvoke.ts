@@ -43,7 +43,7 @@ function promisifyInvoke(invoke, subscribe: (fn: any) => void) {
   const requestResolver = createRequestResolver();
 
   subscribe((event) => {
-    if (!event.detail || !event.detail.data) {
+    if (!event.detail) {
       return;
     }
 

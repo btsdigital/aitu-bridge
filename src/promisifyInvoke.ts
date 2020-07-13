@@ -19,8 +19,9 @@ function createRequestResolver() {
   return {
     add(controller: PromiseController, customId?: number | string): number | string {
       const id = customId != null ? customId : counter.next();
-      promiseControllers[id] = controller;
-      return id;
+      const invokeId = `s${id}`;
+      promiseControllers[invokeId] = controller;
+      return invokeId;
     },
 
     resolve<T>(reqId: number | string, data: T, isSuccess: (data: T) => boolean, error: any) {
@@ -56,7 +57,7 @@ function promisifyInvoke(invoke, subscribe: (fn: any) => void) {
     }
   });
 
-  return function promisifiedSend(method: any, props: any = {}): Promise<any | void> {
+  return function promisifiedFunc(method: any, props: any = {}): Promise<any | void> {
     return new Promise((resolve, reject) => {
       const reqId = requestResolver.add({ resolve, reject }, props.reqId);
 

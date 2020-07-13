@@ -69,25 +69,7 @@ function createCounter() {
           const reqId = requestResolver.add({ resolve, reject });
           storage(reqId, 'getItem', { keyName });
         });
-      },
-      removeItem: (keyName: string): Promise<void> => {
-        return new Promise((resolve, reject) => {
-          const reqId = requestResolver.add({ resolve, reject });
-          storage(reqId, 'removeItem', { keyName });
-        });
-      },
-      key: (index: number): Promise<string | null> => {
-        return new Promise((resolve, reject) => {
-          const reqId = requestResolver.add({ resolve, reject });
-          storage(reqId, 'key', { index });
-        });
-      },
-      clear: (): Promise<void> => {
-        return new Promise((resolve, reject) => {
-          const reqId = requestResolver.add({ resolve, reject });
-          storage(reqId, 'key', {});
-        });
-      },
+      }
     }
   }
   

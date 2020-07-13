@@ -58,7 +58,7 @@ const buildBridge = (): AituBridge => {
     } else if (isIos) {
       ios[invokeMethod].postMessage({ reqId, method, data });
     } else if (typeof window !== 'undefined') {
-      console.log('isWeb');
+      console.log('--invoke-isWeb');
     }
   };
 
@@ -71,7 +71,7 @@ const buildBridge = (): AituBridge => {
     } else if (isIos) {
       ios[storageMethod].postMessage({ reqId, method, data });
     } else if (typeof window !== 'undefined') {
-      console.log('isWeb');
+      console.log('--storage-isWeb');
     }
   }
 

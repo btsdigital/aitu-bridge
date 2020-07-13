@@ -19,7 +19,7 @@ function createRequestResolver() {
   return {
     add(controller: PromiseController, customId?: number | string): number | string {
       const id = customId != null ? customId : counter.next();
-      const invokeId = `s${id}`;
+      const invokeId = id;
       promiseControllers[invokeId] = controller;
       return invokeId;
     },

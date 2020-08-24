@@ -1,7 +1,7 @@
 import promisifyInvoke from './promisifyInvoke';
 import promisifyStorage from './promisifyStorage';
 
-type InvokeRequest = 'GetMe' | 'GetPhone';
+type InvokeRequest = 'GetMe' | 'GetPhone' | 'GetContacts';
 
 type SetItemType = (keyName: string, keyValue: string) => Promise<void>;
 type GetItemType = (keyName: string) => Promise<string | null>;

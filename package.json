@@ -1,6 +1,6 @@
 {
   "name": "@btsd/aitu-bridge",
-  "version": "0.1.23",
+  "version": "0.1.25",
   "description": "",
   "source": "src/index.ts",
   "main": "dist/index.js",

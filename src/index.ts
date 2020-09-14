@@ -79,27 +79,27 @@ const buildBridge = (): AituBridge => {
     }
   }
 
-  const getGeo = (reqId, data = {}) => {
+  const getGeo = (reqId) => {
     const isAndroid = android && android[getGeoMethod];
     const isIos = ios && ios[getGeoMethod];
 
     if (isAndroid) {
-      android[getGeoMethod](reqId, JSON.stringify(data));
+      android[getGeoMethod](reqId);
     } else if (isIos) {
-      ios[getGeoMethod].postMessage({ reqId, data });
+      ios[getGeoMethod].postMessage({ reqId });
     } else if (typeof window !== 'undefined') {
       console.log('--getGeo-isWeb');
     }
   }
 
-  const openSettings = (reqId, method, data = {}) => {
+  const openSettings = (reqId) => {
     const isAndroid = android && android[openSettingsMethod];
     const isIos = ios && ios[openSettingsMethod];
 
     if (isAndroid) {
-      android[openSettingsMethod](reqId, method, JSON.stringify(data));
+      android[openSettingsMethod](reqId);
     } else if (isIos) {
-      ios[openSettingsMethod].postMessage({ reqId, method, data });
+      ios[openSettingsMethod].postMessage({ reqId });
     } else if (typeof window !== 'undefined') {
       console.log('--openSettings-isWeb');
     }

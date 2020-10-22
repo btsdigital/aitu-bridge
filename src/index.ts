@@ -33,6 +33,7 @@ interface AituBridge {
   getGeo: BridgeGetGeo;
   openSettings: BridgeOpenSettings;
   isSupported: () => boolean;
+  supports: (method: string) => boolean;
   sub: any;
 }
 
@@ -109,6 +110,13 @@ const buildBridge = (): AituBridge => {
     return android || ios;
   }
 
+  const supports = (method) =>
+    android
+      ? !!(typeof android[method] === 'function')
+      : ios
+        ? !!(ios[method] && typeof ios[method].postMessage === 'function')
+        : false;
+
   const sub = (listener: any) => {
     subs.push(listener);
   }
@@ -124,6 +132,7 @@ const buildBridge = (): AituBridge => {
     getGeo: getGeoPromise,
     openSettings: openSettingsPromise,
     isSupported,
+    supports,
     sub
   }
 }

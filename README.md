@@ -8,14 +8,17 @@ npm i @btsd/aitu-bridge
 yarn add @btsd/aitu-bridge
 ```
 
+## Documentation
+https://docs.aitu.io/aitudocs/aitu.apps/aitu-bridge-api
+
 ## Usage
 ```js
 import aituBridge from '@btsd/aitu-bridge';
 
 async function getData() {
   try {
-    // invoke method
-    const data = await aituBridge.invoke('getMe');
+    // getMe method
+    const data = await aituBridge.getMe();
     // handle data
   } catch (e) {
     // handle error

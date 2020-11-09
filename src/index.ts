@@ -2,25 +2,50 @@ import promisifyInvoke from './promisifyInvoke';
 import promisifyStorage from './promisifyStorage';
 import promisifyMethod from './promisifyMethod';
 
-type InvokeRequest = 'GetMe' | 'GetPhone' | 'GetContacts' | 'AllowNotifications';
+enum EInvokeRequest {
+  getMe = 'GetMe',
+  getPhone = 'GetPhone',
+  getContacts = 'GetContacts',
+  allowNotifications = 'AllowNotifications'
+}
 
 type SetItemType = (keyName: string, keyValue: string) => Promise<void>;
 type GetItemType = (keyName: string) => Promise<string | null>;
 
-// interface GetPhoneResponse { phone: string }
-// interface GetMeResponse { name: string; lastname: string }
+interface GetPhoneResponse {
+  phone: string;
+  sign: string;
+}
+
+interface GetMeResponse {
+  name: string;
+  lastname: string;
+  sign: string;
+}
+
 interface ResponseObject {
   phone?: string;
   name?: string;
   lastname?: string;
 }
 
-// interface GetGeoResponse {}
-// interface OpenSettingsResponse {}
+interface GetGeoResponse {
+  latitude: number;
+  longitude: number;
+}
 
-type BridgeInvoke<T extends InvokeRequest> = (method: T, data?: {}) => Promise<ResponseObject>;
-type BridgeGetGeo = () => Promise<any>;
-type BridgeOpenSettings = () => Promise<any>;
+interface GetContactsResponse {
+  contacts: Array<{
+    first_name: string;
+    last_name: string;
+    phone: string;
+  }>;
+  sign: string;
+}
+
+type OpenSettingsResponse = 'success' | 'failed';
+
+type BridgeInvoke<T extends EInvokeRequest, R> = (method: T, data?: {}) => Promise<R>;
 
 interface BridgeStorage {
   setItem: SetItemType,
@@ -28,10 +53,13 @@ interface BridgeStorage {
 }
 
 interface AituBridge {
-  invoke: BridgeInvoke<InvokeRequest>;
+  invoke: BridgeInvoke<EInvokeRequest, ResponseObject>;
   storage: BridgeStorage;
-  getGeo: BridgeGetGeo;
-  openSettings: BridgeOpenSettings;
+  getMe: () => Promise<GetMeResponse>;
+  getPhone: () => Promise<GetPhoneResponse>;
+  getContacts: () => Promise<GetContactsResponse>;
+  getGeo: () => Promise<GetGeoResponse>;
+  openSettings: () => Promise<OpenSettingsResponse>;
   isSupported: () => boolean;
   supports: (method: string) => boolean;
   sub: any;
@@ -129,6 +157,9 @@ const buildBridge = (): AituBridge => {
   return {
     invoke: invokePromise,
     storage: storagePromise,
+    getMe: () => invokePromise(EInvokeRequest.getMe),
+    getPhone: () => invokePromise(EInvokeRequest.getPhone),
+    getContacts: () => invokePromise(EInvokeRequest.getContacts),
     getGeo: getGeoPromise,
     openSettings: openSettingsPromise,
     isSupported,

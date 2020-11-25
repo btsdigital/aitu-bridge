@@ -44,6 +44,7 @@ interface GetContactsResponse {
 }
 
 type OpenSettingsResponse = 'success' | 'failed';
+type ShareResponse = 'success' | 'failed';
 
 type BridgeInvoke<T extends EInvokeRequest, R> = (method: T, data?: {}) => Promise<R>;
 
@@ -59,6 +60,7 @@ interface AituBridge {
   getPhone: () => Promise<GetPhoneResponse>;
   getContacts: () => Promise<GetContactsResponse>;
   getGeo: () => Promise<GetGeoResponse>;
+  share: (text: string) => Promise<ShareResponse>;
   openSettings: () => Promise<OpenSettingsResponse>;
   isSupported: () => boolean;
   supports: (method: string) => boolean;
@@ -69,6 +71,7 @@ const invokeMethod = 'invoke';
 const storageMethod = 'storage';
 const getGeoMethod = 'getGeo';
 const openSettingsMethod = 'openSettings';
+const shareMethod = 'share';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -134,6 +137,19 @@ const buildBridge = (): AituBridge => {
     }
   }
 
+  const share = (reqId, data) => {
+    const isAndroid = android && android[shareMethod];
+    const isIos = ios && ios[shareMethod];
+
+    if (isAndroid) {
+      android[shareMethod](reqId, JSON.stringify(data));
+    } else if (isIos) {
+      ios[shareMethod].postMessage({ reqId, data });
+    } else if (typeof window !== 'undefined') {
+      console.log('--share-isWeb');
+    }
+  }
+
   const isSupported = () => {
     return android || ios;
   }
@@ -153,6 +169,7 @@ const buildBridge = (): AituBridge => {
   const storagePromise = promisifyStorage(storage, sub);
   const getGeoPromise = promisifyMethod(getGeo, sub);
   const openSettingsPromise = promisifyMethod(openSettings, sub);
+  const sharePromise = promisifyMethod(share, sub);
 
   return {
     invoke: invokePromise,
@@ -162,6 +179,7 @@ const buildBridge = (): AituBridge => {
     getContacts: () => invokePromise(EInvokeRequest.getContacts),
     getGeo: getGeoPromise,
     openSettings: openSettingsPromise,
+    share: sharePromise,
     isSupported,
     supports,
     sub

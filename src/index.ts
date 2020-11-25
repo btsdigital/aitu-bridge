@@ -137,14 +137,14 @@ const buildBridge = (): AituBridge => {
     }
   }
 
-  const share = (reqId, data) => {
+  const share = (reqId, text) => {
     const isAndroid = android && android[shareMethod];
     const isIos = ios && ios[shareMethod];
 
     if (isAndroid) {
-      android[shareMethod](reqId, JSON.stringify(data));
+      android[shareMethod](reqId, JSON.stringify(text));
     } else if (isIos) {
-      ios[shareMethod].postMessage({ reqId, data });
+      ios[shareMethod].postMessage({ reqId, text });
     } else if (typeof window !== 'undefined') {
       console.log('--share-isWeb');
     }

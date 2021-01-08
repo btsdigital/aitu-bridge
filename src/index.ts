@@ -60,6 +60,7 @@ interface AituBridge {
   getPhone: () => Promise<GetPhoneResponse>;
   getContacts: () => Promise<GetContactsResponse>;
   getGeo: () => Promise<GetGeoResponse>;
+  getQr: () => Promise<string>;
   share: (text: string) => Promise<ShareResponse>;
   openSettings: () => Promise<OpenSettingsResponse>;
   isSupported: () => boolean;
@@ -70,6 +71,7 @@ interface AituBridge {
 const invokeMethod = 'invoke';
 const storageMethod = 'storage';
 const getGeoMethod = 'getGeo';
+const getQrMethod = 'getQr';
 const openSettingsMethod = 'openSettings';
 const shareMethod = 'share';
 
@@ -124,6 +126,19 @@ const buildBridge = (): AituBridge => {
     }
   }
 
+  const getQr = (reqId) => {
+    const isAndroid = android && android[getQrMethod];
+    const isIos = ios && ios[getQrMethod];
+
+    if (isAndroid) {
+      android[getQrMethod](reqId);
+    } else if (isIos) {
+      ios[getQrMethod].postMessage({ reqId });
+    } else if (typeof window !== 'undefined') {
+      console.log('--getQr-isWeb');
+    }
+  }
+
   const openSettings = (reqId) => {
     const isAndroid = android && android[openSettingsMethod];
     const isIos = ios && ios[openSettingsMethod];
@@ -168,6 +183,7 @@ const buildBridge = (): AituBridge => {
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);
   const getGeoPromise = promisifyMethod(getGeo, sub);
+  const getQrPromise = promisifyMethod(getQr, sub);
   const openSettingsPromise = promisifyMethod(openSettings, sub);
   const sharePromise = promisifyMethod(share, sub);
 
@@ -178,6 +194,7 @@ const buildBridge = (): AituBridge => {
     getPhone: () => invokePromise(EInvokeRequest.getPhone),
     getContacts: () => invokePromise(EInvokeRequest.getContacts),
     getGeo: getGeoPromise,
+    getQr: getQrPromise,
     openSettings: openSettingsPromise,
     share: sharePromise,
     isSupported,

@@ -11,6 +11,7 @@ enum EInvokeRequest {
 
 type SetItemType = (keyName: string, keyValue: string) => Promise<void>;
 type GetItemType = (keyName: string) => Promise<string | null>;
+type ClearType = () => Promise<void>;
 
 interface GetPhoneResponse {
   phone: string;
@@ -50,7 +51,8 @@ type BridgeInvoke<T extends EInvokeRequest, R> = (method: T, data?: {}) => Promi
 
 interface BridgeStorage {
   setItem: SetItemType,
-  getItem: GetItemType
+  getItem: GetItemType,
+  clear: ClearType
 }
 
 interface AituBridge {

@@ -6,7 +6,8 @@ enum EInvokeRequest {
   getMe = 'GetMe',
   getPhone = 'GetPhone',
   getContacts = 'GetContacts',
-  allowNotifications = 'AllowNotifications'
+  enableNotifications = 'AllowNotifications',
+  disableNotifications = 'DisableNotifications'
 }
 
 type SetItemType = (keyName: string, keyValue: string) => Promise<void>;
@@ -64,6 +65,8 @@ interface AituBridge {
   getGeo: () => Promise<GetGeoResponse>;
   getQr: () => Promise<string>;
   share: (text: string) => Promise<ShareResponse>;
+  enableNotifications: () => Promise<{}>;
+  disableNotifications: () => Promise<{}>;
   openSettings: () => Promise<OpenSettingsResponse>;
   isSupported: () => boolean;
   supports: (method: string) => boolean;
@@ -167,6 +170,10 @@ const buildBridge = (): AituBridge => {
     }
   }
 
+  const enableNotifications = () => invokePromise(EInvokeRequest.enableNotifications);
+
+  const disableNotifications = () => invokePromise(EInvokeRequest.disableNotifications);
+
   const isSupported = () => {
     return android || ios;
   }
@@ -197,6 +204,8 @@ const buildBridge = (): AituBridge => {
     getContacts: () => invokePromise(EInvokeRequest.getContacts),
     getGeo: getGeoPromise,
     getQr: getQrPromise,
+    enableNotifications,
+    disableNotifications,
     openSettings: openSettingsPromise,
     share: sharePromise,
     isSupported,

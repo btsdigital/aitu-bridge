@@ -64,7 +64,7 @@ interface AituBridge {
   getContacts: () => Promise<GetContactsResponse>;
   getGeo: () => Promise<GetGeoResponse>;
   getQr: () => Promise<string>;
-  share: (text: string) => Promise<ShareResponse>;
+  share: (text: string, media?: string) => Promise<ShareResponse>;
   enableNotifications: () => Promise<{}>;
   disableNotifications: () => Promise<{}>;
   openSettings: () => Promise<OpenSettingsResponse>;
@@ -157,14 +157,14 @@ const buildBridge = (): AituBridge => {
     }
   }
 
-  const share = (reqId, text) => {
+  const share = (reqId, text = '', media) => {
     const isAndroid = android && android[shareMethod];
     const isIos = ios && ios[shareMethod];
 
     if (isAndroid) {
-      android[shareMethod](reqId, JSON.stringify(text));
+      android[shareMethod](reqId, text, media);
     } else if (isIos) {
-      ios[shareMethod].postMessage({ reqId, text });
+      ios[shareMethod].postMessage({ reqId, text, media });
     } else if (typeof window !== 'undefined') {
       console.log('--share-isWeb');
     }

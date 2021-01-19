@@ -65,6 +65,7 @@ interface AituBridge {
   getGeo: () => Promise<GetGeoResponse>;
   getQr: () => Promise<string>;
   share: (text: string) => Promise<ShareResponse>;
+  shareImage: (text: string, image: string) => Promise<ShareResponse>;
   enableNotifications: () => Promise<{}>;
   disableNotifications: () => Promise<{}>;
   openSettings: () => Promise<OpenSettingsResponse>;
@@ -79,6 +80,7 @@ const getGeoMethod = 'getGeo';
 const getQrMethod = 'getQr';
 const openSettingsMethod = 'openSettings';
 const shareMethod = 'share';
+const shareImageMethod = 'shareImage';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -162,11 +164,24 @@ const buildBridge = (): AituBridge => {
     const isIos = ios && ios[shareMethod];
 
     if (isAndroid) {
-      android[shareMethod](reqId, JSON.stringify(text));
+      android[shareMethod](reqId, text);
     } else if (isIos) {
       ios[shareMethod].postMessage({ reqId, text });
     } else if (typeof window !== 'undefined') {
       console.log('--share-isWeb');
+    }
+  }
+
+  const shareImage = (reqId, text, image) => {
+    const isAndroid = android && android[shareImageMethod];
+    const isIos = ios && ios[shareImageMethod];
+
+    if (isAndroid) {
+      android[shareImageMethod](reqId, text, image);
+    } else if (isIos) {
+      ios[shareImageMethod].postMessage({ reqId, text, image });
+    } else if (typeof window !== 'undefined') {
+      console.log('--shareImage-isWeb');
     }
   }
 
@@ -195,6 +210,7 @@ const buildBridge = (): AituBridge => {
   const getQrPromise = promisifyMethod(getQr, sub);
   const openSettingsPromise = promisifyMethod(openSettings, sub);
   const sharePromise = promisifyMethod(share, sub);
+  const shareImagePromise = promisifyMethod(shareImage, sub);
 
   return {
     invoke: invokePromise,
@@ -208,6 +224,7 @@ const buildBridge = (): AituBridge => {
     disableNotifications,
     openSettings: openSettingsPromise,
     share: sharePromise,
+    shareImage: shareImagePromise,
     isSupported,
     supports,
     sub

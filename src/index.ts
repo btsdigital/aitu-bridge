@@ -162,11 +162,7 @@ const buildBridge = (): AituBridge => {
     const isIos = ios && ios[shareMethod];
 
     if (isAndroid) {
-      if (media) {
-        android[shareMethod](reqId, text, media);
-      } else {
-        android[shareMethod](reqId, text);
-      }
+      android[shareMethod](reqId, text, media);
     } else if (isIos) {
       ios[shareMethod].postMessage({ reqId, text, media });
     } else if (typeof window !== 'undefined') {

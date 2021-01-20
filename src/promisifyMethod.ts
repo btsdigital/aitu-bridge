@@ -57,11 +57,11 @@ function promisifyMethod(method, subscribe: (fn: any) => void) {
     }
   });
 
-  return function promisifiedFunc(props: any = {}): Promise<any | void> {
+  return function promisifiedFunc(...args: any[]): Promise<any | void> {
     return new Promise((resolve, reject) => {
-      const reqId = requestResolver.add({ resolve, reject }, props.reqId);
+      const reqId = requestResolver.add({ resolve, reject });
 
-      method(reqId, props);
+      method(reqId, ...args);
     });
   };
 }

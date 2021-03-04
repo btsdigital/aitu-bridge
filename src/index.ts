@@ -65,6 +65,7 @@ interface AituBridge {
   getGeo: () => Promise<GetGeoResponse>;
   getQr: () => Promise<string>;
   share: (text: string) => Promise<ShareResponse>;
+  copyToClipboard: (text: string) => Promise<{}>;
   shareImage: (text: string, image: string) => Promise<ShareResponse>;
   enableNotifications: () => Promise<{}>;
   disableNotifications: () => Promise<{}>;
@@ -172,6 +173,20 @@ const buildBridge = (): AituBridge => {
     }
   }
 
+
+  const copyToClipboard  = (reqId, text) => {
+    const isAndroid = android && android[shareMethod];
+    const isIos = ios && ios[shareMethod];
+
+    if (isAndroid) {
+      android[shareMethod](reqId, text);
+    } else if (isIos) {
+      ios[shareMethod].postMessage({ reqId, text });
+    } else if (typeof window !== 'undefined') {
+      console.log('--share-isWeb');
+    }
+  }
+
   const shareImage = (reqId, text, image) => {
     const isAndroid = android && android[shareImageMethod];
     const isIos = ios && ios[shareImageMethod];
@@ -210,9 +225,11 @@ const buildBridge = (): AituBridge => {
   const getQrPromise = promisifyMethod(getQr, sub);
   const openSettingsPromise = promisifyMethod(openSettings, sub);
   const sharePromise = promisifyMethod(share, sub);
+  const copyToClipboardPromise = promisifyMethod(copyToClipboard, sub);
   const shareImagePromise = promisifyMethod(shareImage, sub);
 
   return {
+    copyToClipboard: copyToClipboardPromise,
     invoke: invokePromise,
     storage: storagePromise,
     getMe: () => invokePromise(EInvokeRequest.getMe),

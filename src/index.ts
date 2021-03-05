@@ -47,6 +47,7 @@ interface GetContactsResponse {
 
 type OpenSettingsResponse = 'success' | 'failed';
 type ShareResponse = 'success' | 'failed';
+type CopyToClipboardResponse = 'success' | 'failed';
 
 type BridgeInvoke<T extends EInvokeRequest, R> = (method: T, data?: {}) => Promise<R>;
 
@@ -65,7 +66,7 @@ interface AituBridge {
   getGeo: () => Promise<GetGeoResponse>;
   getQr: () => Promise<string>;
   share: (text: string) => Promise<ShareResponse>;
-  copyToClipboard: (text: string) => Promise<{}>;
+  copyToClipboard: (text: string) => Promise<CopyToClipboardResponse>;
   shareImage: (text: string, image: string) => Promise<ShareResponse>;
   enableNotifications: () => Promise<{}>;
   disableNotifications: () => Promise<{}>;
@@ -184,7 +185,7 @@ const buildBridge = (): AituBridge => {
     } else if (isIos) {
       ios[copyToClipboardMethod].postMessage({ reqId, text });
     } else if (typeof window !== 'undefined') {
-      console.log('--share-isWeb');
+      console.log('--copyToClipboard-isWeb');
     }
   }
 

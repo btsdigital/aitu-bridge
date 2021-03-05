@@ -81,6 +81,7 @@ const getGeoMethod = 'getGeo';
 const getQrMethod = 'getQr';
 const openSettingsMethod = 'openSettings';
 const shareMethod = 'share';
+const copyToClipboardMethod = 'copyToClipboard';
 const shareImageMethod = 'shareImage';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
@@ -175,13 +176,13 @@ const buildBridge = (): AituBridge => {
 
 
   const copyToClipboard  = (reqId, text) => {
-    const isAndroid = android && android[shareMethod];
-    const isIos = ios && ios[shareMethod];
+    const isAndroid = android && android[copyToClipboardMethod];
+    const isIos = ios && ios[copyToClipboardMethod];
 
     if (isAndroid) {
-      android[shareMethod](reqId, text);
+      android[copyToClipboardMethod](reqId, text);
     } else if (isIos) {
-      ios[shareMethod].postMessage({ reqId, text });
+      ios[copyToClipboardMethod].postMessage({ reqId, text });
     } else if (typeof window !== 'undefined') {
       console.log('--share-isWeb');
     }

@@ -48,6 +48,7 @@ interface GetContactsResponse {
 type OpenSettingsResponse = 'success' | 'failed';
 type ShareResponse = 'success' | 'failed';
 type CopyToClipboardResponse = 'success' | 'failed';
+type VibrateResponse = 'success' | 'failed';
 
 type BridgeInvoke<T extends EInvokeRequest, R> = (method: T, data?: {}) => Promise<R>;
 
@@ -72,6 +73,7 @@ interface AituBridge {
   disableNotifications: () => Promise<{}>;
   openSettings: () => Promise<OpenSettingsResponse>;
   setShakeHandler: (handler: any) => void;
+  vibrate: (pattern: number[]) => Promise<VibratePattern>;
   isSupported: () => boolean;
   supports: (method: string) => boolean;
   sub: any;
@@ -86,6 +88,7 @@ const shareMethod = 'share';
 const copyToClipboardMethod = 'copyToClipboard';
 const shareImageMethod = 'shareImage';
 const setShakeHandlerMethod = 'setShakeHandler';
+const vibrateMethod = 'vibrate';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -221,6 +224,28 @@ const buildBridge = (): AituBridge => {
     }
   };
 
+  const vibrate = (reqId, pattern) => {
+    if (
+      !Array.isArray(pattern) ||
+      pattern.some((timing) => timing !== Math.floor(timing)) ||
+      pattern.reduce((total, timing) => total + timing) > 10000
+    ) {
+      console.error('Pattern should be an array of integers no longer than 10000ms total');
+      return;
+    }
+
+    const isAndroid = android && android[vibrateMethod];
+    const isIos = ios && ios[vibrateMethod];
+
+    if (isAndroid) {
+      android[vibrateMethod](reqId, pattern);
+    } else if (isIos) {
+      ios[vibrateMethod].postMessage({ reqId, pattern });
+    } else if (typeof window !== 'undefined') {
+      console.log('--vibrate-isWeb');
+    }
+  }
+
   const isSupported = () => {
     return android || ios;
   }
@@ -244,6 +269,7 @@ const buildBridge = (): AituBridge => {
   const sharePromise = promisifyMethod(share, sub);
   const copyToClipboardPromise = promisifyMethod(copyToClipboard, sub);
   const shareImagePromise = promisifyMethod(shareImage, sub);
+  const vibratePromise = promisifyMethod(vibrate, sub);
 
   return {
     copyToClipboard: copyToClipboardPromise,
@@ -260,6 +286,7 @@ const buildBridge = (): AituBridge => {
     share: sharePromise,
     shareImage: shareImagePromise,
     setShakeHandler,
+    vibrate: vibratePromise,
     isSupported,
     supports,
     sub

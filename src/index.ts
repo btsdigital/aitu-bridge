@@ -71,6 +71,7 @@ interface AituBridge {
   enableNotifications: () => Promise<{}>;
   disableNotifications: () => Promise<{}>;
   openSettings: () => Promise<OpenSettingsResponse>;
+  setShakeHandler: (handler: any) => void;
   isSupported: () => boolean;
   supports: (method: string) => boolean;
   sub: any;
@@ -84,6 +85,7 @@ const openSettingsMethod = 'openSettings';
 const shareMethod = 'share';
 const copyToClipboardMethod = 'copyToClipboard';
 const shareImageMethod = 'shareImage';
+const setShakeHandlerMethod = 'setShakeHandler';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -206,6 +208,19 @@ const buildBridge = (): AituBridge => {
 
   const disableNotifications = () => invokePromise(EInvokeRequest.disableNotifications);
 
+  const setShakeHandler = (handler) => {
+    const isAndroid = android && android[setShakeHandlerMethod];
+    const isIos = ios && ios[setShakeHandlerMethod];
+
+    if (isAndroid) {
+      android[setShakeHandlerMethod](handler);
+    } else if (isIos) {
+      ios[setShakeHandlerMethod].postMessage(handler);
+    } else if (typeof window !== 'undefined') {
+      console.log('--setShakeHandler-isWeb');
+    }
+  };
+
   const isSupported = () => {
     return android || ios;
   }
@@ -244,6 +259,7 @@ const buildBridge = (): AituBridge => {
     openSettings: openSettingsPromise,
     share: sharePromise,
     shareImage: shareImagePromise,
+    setShakeHandler,
     isSupported,
     supports,
     sub

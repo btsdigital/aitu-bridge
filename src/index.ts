@@ -227,10 +227,10 @@ const buildBridge = (): AituBridge => {
   const vibrate = (reqId, pattern) => {
     if (
       !Array.isArray(pattern) ||
-      pattern.some((timing) => timing !== Math.floor(timing)) ||
+      pattern.some((timing) => timing < 1 || timing !== Math.floor(timing)) ||
       pattern.reduce((total, timing) => total + timing) > 10000
     ) {
-      console.error('Pattern should be an array of integers no longer than 10000ms total');
+      console.error('Pattern should be an array of positive integers no longer than 10000ms total');
       return;
     }
 

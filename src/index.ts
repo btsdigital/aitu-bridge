@@ -238,7 +238,7 @@ const buildBridge = (): AituBridge => {
     const isIos = ios && ios[vibrateMethod];
 
     if (isAndroid) {
-      android[vibrateMethod](reqId, pattern);
+      android[vibrateMethod](reqId, JSON.stringify(pattern));
     } else if (isIos) {
       ios[vibrateMethod].postMessage({ reqId, pattern });
     } else if (typeof window !== 'undefined') {

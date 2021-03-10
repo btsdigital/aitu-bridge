@@ -45,6 +45,12 @@ interface GetContactsResponse {
   sign: string;
 }
 
+interface SelectContactResponse {
+  phone: string;
+  name: string;
+  lastname: string;
+}
+
 type OpenSettingsResponse = 'success' | 'failed';
 type ShareResponse = 'success' | 'failed';
 type CopyToClipboardResponse = 'success' | 'failed';
@@ -65,6 +71,7 @@ interface AituBridge {
   getPhone: () => Promise<GetPhoneResponse>;
   getContacts: () => Promise<GetContactsResponse>;
   getGeo: () => Promise<GetGeoResponse>;
+  selectContact: () => Promise<SelectContactResponse>;
   getQr: () => Promise<string>;
   share: (text: string) => Promise<ShareResponse>;
   copyToClipboard: (text: string) => Promise<CopyToClipboardResponse>;
@@ -83,6 +90,7 @@ const invokeMethod = 'invoke';
 const storageMethod = 'storage';
 const getGeoMethod = 'getGeo';
 const getQrMethod = 'getQr';
+const selectContactMethod = 'selectContact';
 const openSettingsMethod = 'openSettings';
 const shareMethod = 'share';
 const copyToClipboardMethod = 'copyToClipboard';
@@ -151,6 +159,19 @@ const buildBridge = (): AituBridge => {
       ios[getQrMethod].postMessage({ reqId });
     } else if (typeof window !== 'undefined') {
       console.log('--getQr-isWeb');
+    }
+  }
+
+  const selectContact = (reqId) => {
+    const isAndroid = android && android[selectContactMethod];
+    const isIos = ios && ios[selectContactMethod];
+
+    if (isAndroid) {
+      android[selectContactMethod](reqId);
+    } else if (isIos) {
+      ios[selectContactMethod].postMessage({ reqId });
+    } else if (typeof window !== 'undefined') {
+      console.log('--selectContact-isWeb');
     }
   }
 
@@ -265,6 +286,7 @@ const buildBridge = (): AituBridge => {
   const storagePromise = promisifyStorage(storage, sub);
   const getGeoPromise = promisifyMethod(getGeo, sub);
   const getQrPromise = promisifyMethod(getQr, sub);
+  const selectContactPromise = promisifyMethod(selectContact, sub);
   const openSettingsPromise = promisifyMethod(openSettings, sub);
   const sharePromise = promisifyMethod(share, sub);
   const copyToClipboardPromise = promisifyMethod(copyToClipboard, sub);
@@ -280,6 +302,7 @@ const buildBridge = (): AituBridge => {
     getContacts: () => invokePromise(EInvokeRequest.getContacts),
     getGeo: getGeoPromise,
     getQr: getQrPromise,
+    selectContact: selectContactPromise,
     enableNotifications,
     disableNotifications,
     openSettings: openSettingsPromise,

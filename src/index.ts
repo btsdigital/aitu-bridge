@@ -101,18 +101,6 @@ const vibrateMethod = 'vibrate';
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
 
-const maybeInitSetShakeHandler = () => {
-  const setShakeHandler = (handler) => {
-    (window as any).onAituBridgeShake = handler;
-  };
-  if (android && android[setShakeHandlerMethod]) {
-    android[setShakeHandlerMethod] = setShakeHandler;
-  }
-  if (ios && ios[setShakeHandlerMethod] && ios[setShakeHandlerMethod].postMessage) {
-    ios[setShakeHandlerMethod].postMessage = setShakeHandler;
-  }
-};
-
 const buildBridge = (): AituBridge => {
   const subs = [];
 
@@ -244,15 +232,12 @@ const buildBridge = (): AituBridge => {
 
   const disableNotifications = () => invokePromise(EInvokeRequest.disableNotifications);
 
-  maybeInitSetShakeHandler();
   const setShakeHandler = (handler) => {
     const isAndroid = android && android[setShakeHandlerMethod];
     const isIos = ios && ios[setShakeHandlerMethod];
 
-    if (isAndroid) {
-      android[setShakeHandlerMethod](handler);
-    } else if (isIos) {
-      ios[setShakeHandlerMethod].postMessage(handler);
+    if (isAndroid || isIos) {
+      (window as any).onAituBridgeShake = handler;
     } else if (typeof window !== 'undefined') {
       console.log('--setShakeHandler-isWeb');
     }

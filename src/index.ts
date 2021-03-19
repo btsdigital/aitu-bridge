@@ -100,6 +100,29 @@ const vibrateMethod = 'vibrate';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
+const web = typeof window !== 'undefined' && (window.top !== window) && ((window as any).WebBridge = (window as any).WebBridge || {});
+
+if (web) {
+  const aituOrigin = (window as any).AITU_ORIGIN || 'https://aitu.io';
+
+  [invokeMethod, storageMethod].forEach((method) => {
+    if (!web[method]) {
+      web[method] = (...args) => window.top.postMessage(JSON.stringify({
+        method,
+        payload: args,
+      }), aituOrigin);
+    }
+  });
+
+  window.addEventListener('message', (event) => {
+    if (event.origin === aituOrigin && event.data) {
+      try {
+        const detail = JSON.parse(event.data);
+        window.dispatchEvent(new CustomEvent('aituEvents', { detail }));
+      } catch(e) {}
+    }
+  });
+}
 
 const buildBridge = (): AituBridge => {
   const subs = [];
@@ -113,26 +136,32 @@ const buildBridge = (): AituBridge => {
   const invoke = (reqId, method, data = {}) => {
     const isAndroid = android && android[invokeMethod];
     const isIos = ios && ios[invokeMethod];
+    const isWeb = web && web[invokeMethod];
 
     if (isAndroid) {
       android[invokeMethod](reqId, method, JSON.stringify(data));
     } else if (isIos) {
       ios[invokeMethod].postMessage({ reqId, method, data });
+    } else if (isWeb) {
+      web[invokeMethod](reqId, method, data);
     } else if (typeof window !== 'undefined') {
-      console.log('--invoke-isWeb');
+      console.log('--invoke-isUnknown');
     }
   };
 
   const storage = (reqId, method, data = {}) => {
     const isAndroid = android && android[storageMethod];
     const isIos = ios && ios[storageMethod];
+    const isWeb = web && web[storageMethod];
 
     if (isAndroid) {
       android[storageMethod](reqId, method, JSON.stringify(data));
     } else if (isIos) {
       ios[storageMethod].postMessage({ reqId, method, data });
+    } else if (isWeb) {
+      web[storageMethod](reqId, method, data);
     } else if (typeof window !== 'undefined') {
-      console.log('--storage-isWeb');
+      console.log('--storage-isUnknown');
     }
   }
 
@@ -266,15 +295,13 @@ const buildBridge = (): AituBridge => {
   }
 
   const isSupported = () => {
-    return android || ios;
+    return android || ios || web;
   }
 
   const supports = (method) =>
-    android
-      ? !!(typeof android[method] === 'function')
-      : ios
-        ? !!(ios[method] && typeof ios[method].postMessage === 'function')
-        : false;
+    (android && typeof android[method] === 'function') ||
+    (ios && ios[method] && typeof ios[method].postMessage === 'function') ||
+    (web && typeof web[method] === 'function');
 
   const sub = (listener: any) => {
     subs.push(listener);

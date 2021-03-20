@@ -22,6 +22,9 @@ interface GetPhoneResponse {
 interface GetMeResponse {
   name: string;
   lastname: string;
+  id: string;
+  avatar?: string;
+  avatarThumb?: string;
   sign: string;
 }
 

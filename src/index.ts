@@ -298,7 +298,7 @@ const buildBridge = (): AituBridge => {
   }
 
   const isSupported = () => {
-    return android || ios || web;
+    return Boolean(android || ios || web);
   }
 
   const supports = (method) =>

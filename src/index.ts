@@ -76,9 +76,11 @@ interface AituBridge {
   getGeo: () => Promise<GetGeoResponse>;
   selectContact: () => Promise<SelectContactResponse>;
   getQr: () => Promise<string>;
+  getSMSCode: () => Promise<string>;
   share: (text: string) => Promise<ShareResponse>;
   copyToClipboard: (text: string) => Promise<CopyToClipboardResponse>;
   shareImage: (text: string, image: string) => Promise<ShareResponse>;
+  shareFile: (text: string, file: string) => Promise<ShareResponse>;
   enableNotifications: () => Promise<{}>;
   disableNotifications: () => Promise<{}>;
   openSettings: () => Promise<OpenSettingsResponse>;
@@ -93,16 +95,18 @@ const invokeMethod = 'invoke';
 const storageMethod = 'storage';
 const getGeoMethod = 'getGeo';
 const getQrMethod = 'getQr';
+const getSMSCodeMethod = 'getSMSCode';
 const selectContactMethod = 'selectContact';
 const openSettingsMethod = 'openSettings';
 const shareMethod = 'share';
 const copyToClipboardMethod = 'copyToClipboard';
 const shareImageMethod = 'shareImage';
+const shareFileMethod = 'shareFile';
 const setShakeHandlerMethod = 'setShakeHandler';
 const vibrateMethod = 'vibrate';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
-const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
+const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers && (window as any).webkit.messageHandlers.invoke;
 const web = typeof window !== 'undefined' && (window.top !== window) && ((window as any).WebBridge = (window as any).WebBridge || {});
 
 if (web) {
@@ -194,6 +198,19 @@ const buildBridge = (): AituBridge => {
     }
   }
 
+  const getSMSCode = (reqId) => {
+    const isAndroid = android && android[getSMSCodeMethod];
+    const isIos = ios && ios[getSMSCodeMethod];
+
+    if (isAndroid) {
+      android[getSMSCodeMethod](reqId);
+    } else if (isIos) {
+      ios[getSMSCodeMethod].postMessage({ reqId });
+    } else if (typeof window !== 'undefined') {
+      console.log('--getSMSCode-isWeb');
+    }
+  }
+
   const selectContact = (reqId) => {
     const isAndroid = android && android[selectContactMethod];
     const isIos = ios && ios[selectContactMethod];
@@ -260,6 +277,19 @@ const buildBridge = (): AituBridge => {
     }
   }
 
+  const shareFile = (reqId, text, file) => {
+    const isAndroid = android && android[shareFileMethod];
+    const isIos = ios && ios[shareFileMethod];
+
+    if (isAndroid) {
+      android[shareFileMethod](reqId, text, file);
+    } else if (isIos) {
+      ios[shareFileMethod].postMessage({ reqId, text, file });
+    } else if (typeof window !== 'undefined') {
+      console.log('--shareFile-isWeb');
+    }
+  }
+
   const enableNotifications = () => invokePromise(EInvokeRequest.enableNotifications);
 
   const disableNotifications = () => invokePromise(EInvokeRequest.disableNotifications);
@@ -314,11 +344,13 @@ const buildBridge = (): AituBridge => {
   const storagePromise = promisifyStorage(storage, sub);
   const getGeoPromise = promisifyMethod(getGeo, sub);
   const getQrPromise = promisifyMethod(getQr, sub);
+  const getSMSCodePromise = promisifyMethod(getSMSCode, sub);
   const selectContactPromise = promisifyMethod(selectContact, sub);
   const openSettingsPromise = promisifyMethod(openSettings, sub);
   const sharePromise = promisifyMethod(share, sub);
   const copyToClipboardPromise = promisifyMethod(copyToClipboard, sub);
   const shareImagePromise = promisifyMethod(shareImage, sub);
+  const shareFilePromise = promisifyMethod(shareFile, sub);
   const vibratePromise = promisifyMethod(vibrate, sub);
 
   return {
@@ -330,12 +362,14 @@ const buildBridge = (): AituBridge => {
     getContacts: () => invokePromise(EInvokeRequest.getContacts),
     getGeo: getGeoPromise,
     getQr: getQrPromise,
+    getSMSCode: getSMSCodePromise,
     selectContact: selectContactPromise,
     enableNotifications,
     disableNotifications,
     openSettings: openSettingsPromise,
     share: sharePromise,
     shareImage: shareImagePromise,
+    shareFile: shareFilePromise,
     setShakeHandler,
     vibrate: vibratePromise,
     isSupported,

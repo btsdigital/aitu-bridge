@@ -106,7 +106,7 @@ const setShakeHandlerMethod = 'setShakeHandler';
 const vibrateMethod = 'vibrate';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
-const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers && (window as any).webkit.messageHandlers.invoke;
+const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
 const web = typeof window !== 'undefined' && (window.top !== window) && ((window as any).WebBridge = (window as any).WebBridge || {});
 
 if (web) {
@@ -328,7 +328,8 @@ const buildBridge = (): AituBridge => {
   }
 
   const isSupported = () => {
-    return Boolean(android || ios || web);
+    const iosSup = ios && (window as any).webkit.messageHandlers.invoke;
+    return Boolean(android || iosSup || web);
   }
 
   const supports = (method) =>

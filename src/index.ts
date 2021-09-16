@@ -83,7 +83,7 @@ interface AituBridge {
   setTitle: (text: string) => Promise<ResponseType>;
   copyToClipboard: (text: string) => Promise<CopyToClipboardResponse>;
   shareImage: (text: string, image: string) => Promise<ShareResponse>;
-  shareFile: (text: string, file: string) => Promise<ShareResponse>;
+  shareFile: (text: string, filename: string, base64Data: string) => Promise<ShareResponse>;
   enableNotifications: () => Promise<{}>;
   disableNotifications: () => Promise<{}>;
   openSettings: () => Promise<OpenSettingsResponse>;
@@ -296,26 +296,45 @@ const buildBridge = (): AituBridge => {
   }
 
   const shareImage = (reqId, text, image) => {
-    const isAndroid = android && android[shareImageMethod];
-    const isIos = ios && ios[shareImageMethod];
+    // !!!======================!!!
+    // !!!===== Deprecated =====!!!
+    // !!!======================!!!
+
+    // const isAndroid = android && android[shareImageMethod];
+    // const isIos = ios && ios[shareImageMethod];
+
+    // if (isAndroid) {
+    //   android[shareImageMethod](reqId, text, image);
+    // } else if (isIos) {
+    //   ios[shareImageMethod].postMessage({ reqId, text, image });
+    // } else if (typeof window !== 'undefined') {
+    //   console.log('--shareImage-isWeb');
+    // }
+
+    // new one - fallback to shareFile
+    const isAndroid = android && android[shareFileMethod];
+    const isIos = ios && ios[shareFileMethod];
+
+    const filename = 'image';
+    const base64Data = image;
 
     if (isAndroid) {
-      android[shareImageMethod](reqId, text, image);
+      android[shareFileMethod](reqId, text, filename, base64Data);
     } else if (isIos) {
-      ios[shareImageMethod].postMessage({ reqId, text, image });
+      ios[shareFileMethod].postMessage({ reqId, text, filename, base64Data });
     } else if (typeof window !== 'undefined') {
-      console.log('--shareImage-isWeb');
+      console.log('--shareFile-isWeb');
     }
   }
 
-  const shareFile = (reqId, text, file) => {
+  const shareFile = (reqId, text, filename, base64Data) => {
     const isAndroid = android && android[shareFileMethod];
     const isIos = ios && ios[shareFileMethod];
 
     if (isAndroid) {
-      android[shareFileMethod](reqId, text, file);
+      android[shareFileMethod](reqId, text, filename, base64Data);
     } else if (isIos) {
-      ios[shareFileMethod].postMessage({ reqId, text, file });
+      ios[shareFileMethod].postMessage({ reqId, text, filename, base64Data });
     } else if (typeof window !== 'undefined') {
       console.log('--shareFile-isWeb');
     }

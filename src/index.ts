@@ -58,6 +58,8 @@ type OpenSettingsResponse = 'success' | 'failed';
 type ShareResponse = 'success' | 'failed';
 type CopyToClipboardResponse = 'success' | 'failed';
 type VibrateResponse = 'success' | 'failed';
+// todo: remove duplicates
+type ResponseType = 'success' | 'failed';
 
 type BridgeInvoke<T extends EInvokeRequest, R> = (method: T, data?: {}) => Promise<R>;
 
@@ -78,12 +80,14 @@ interface AituBridge {
   getQr: () => Promise<string>;
   getSMSCode: () => Promise<string>;
   share: (text: string) => Promise<ShareResponse>;
+  setTitle: (text: string) => Promise<ResponseType>;
   copyToClipboard: (text: string) => Promise<CopyToClipboardResponse>;
   shareImage: (text: string, image: string) => Promise<ShareResponse>;
   shareFile: (text: string, file: string) => Promise<ShareResponse>;
   enableNotifications: () => Promise<{}>;
   disableNotifications: () => Promise<{}>;
   openSettings: () => Promise<OpenSettingsResponse>;
+  closeApplication: () => Promise<ResponseType>;
   setShakeHandler: (handler: any) => void;
   vibrate: (pattern: number[]) => Promise<VibratePattern>;
   isSupported: () => boolean;
@@ -98,7 +102,9 @@ const getQrMethod = 'getQr';
 const getSMSCodeMethod = 'getSMSCode';
 const selectContactMethod = 'selectContact';
 const openSettingsMethod = 'openSettings';
+const closeApplicationMethod = 'closeApplication';
 const shareMethod = 'share';
+const setTitleMethod = 'setTitle';
 const copyToClipboardMethod = 'copyToClipboard';
 const shareImageMethod = 'shareImage';
 const shareFileMethod = 'shareFile';
@@ -237,6 +243,19 @@ const buildBridge = (): AituBridge => {
     }
   }
 
+  const closeApplication = (reqId) => {
+    const isAndroid = android && android[closeApplicationMethod];
+    const isIos = ios && ios[closeApplicationMethod];
+
+    if (isAndroid) {
+      android[closeApplicationMethod](reqId);
+    } else if (isIos) {
+      ios[closeApplicationMethod].postMessage({ reqId });
+    } else if (typeof window !== 'undefined') {
+      console.log('--closeApplication-isWeb');
+    }
+  }
+
   const share = (reqId, text) => {
     const isAndroid = android && android[shareMethod];
     const isIos = ios && ios[shareMethod];
@@ -250,6 +269,18 @@ const buildBridge = (): AituBridge => {
     }
   }
 
+  const setTitle = (reqId, text) => {
+    const isAndroid = android && android[setTitleMethod];
+    const isIos = ios && ios[setTitleMethod];
+
+    if (isAndroid) {
+      android[setTitleMethod](reqId, text);
+    } else if (isIos) {
+      ios[setTitleMethod].postMessage({ reqId, text });
+    } else if (typeof window !== 'undefined') {
+      console.log('--setTitle-isWeb');
+    }
+  }
 
   const copyToClipboard  = (reqId, text) => {
     const isAndroid = android && android[copyToClipboardMethod];
@@ -348,7 +379,9 @@ const buildBridge = (): AituBridge => {
   const getSMSCodePromise = promisifyMethod(getSMSCode, sub);
   const selectContactPromise = promisifyMethod(selectContact, sub);
   const openSettingsPromise = promisifyMethod(openSettings, sub);
+  const closeApplicationPromise = promisifyMethod(closeApplication, sub);
   const sharePromise = promisifyMethod(share, sub);
+  const setTitlePromise = promisifyMethod(setTitle, sub);
   const copyToClipboardPromise = promisifyMethod(copyToClipboard, sub);
   const shareImagePromise = promisifyMethod(shareImage, sub);
   const shareFilePromise = promisifyMethod(shareFile, sub);
@@ -368,6 +401,8 @@ const buildBridge = (): AituBridge => {
     enableNotifications,
     disableNotifications,
     openSettings: openSettingsPromise,
+    closeApplication: closeApplicationPromise,
+    setTitle: setTitlePromise,
     share: sharePromise,
     shareImage: shareImagePromise,
     shareFile: shareFilePromise,

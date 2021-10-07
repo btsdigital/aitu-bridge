@@ -6,6 +6,7 @@ enum EInvokeRequest {
   getMe = 'GetMe',
   getPhone = 'GetPhone',
   getContacts = 'GetContacts',
+  getUserProfile = 'GetUserProfile',
   enableNotifications = 'AllowNotifications',
   disableNotifications = 'DisableNotifications'
 }
@@ -54,6 +55,14 @@ interface SelectContactResponse {
   lastname: string;
 }
 
+interface GetUserProfileResponse {
+  name: string;
+  lastname?: string;
+  phone?: string;
+  avatar?: string;
+  avatarThumb?: string;
+}
+
 type OpenSettingsResponse = 'success' | 'failed';
 type ShareResponse = 'success' | 'failed';
 type CopyToClipboardResponse = 'success' | 'failed';
@@ -79,6 +88,7 @@ interface AituBridge {
   selectContact: () => Promise<SelectContactResponse>;
   getQr: () => Promise<string>;
   getSMSCode: () => Promise<string>;
+  getUserProfile: (userId: string) => Promise<GetUserProfileResponse>;
   share: (text: string) => Promise<ShareResponse>;
   setTitle: (text: string) => Promise<ResponseType>;
   copyToClipboard: (text: string) => Promise<CopyToClipboardResponse>;
@@ -416,6 +426,7 @@ const buildBridge = (): AituBridge => {
     getGeo: getGeoPromise,
     getQr: getQrPromise,
     getSMSCode: getSMSCodePromise,
+    getUserProfile: (id: string) => invokePromise(EInvokeRequest.getUserProfile, { id }),
     selectContact: selectContactPromise,
     enableNotifications,
     disableNotifications,

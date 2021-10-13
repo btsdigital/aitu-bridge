@@ -325,8 +325,11 @@ const buildBridge = (): AituBridge => {
     const isAndroid = android && android[shareFileMethod];
     const isIos = ios && ios[shareFileMethod];
 
-    const filename = 'image';
-    const base64Data = image;
+    // get extension from base64 mime type and merge with name
+    const ext = image.substring('data:image/'.length, image.indexOf(';base64'));
+    const filename = 'image.' + ext;
+    // remove mime type
+    const base64Data = image.substr(image.indexOf(',') + 1);
 
     if (isAndroid) {
       android[shareFileMethod](reqId, text, filename, base64Data);

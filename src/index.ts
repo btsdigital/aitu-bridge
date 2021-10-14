@@ -326,7 +326,7 @@ const buildBridge = (): AituBridge => {
     const isIos = ios && ios[shareFileMethod];
 
     // get extension from base64 mime type and merge with name
-    const ext = image.substring('data:image/'.length, image.indexOf(';base64'));
+    const ext = image.split(';')[0].split('/')[1];
     const filename = 'image.' + ext;
     // remove mime type
     const base64Data = image.substr(image.indexOf(',') + 1);

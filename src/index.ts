@@ -123,8 +123,8 @@ const shareImageMethod = 'shareImage';
 const shareFileMethod = 'shareFile';
 const setShakeHandlerMethod = 'setShakeHandler';
 const vibrateMethod = 'vibrate';
-const enableScreenCaptureMethod = 'enableScreenCaptureMethod';
-const disableScreenCaptureMethod = 'disableScreenCaptureMethod';
+const enableScreenCaptureMethod = 'enableScreenCapture';
+const disableScreenCaptureMethod = 'disableScreenCapture';
 const setTabActiveHandlerMethod = 'setTabActiveHandler';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;

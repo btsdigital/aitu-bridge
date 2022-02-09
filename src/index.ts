@@ -99,6 +99,7 @@ interface AituBridge {
   openSettings: () => Promise<OpenSettingsResponse>;
   closeApplication: () => Promise<ResponseType>;
   setShakeHandler: (handler: any) => void;
+  setTabActiveHandler: (handler: (tabname: string) => void) => void;
   vibrate: (pattern: number[]) => Promise<VibratePattern>;
   isSupported: () => boolean;
   supports: (method: string) => boolean;
@@ -124,6 +125,7 @@ const setShakeHandlerMethod = 'setShakeHandler';
 const vibrateMethod = 'vibrate';
 const enableScreenCaptureMethod = 'enableScreenCaptureMethod';
 const disableScreenCaptureMethod = 'disableScreenCaptureMethod';
+const setTabActiveHandlerMethod = 'setTabActiveHandler';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -398,6 +400,17 @@ const buildBridge = (): AituBridge => {
     }
   };
 
+  const setTabActiveHandler = (handler: (tabname: string) => void) => {
+    const isAndroid = android && android[setTabActiveHandlerMethod];
+    const isIos = ios && ios[setTabActiveHandlerMethod];
+
+    if (isAndroid || isIos) {
+      (window as any).onAituBridgeTabActive = handler;
+    } else if (typeof window !== 'undefined') {
+      console.log('--setTabActiveHandler-isWeb');
+    }
+  };
+
   const vibrate = (reqId, pattern) => {
     if (
       !Array.isArray(pattern) ||
@@ -472,6 +485,7 @@ const buildBridge = (): AituBridge => {
     shareImage: shareImagePromise,
     shareFile: shareFilePromise,
     setShakeHandler,
+    setTabActiveHandler,
     vibrate: vibratePromise,
     isSupported,
     supports,

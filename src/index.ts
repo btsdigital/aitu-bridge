@@ -311,27 +311,27 @@ const buildBridge = (): AituBridge => {
     }
   }
 
-  const enableScreenCapture = () => {
+  const enableScreenCapture = (reqId) => {
     const isAndroid = android && android[enableScreenCaptureMethod];
     const isIos = ios && ios[enableScreenCaptureMethod];
 
     if (isAndroid) {
-      android[enableScreenCaptureMethod]();
+      android[enableScreenCaptureMethod](reqId);
     } else if (isIos) {
-      ios[enableScreenCaptureMethod].postMessage({});
+      ios[enableScreenCaptureMethod].postMessage({ reqId });
     } else if (typeof window !== 'undefined') {
       console.log('--enableScreenCapture-isWeb');
     }
   }
 
-  const disableScreenCapture = () => {
+  const disableScreenCapture = (reqId) => {
     const isAndroid = android && android[disableScreenCaptureMethod];
     const isIos = ios && ios[disableScreenCaptureMethod];
 
     if (isAndroid) {
-      android[disableScreenCaptureMethod]();
+      android[disableScreenCaptureMethod](reqId);
     } else if (isIos) {
-      ios[disableScreenCaptureMethod].postMessage({});
+      ios[disableScreenCaptureMethod].postMessage({ reqId });
     } else if (typeof window !== 'undefined') {
       console.log('--disableScreenCapture-isWeb');
     }

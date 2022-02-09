@@ -103,6 +103,8 @@ interface AituBridge {
   isSupported: () => boolean;
   supports: (method: string) => boolean;
   sub: any;
+  enableScreenCapture: () => Promise<{}>;
+  disableScreenCapture: () => Promise<{}>;
 }
 
 const invokeMethod = 'invoke';
@@ -120,6 +122,8 @@ const shareImageMethod = 'shareImage';
 const shareFileMethod = 'shareFile';
 const setShakeHandlerMethod = 'setShakeHandler';
 const vibrateMethod = 'vibrate';
+const enableScreenCaptureMethod = 'enableScreenCaptureMethod';
+const disableScreenCaptureMethod = 'disableScreenCaptureMethod';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -142,7 +146,7 @@ if (web) {
       try {
         const detail = JSON.parse(event.data);
         window.dispatchEvent(new CustomEvent('aituEvents', { detail }));
-      } catch(e) {}
+      } catch (e) { }
     }
   });
 }
@@ -292,7 +296,7 @@ const buildBridge = (): AituBridge => {
     }
   }
 
-  const copyToClipboard  = (reqId, text) => {
+  const copyToClipboard = (reqId, text) => {
     const isAndroid = android && android[copyToClipboardMethod];
     const isIos = ios && ios[copyToClipboardMethod];
 
@@ -302,6 +306,32 @@ const buildBridge = (): AituBridge => {
       ios[copyToClipboardMethod].postMessage({ reqId, text });
     } else if (typeof window !== 'undefined') {
       console.log('--copyToClipboard-isWeb');
+    }
+  }
+
+  const enableScreenCapture = () => {
+    const isAndroid = android && android[enableScreenCaptureMethod];
+    const isIos = ios && ios[enableScreenCaptureMethod];
+
+    if (isAndroid) {
+      android[enableScreenCaptureMethod]();
+    } else if (isIos) {
+      ios[enableScreenCaptureMethod].postMessage({});
+    } else if (typeof window !== 'undefined') {
+      console.log('--enableScreenCapture-isWeb');
+    }
+  }
+
+  const disableScreenCapture = () => {
+    const isAndroid = android && android[disableScreenCaptureMethod];
+    const isIos = ios && ios[disableScreenCaptureMethod];
+
+    if (isAndroid) {
+      android[disableScreenCaptureMethod]();
+    } else if (isIos) {
+      ios[disableScreenCaptureMethod].postMessage({});
+    } else if (typeof window !== 'undefined') {
+      console.log('--disableScreenCapture-isWeb');
     }
   }
 
@@ -418,6 +448,8 @@ const buildBridge = (): AituBridge => {
   const shareImagePromise = promisifyMethod(shareImage, sub);
   const shareFilePromise = promisifyMethod(shareFile, sub);
   const vibratePromise = promisifyMethod(vibrate, sub);
+  const enableScreenCapturePromise = promisifyMethod(enableScreenCapture, sub);
+  const disableScreenCapturePromise = promisifyMethod(disableScreenCapture, sub);
 
   return {
     copyToClipboard: copyToClipboardPromise,
@@ -443,7 +475,9 @@ const buildBridge = (): AituBridge => {
     vibrate: vibratePromise,
     isSupported,
     supports,
-    sub
+    sub,
+    enableScreenCapture: enableScreenCapturePromise,
+    disableScreenCapture: disableScreenCapturePromise
   }
 }
 

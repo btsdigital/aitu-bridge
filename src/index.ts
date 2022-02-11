@@ -1,3 +1,5 @@
+import { version } from '../package.json';
+
 import promisifyInvoke from './promisifyInvoke';
 import promisifyStorage from './promisifyStorage';
 import promisifyMethod from './promisifyMethod';
@@ -79,6 +81,7 @@ interface BridgeStorage {
 }
 
 interface AituBridge {
+  version: string;
   invoke: BridgeInvoke<EInvokeRequest, ResponseObject>;
   storage: BridgeStorage;
   getMe: () => Promise<GetMeResponse>;
@@ -465,6 +468,7 @@ const buildBridge = (): AituBridge => {
   const disableScreenCapturePromise = promisifyMethod(disableScreenCapture, sub);
 
   return {
+    version: String(version),
     copyToClipboard: copyToClipboardPromise,
     invoke: invokePromise,
     storage: storagePromise,

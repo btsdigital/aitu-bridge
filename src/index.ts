@@ -1,4 +1,4 @@
-import { version } from '../package.json';
+import { LIB_VERSION } from './version';
 
 import promisifyInvoke from './promisifyInvoke';
 import promisifyStorage from './promisifyStorage';
@@ -468,7 +468,7 @@ const buildBridge = (): AituBridge => {
   const disableScreenCapturePromise = promisifyMethod(disableScreenCapture, sub);
 
   return {
-    version: String(version),
+    version: String(LIB_VERSION),
     copyToClipboard: copyToClipboardPromise,
     invoke: invokePromise,
     storage: storagePromise,

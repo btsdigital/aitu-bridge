@@ -462,14 +462,14 @@ const buildBridge = (): AituBridge => {
     subs.push(listener);
   }
 
-  const setHeaderMenuItems = (icons: Array<HeaderMenuItem>) => {
+  const setHeaderMenuItems = (items: Array<HeaderMenuItem>) => {
     const isAndroid = android && android[setHeaderMenuItemsMethod];
     const isIos = ios && ios[setHeaderMenuItemsMethod];
 
     if (isAndroid) {
-      android[setHeaderMenuItemsMethod](icons);
+      android[setHeaderMenuItemsMethod](items);
     } else if (isIos) {
-      ios[setHeaderMenuItemsMethod].postMessage({ icons });
+      ios[setHeaderMenuItemsMethod].postMessage({ items });
     } else if (typeof window !== 'undefined') {
       console.log('--setHeaderMenuItems-isWeb');
     }

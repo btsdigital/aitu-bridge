@@ -17,6 +17,8 @@ type SetItemType = (keyName: string, keyValue: string) => Promise<void>;
 type GetItemType = (keyName: string) => Promise<string | null>;
 type ClearType = () => Promise<void>;
 
+type OnHeaderIconClickHandlerType = (itemId: string) => Promise<void>;
+
 interface GetPhoneResponse {
   phone: string;
   sign: string;
@@ -65,6 +67,12 @@ interface GetUserProfileResponse {
   avatarThumb?: string;
 }
 
+interface HeaderIcon {
+  itemId: string;
+  iconCode: string;
+  badge?: string;
+}
+
 type OpenSettingsResponse = 'success' | 'failed';
 type ShareResponse = 'success' | 'failed';
 type CopyToClipboardResponse = 'success' | 'failed';
@@ -109,6 +117,8 @@ interface AituBridge {
   sub: any;
   enableScreenCapture: () => Promise<{}>;
   disableScreenCapture: () => Promise<{}>;
+  setHeaderIcons: (icons: Array<HeaderIcon>) => Promise<ResponseType>;
+  setHeaderIconsClickHandler: (handler: OnHeaderIconClickHandlerType) => void;
 }
 
 const invokeMethod = 'invoke';
@@ -129,6 +139,8 @@ const vibrateMethod = 'vibrate';
 const enableScreenCaptureMethod = 'enableScreenCapture';
 const disableScreenCaptureMethod = 'disableScreenCapture';
 const setTabActiveHandlerMethod = 'setTabActiveHandler';
+const setHeaderIconsMethod = 'setHeaderIcons';
+const setHeaderIconsClickHandlerMethod = 'setHeaderIconsClickHandler';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -450,6 +462,30 @@ const buildBridge = (): AituBridge => {
     subs.push(listener);
   }
 
+  const setHeaderIcons = (icons: Array<HeaderIcon>) => {
+    const isAndroid = android && android[setHeaderIconsMethod];
+    const isIos = ios && ios[setHeaderIconsMethod];
+
+    if (isAndroid) {
+      android[setHeaderIconsMethod](icons);
+    } else if (isIos) {
+      ios[setHeaderIconsMethod].postMessage({ icons });
+    } else if (typeof window !== 'undefined') {
+      console.log('--setHeaderIcons-isWeb');
+    }
+  }
+
+  const setHeaderIconsClickHandler = (handler: OnHeaderIconClickHandlerType) => {
+    const isAndroid = android && android[setHeaderIconsClickHandlerMethod];
+    const isIos = ios && ios[setHeaderIconsClickHandlerMethod];
+
+    if (isAndroid || isIos) {
+      (window as any).onAituBridgeHeaderIconsClick = handler;
+    } else if (typeof window !== 'undefined') {
+      console.log('--setHeaderIconsClickHandler-isWeb');
+    }
+  }
+
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);
   const getGeoPromise = promisifyMethod(getGeo, sub);
@@ -466,6 +502,7 @@ const buildBridge = (): AituBridge => {
   const vibratePromise = promisifyMethod(vibrate, sub);
   const enableScreenCapturePromise = promisifyMethod(enableScreenCapture, sub);
   const disableScreenCapturePromise = promisifyMethod(disableScreenCapture, sub);
+  const setHeaderIconsPromise = promisifyMethod(setHeaderIcons, sub);
 
   return {
     version: String(LIB_VERSION),
@@ -495,7 +532,9 @@ const buildBridge = (): AituBridge => {
     supports,
     sub,
     enableScreenCapture: enableScreenCapturePromise,
-    disableScreenCapture: disableScreenCapturePromise
+    disableScreenCapture: disableScreenCapturePromise,
+    setHeaderIcons: setHeaderIconsPromise,
+    setHeaderIconsClickHandler
   }
 }
 

@@ -117,7 +117,7 @@ interface AituBridge {
   sub: any;
   enableScreenCapture: () => Promise<{}>;
   disableScreenCapture: () => Promise<{}>;
-  setHeaderMenuItems: (icons: Array<HeaderMenuItem>) => Promise<ResponseType>;
+  setHeaderMenuItems: (items: Array<HeaderMenuItem>) => Promise<ResponseType>;
   setHeaderMenuItemClickHandler: (handler: HeaderMenuItemClickHandlerType) => void;
 }
 

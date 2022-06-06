@@ -17,7 +17,7 @@ type SetItemType = (keyName: string, keyValue: string) => Promise<void>;
 type GetItemType = (keyName: string) => Promise<string | null>;
 type ClearType = () => Promise<void>;
 
-type OnHeaderIconClickHandlerType = (itemId: string) => Promise<void>;
+type HeaderMenuItemClickHandlerType = (id: string) => Promise<void>;
 
 interface GetPhoneResponse {
   phone: string;
@@ -67,9 +67,9 @@ interface GetUserProfileResponse {
   avatarThumb?: string;
 }
 
-interface HeaderIcon {
-  itemId: string;
-  iconCode: string;
+interface HeaderMenuItem {
+  id: string;
+  iconId: string;
   badge?: string;
 }
 
@@ -117,8 +117,8 @@ interface AituBridge {
   sub: any;
   enableScreenCapture: () => Promise<{}>;
   disableScreenCapture: () => Promise<{}>;
-  setHeaderIcons: (icons: Array<HeaderIcon>) => Promise<ResponseType>;
-  setHeaderIconsClickHandler: (handler: OnHeaderIconClickHandlerType) => void;
+  setHeaderMenuItems: (icons: Array<HeaderMenuItem>) => Promise<ResponseType>;
+  setHeaderMenuItemClickHandler: (handler: HeaderMenuItemClickHandlerType) => void;
 }
 
 const invokeMethod = 'invoke';
@@ -139,8 +139,8 @@ const vibrateMethod = 'vibrate';
 const enableScreenCaptureMethod = 'enableScreenCapture';
 const disableScreenCaptureMethod = 'disableScreenCapture';
 const setTabActiveHandlerMethod = 'setTabActiveHandler';
-const setHeaderIconsMethod = 'setHeaderIcons';
-const setHeaderIconsClickHandlerMethod = 'setHeaderIconsClickHandler';
+const setHeaderMenuItemsMethod = 'setHeaderMenuItems';
+const setHeaderMenuItemClickHandlerMethod = 'setHeaderMenuItemClickHandler';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -462,27 +462,27 @@ const buildBridge = (): AituBridge => {
     subs.push(listener);
   }
 
-  const setHeaderIcons = (icons: Array<HeaderIcon>) => {
-    const isAndroid = android && android[setHeaderIconsMethod];
-    const isIos = ios && ios[setHeaderIconsMethod];
+  const setHeaderMenuItems = (icons: Array<HeaderMenuItem>) => {
+    const isAndroid = android && android[setHeaderMenuItemsMethod];
+    const isIos = ios && ios[setHeaderMenuItemsMethod];
 
     if (isAndroid) {
-      android[setHeaderIconsMethod](icons);
+      android[setHeaderMenuItemsMethod](icons);
     } else if (isIos) {
-      ios[setHeaderIconsMethod].postMessage({ icons });
+      ios[setHeaderMenuItemsMethod].postMessage({ icons });
     } else if (typeof window !== 'undefined') {
-      console.log('--setHeaderIcons-isWeb');
+      console.log('--setHeaderMenuItems-isWeb');
     }
   }
 
-  const setHeaderIconsClickHandler = (handler: OnHeaderIconClickHandlerType) => {
-    const isAndroid = android && android[setHeaderIconsClickHandlerMethod];
-    const isIos = ios && ios[setHeaderIconsClickHandlerMethod];
+  const setHeaderMenuItemClickHandler = (handler: HeaderMenuItemClickHandlerType) => {
+    const isAndroid = android && android[setHeaderMenuItemClickHandlerMethod];
+    const isIos = ios && ios[setHeaderMenuItemClickHandlerMethod];
 
     if (isAndroid || isIos) {
-      (window as any).onAituBridgeHeaderIconsClick = handler;
+      (window as any).onAituBridgeHeaderMenuItemClick = handler;
     } else if (typeof window !== 'undefined') {
-      console.log('--setHeaderIconsClickHandler-isWeb');
+      console.log('--setHeaderMenuItemClickHandler-isWeb');
     }
   }
 
@@ -502,7 +502,7 @@ const buildBridge = (): AituBridge => {
   const vibratePromise = promisifyMethod(vibrate, sub);
   const enableScreenCapturePromise = promisifyMethod(enableScreenCapture, sub);
   const disableScreenCapturePromise = promisifyMethod(disableScreenCapture, sub);
-  const setHeaderIconsPromise = promisifyMethod(setHeaderIcons, sub);
+  const setHeaderMenuItemsPromise = promisifyMethod(setHeaderMenuItems, sub);
 
   return {
     version: String(LIB_VERSION),
@@ -533,8 +533,8 @@ const buildBridge = (): AituBridge => {
     sub,
     enableScreenCapture: enableScreenCapturePromise,
     disableScreenCapture: disableScreenCapturePromise,
-    setHeaderIcons: setHeaderIconsPromise,
-    setHeaderIconsClickHandler
+    setHeaderMenuItems: setHeaderMenuItemsPromise,
+    setHeaderMenuItemClickHandler
   }
 }
 

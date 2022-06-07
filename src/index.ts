@@ -67,9 +67,22 @@ interface GetUserProfileResponse {
   avatarThumb?: string;
 }
 
+enum HeaderMenuIcon {
+  Search = "Search",
+  ShoppingCart = "ShoppingCart",
+  Menu = "Menu",
+  Share = "Share",
+  Notifications = "Notifications",
+  Help = "Help",
+  Error = "Error",
+  Person = "Person",
+  Sort = "Sort",
+  Filter = "Filter"
+}
+
 interface HeaderMenuItem {
   id: string;
-  iconId: string;
+  iconId: HeaderMenuIcon;
   badge?: string;
 }
 

@@ -67,6 +67,8 @@ interface GetUserProfileResponse {
   avatarThumb?: string;
 }
 
+const MAX_HEADER_MENU_ITEMS_COUNT = 3;
+
 export enum HeaderMenuIcon {
   Search = "Search",
   ShoppingCart = "ShoppingCart",
@@ -476,6 +478,11 @@ const buildBridge = (): AituBridge => {
   }
 
   const setHeaderMenuItems = (items: Array<HeaderMenuItem>) => {
+    if (items.length > MAX_HEADER_MENU_ITEMS_COUNT) {
+      console.error('SetHeaderMenuItems: items count should not be more than ' + MAX_HEADER_MENU_ITEMS_COUNT);
+      return;
+    }
+
     const isAndroid = android && android[setHeaderMenuItemsMethod];
     const isIos = ios && ios[setHeaderMenuItemsMethod];
 

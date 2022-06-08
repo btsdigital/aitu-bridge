@@ -82,7 +82,7 @@ export enum HeaderMenuIcon {
 
 interface HeaderMenuItem {
   id: string;
-  iconId: HeaderMenuIcon;
+  icon: HeaderMenuIcon;
   badge?: string;
 }
 

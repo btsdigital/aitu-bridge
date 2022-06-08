@@ -67,7 +67,7 @@ interface GetUserProfileResponse {
   avatarThumb?: string;
 }
 
-enum HeaderMenuIcon {
+export enum HeaderMenuIcon {
   Search = "Search",
   ShoppingCart = "ShoppingCart",
   Menu = "Menu",

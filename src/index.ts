@@ -17,6 +17,8 @@ type SetItemType = (keyName: string, keyValue: string) => Promise<void>;
 type GetItemType = (keyName: string) => Promise<string | null>;
 type ClearType = () => Promise<void>;
 
+type HeaderMenuItemClickHandlerType = (id: string) => Promise<void>;
+
 interface GetPhoneResponse {
   phone: string;
   sign: string;
@@ -65,6 +67,25 @@ interface GetUserProfileResponse {
   avatarThumb?: string;
 }
 
+export enum HeaderMenuIcon {
+  Search = "Search",
+  ShoppingCart = "ShoppingCart",
+  Menu = "Menu",
+  Share = "Share",
+  Notifications = "Notifications",
+  Help = "Help",
+  Error = "Error",
+  Person = "Person",
+  Sort = "Sort",
+  Filter = "Filter"
+}
+
+interface HeaderMenuItem {
+  id: string;
+  icon: HeaderMenuIcon;
+  badge?: string;
+}
+
 type OpenSettingsResponse = 'success' | 'failed';
 type ShareResponse = 'success' | 'failed';
 type CopyToClipboardResponse = 'success' | 'failed';
@@ -109,6 +130,8 @@ interface AituBridge {
   sub: any;
   enableScreenCapture: () => Promise<{}>;
   disableScreenCapture: () => Promise<{}>;
+  setHeaderMenuItems: (items: Array<HeaderMenuItem>) => Promise<ResponseType>;
+  setHeaderMenuItemClickHandler: (handler: HeaderMenuItemClickHandlerType) => void;
 }
 
 const invokeMethod = 'invoke';
@@ -129,6 +152,8 @@ const vibrateMethod = 'vibrate';
 const enableScreenCaptureMethod = 'enableScreenCapture';
 const disableScreenCaptureMethod = 'disableScreenCapture';
 const setTabActiveHandlerMethod = 'setTabActiveHandler';
+const setHeaderMenuItemsMethod = 'setHeaderMenuItems';
+const setHeaderMenuItemClickHandlerMethod = 'setHeaderMenuItemClickHandler';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -450,6 +475,30 @@ const buildBridge = (): AituBridge => {
     subs.push(listener);
   }
 
+  const setHeaderMenuItems = (items: Array<HeaderMenuItem>) => {
+    const isAndroid = android && android[setHeaderMenuItemsMethod];
+    const isIos = ios && ios[setHeaderMenuItemsMethod];
+
+    if (isAndroid) {
+      android[setHeaderMenuItemsMethod](items);
+    } else if (isIos) {
+      ios[setHeaderMenuItemsMethod].postMessage({ items });
+    } else if (typeof window !== 'undefined') {
+      console.log('--setHeaderMenuItems-isWeb');
+    }
+  }
+
+  const setHeaderMenuItemClickHandler = (handler: HeaderMenuItemClickHandlerType) => {
+    const isAndroid = android && android[setHeaderMenuItemClickHandlerMethod];
+    const isIos = ios && ios[setHeaderMenuItemClickHandlerMethod];
+
+    if (isAndroid || isIos) {
+      (window as any).onAituBridgeHeaderMenuItemClick = handler;
+    } else if (typeof window !== 'undefined') {
+      console.log('--setHeaderMenuItemClickHandler-isWeb');
+    }
+  }
+
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);
   const getGeoPromise = promisifyMethod(getGeo, sub);
@@ -466,6 +515,7 @@ const buildBridge = (): AituBridge => {
   const vibratePromise = promisifyMethod(vibrate, sub);
   const enableScreenCapturePromise = promisifyMethod(enableScreenCapture, sub);
   const disableScreenCapturePromise = promisifyMethod(disableScreenCapture, sub);
+  const setHeaderMenuItemsPromise = promisifyMethod(setHeaderMenuItems, sub);
 
   return {
     version: String(LIB_VERSION),
@@ -495,7 +545,9 @@ const buildBridge = (): AituBridge => {
     supports,
     sub,
     enableScreenCapture: enableScreenCapturePromise,
-    disableScreenCapture: disableScreenCapturePromise
+    disableScreenCapture: disableScreenCapturePromise,
+    setHeaderMenuItems: setHeaderMenuItemsPromise,
+    setHeaderMenuItemClickHandler
   }
 }
 

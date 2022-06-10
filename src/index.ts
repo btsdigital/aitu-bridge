@@ -477,7 +477,7 @@ const buildBridge = (): AituBridge => {
     subs.push(listener);
   }
 
-  const setHeaderMenuItems = (items: Array<HeaderMenuItem>) => {
+  const setHeaderMenuItems = (reqId, items: Array<HeaderMenuItem>) => {
     if (items.length > MAX_HEADER_MENU_ITEMS_COUNT) {
       console.error('SetHeaderMenuItems: items count should not be more than ' + MAX_HEADER_MENU_ITEMS_COUNT);
       return;
@@ -487,9 +487,9 @@ const buildBridge = (): AituBridge => {
     const isIos = ios && ios[setHeaderMenuItemsMethod];
 
     if (isAndroid) {
-      android[setHeaderMenuItemsMethod](items);
+      android[setHeaderMenuItemsMethod](reqId, items);
     } else if (isIos) {
-      ios[setHeaderMenuItemsMethod].postMessage({ items });
+      ios[setHeaderMenuItemsMethod].postMessage({ reqId, items });
     } else if (typeof window !== 'undefined') {
       console.log('--setHeaderMenuItems-isWeb');
     }

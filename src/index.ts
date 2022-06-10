@@ -486,10 +486,12 @@ const buildBridge = (): AituBridge => {
     const isAndroid = android && android[setHeaderMenuItemsMethod];
     const isIos = ios && ios[setHeaderMenuItemsMethod];
 
+    const itemsJsonArray = JSON.stringify(items);
+
     if (isAndroid) {
-      android[setHeaderMenuItemsMethod](reqId, items);
+      android[setHeaderMenuItemsMethod](reqId, itemsJsonArray);
     } else if (isIos) {
-      ios[setHeaderMenuItemsMethod].postMessage({ reqId, items });
+      ios[setHeaderMenuItemsMethod].postMessage({ reqId, itemsJsonArray });
     } else if (typeof window !== 'undefined') {
       console.log('--setHeaderMenuItems-isWeb');
     }

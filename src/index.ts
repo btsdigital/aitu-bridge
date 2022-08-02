@@ -18,6 +18,7 @@ type GetItemType = (keyName: string) => Promise<string | null>;
 type ClearType = () => Promise<void>;
 
 type HeaderMenuItemClickHandlerType = (id: string) => Promise<void>;
+type BackArrowClickHandlerType = () => Promise<void>;
 
 interface GetPhoneResponse {
   phone: string;
@@ -134,6 +135,10 @@ interface AituBridge {
   disableScreenCapture: () => Promise<{}>;
   setHeaderMenuItems: (items: Array<HeaderMenuItem>) => Promise<ResponseType>;
   setHeaderMenuItemClickHandler: (handler: HeaderMenuItemClickHandlerType) => void;
+  setCustomBackArrowMode: (enabled: boolean) => Promise<ResponseType>;
+  getCustomBackArrowMode: () => Promise<boolean>;
+  setCustomBackArrowVisible: (visible: boolean) => Promise<ResponseType>;
+  setCustomBackArrowOnClickHandler: (handler: BackArrowClickHandlerType) => void;
 }
 
 const invokeMethod = 'invoke';
@@ -156,6 +161,10 @@ const disableScreenCaptureMethod = 'disableScreenCapture';
 const setTabActiveHandlerMethod = 'setTabActiveHandler';
 const setHeaderMenuItemsMethod = 'setHeaderMenuItems';
 const setHeaderMenuItemClickHandlerMethod = 'setHeaderMenuItemClickHandler';
+const setCustomBackArrowModeMethod = 'setCustomBackArrowMode';
+const getCustomBackArrowModeMethod = 'getCustomBackArrowMode';
+const setCustomBackArrowVisibleMethod = 'setCustomBackArrowVisible';
+const setCustomBackArrowOnClickHandlerMethod = 'setCustomBackArrowOnClickHandler';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -508,6 +517,56 @@ const buildBridge = (): AituBridge => {
     }
   }
 
+  const setCustomBackArrowMode = (reqId, enabled: boolean) => {
+    const isAndroid = android && android[setCustomBackArrowModeMethod];
+    const isIos = ios && ios[setCustomBackArrowModeMethod];
+
+    if (isAndroid) {
+      android[setHeaderMenuItemsMethod](reqId, enabled);
+    } else if (isIos) {
+      ios[setHeaderMenuItemsMethod].postMessage({ reqId, enabled });
+    } else if (typeof window !== 'undefined') {
+      console.log('--setCustomBackArrowMode-isWeb');
+    }
+  }
+
+  const getCustomBackArrowMode = (reqId) => {
+    const isAndroid = android && android[getCustomBackArrowModeMethod];
+    const isIos = ios && ios[getCustomBackArrowModeMethod];
+
+    if (isAndroid) {
+      android[setHeaderMenuItemsMethod](reqId);
+    } else if (isIos) {
+      ios[setHeaderMenuItemsMethod].postMessage({ reqId });
+    } else if (typeof window !== 'undefined') {
+      console.log('--getCustomBackArrowMode-isWeb');
+    }
+  }
+
+  const setCustomBackArrowVisible = (reqId, visible: boolean) => {
+    const isAndroid = android && android[setCustomBackArrowVisibleMethod];
+    const isIos = ios && ios[setCustomBackArrowVisibleMethod];
+
+    if (isAndroid) {
+      android[setHeaderMenuItemsMethod](reqId, visible);
+    } else if (isIos) {
+      ios[setHeaderMenuItemsMethod].postMessage({ reqId, visible });
+    } else if (typeof window !== 'undefined') {
+      console.log('--setCustomBackArrowVisible-isWeb');
+    }
+  }
+
+  const setCustomBackArrowOnClickHandler = (handler: BackArrowClickHandlerType) => {
+    const isAndroid = android && android[setCustomBackArrowOnClickHandlerMethod];
+    const isIos = ios && ios[setCustomBackArrowOnClickHandlerMethod];
+
+    if (isAndroid || isIos) {
+      (window as any).onAituBridgeBackArrowClick = handler;
+    } else if (typeof window !== 'undefined') {
+      console.log('--setCustomBackArrowOnClickHandler-isWeb');
+    }
+  }
+
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);
   const getGeoPromise = promisifyMethod(getGeo, sub);
@@ -525,6 +584,9 @@ const buildBridge = (): AituBridge => {
   const enableScreenCapturePromise = promisifyMethod(enableScreenCapture, sub);
   const disableScreenCapturePromise = promisifyMethod(disableScreenCapture, sub);
   const setHeaderMenuItemsPromise = promisifyMethod(setHeaderMenuItems, sub);
+  const setCustomBackArrowModePromise = promisifyMethod(setCustomBackArrowMode, sub);
+  const getCustomBackArrowModePromise = promisifyMethod(getCustomBackArrowMode, sub);
+  const setCustomBackArrowVisiblePromise = promisifyMethod(setCustomBackArrowVisible, sub);
 
   return {
     version: String(LIB_VERSION),
@@ -556,7 +618,11 @@ const buildBridge = (): AituBridge => {
     enableScreenCapture: enableScreenCapturePromise,
     disableScreenCapture: disableScreenCapturePromise,
     setHeaderMenuItems: setHeaderMenuItemsPromise,
-    setHeaderMenuItemClickHandler
+    setHeaderMenuItemClickHandler,
+    setCustomBackArrowMode: setCustomBackArrowModePromise,
+    getCustomBackArrowMode: getCustomBackArrowModePromise,
+    setCustomBackArrowVisible: setCustomBackArrowVisiblePromise,
+    setCustomBackArrowOnClickHandler,
   }
 }
 

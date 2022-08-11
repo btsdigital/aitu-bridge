@@ -522,9 +522,9 @@ const buildBridge = (): AituBridge => {
     const isIos = ios && ios[setCustomBackArrowModeMethod];
 
     if (isAndroid) {
-      android[setHeaderMenuItemsMethod](reqId, enabled);
+      android[setCustomBackArrowModeMethod](reqId, enabled);
     } else if (isIos) {
-      ios[setHeaderMenuItemsMethod].postMessage({ reqId, enabled });
+      ios[setCustomBackArrowModeMethod].postMessage({ reqId, enabled });
     } else if (typeof window !== 'undefined') {
       console.log('--setCustomBackArrowMode-isWeb');
     }
@@ -535,9 +535,9 @@ const buildBridge = (): AituBridge => {
     const isIos = ios && ios[getCustomBackArrowModeMethod];
 
     if (isAndroid) {
-      android[setHeaderMenuItemsMethod](reqId);
+      android[getCustomBackArrowModeMethod](reqId);
     } else if (isIos) {
-      ios[setHeaderMenuItemsMethod].postMessage({ reqId });
+      ios[getCustomBackArrowModeMethod].postMessage({ reqId });
     } else if (typeof window !== 'undefined') {
       console.log('--getCustomBackArrowMode-isWeb');
     }
@@ -548,9 +548,9 @@ const buildBridge = (): AituBridge => {
     const isIos = ios && ios[setCustomBackArrowVisibleMethod];
 
     if (isAndroid) {
-      android[setHeaderMenuItemsMethod](reqId, visible);
+      android[setCustomBackArrowVisibleMethod](reqId, visible);
     } else if (isIos) {
-      ios[setHeaderMenuItemsMethod].postMessage({ reqId, visible });
+      ios[setCustomBackArrowVisibleMethod].postMessage({ reqId, visible });
     } else if (typeof window !== 'undefined') {
       console.log('--setCustomBackArrowVisible-isWeb');
     }

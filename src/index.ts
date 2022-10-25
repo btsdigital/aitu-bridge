@@ -173,7 +173,7 @@ const web = typeof window !== 'undefined' && (window.top !== window) && ((window
 if (web) {
   const aituOrigin = (window as any).AITU_ORIGIN || 'https://aitu.io';
 
-  [invokeMethod, storageMethod].forEach((method) => {
+  [invokeMethod, storageMethod, getGeoMethod].forEach((method) => {
     if (!web[method]) {
       web[method] = (...args) => window.top.postMessage(JSON.stringify({
         method,
@@ -236,13 +236,16 @@ const buildBridge = (): AituBridge => {
   const getGeo = (reqId) => {
     const isAndroid = android && android[getGeoMethod];
     const isIos = ios && ios[getGeoMethod];
+    const isWeb = web && web[getGeoMethod];
 
     if (isAndroid) {
       android[getGeoMethod](reqId);
     } else if (isIos) {
       ios[getGeoMethod].postMessage({ reqId });
+    } else if(isWeb){
+      web[getGeoMethod](reqId);
     } else if (typeof window !== 'undefined') {
-      console.log('--getGeo-isWeb');
+      console.log('--getGeo-isUnknown');
     }
   }
 

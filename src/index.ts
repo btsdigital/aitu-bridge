@@ -248,7 +248,6 @@ const buildBridge = (): AituBridge => {
       web[getGeoMethod](reqId);
     } else if (typeof window !== 'undefined') {
       console.log('--getGeo-isUnknown');
-      console.log('test')
     }
   }
 

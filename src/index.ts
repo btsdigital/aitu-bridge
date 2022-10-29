@@ -173,7 +173,9 @@ const web = typeof window !== 'undefined' && (window.top !== window) && ((window
 if (web) {
   const aituOrigin = (window as any).AITU_ORIGIN || 'https://aitu.io';
 
-  [invokeMethod, storageMethod, getGeoMethod].forEach((method) => {
+  [invokeMethod, storageMethod, getGeoMethod, getQrMethod, copyToClipboardMethod, 
+    setTitleMethod, closeApplicationMethod, setHeaderMenuItemsMethod, setHeaderMenuItemClickHandlerMethod, setCustomBackArrowModeMethod, 
+    getCustomBackArrowModeMethod, setCustomBackArrowVisibleMethod, setCustomBackArrowOnClickHandlerMethod, enableScreenCaptureMethod, disableScreenCaptureMethod].forEach((method) => {
     if (!web[method]) {
       web[method] = (...args) => window.top.postMessage(JSON.stringify({
         method,
@@ -246,19 +248,23 @@ const buildBridge = (): AituBridge => {
       web[getGeoMethod](reqId);
     } else if (typeof window !== 'undefined') {
       console.log('--getGeo-isUnknown');
+      console.log('test')
     }
   }
 
   const getQr = (reqId) => {
     const isAndroid = android && android[getQrMethod];
     const isIos = ios && ios[getQrMethod];
+    const isWeb = web && web[getQrMethod];
 
     if (isAndroid) {
       android[getQrMethod](reqId);
     } else if (isIos) {
       ios[getQrMethod].postMessage({ reqId });
+    } else if (isWeb) {
+      web[getQrMethod](reqId);
     } else if (typeof window !== 'undefined') {
-      console.log('--getQr-isWeb');
+      console.log('--getQr-isUnknown');
     }
   }
 
@@ -304,13 +310,16 @@ const buildBridge = (): AituBridge => {
   const closeApplication = (reqId) => {
     const isAndroid = android && android[closeApplicationMethod];
     const isIos = ios && ios[closeApplicationMethod];
+    const isWeb = web && web[closeApplicationMethod]
 
     if (isAndroid) {
       android[closeApplicationMethod](reqId);
     } else if (isIos) {
       ios[closeApplicationMethod].postMessage({ reqId });
+    } else if (isWeb) {
+      web[closeApplicationMethod](reqId);
     } else if (typeof window !== 'undefined') {
-      console.log('--closeApplication-isWeb');
+      console.log('--closeApplication-isUnknown');
     }
   }
 
@@ -330,52 +339,64 @@ const buildBridge = (): AituBridge => {
   const setTitle = (reqId, text) => {
     const isAndroid = android && android[setTitleMethod];
     const isIos = ios && ios[setTitleMethod];
+    const isWeb = web && web[setTitleMethod];
 
     if (isAndroid) {
       android[setTitleMethod](reqId, text);
     } else if (isIos) {
       ios[setTitleMethod].postMessage({ reqId, text });
+    } else if (isWeb) {
+      web[setTitleMethod](reqId, text);
     } else if (typeof window !== 'undefined') {
-      console.log('--setTitle-isWeb');
+      console.log('--setTitle-isUnknown');
     }
   }
 
   const copyToClipboard = (reqId, text) => {
     const isAndroid = android && android[copyToClipboardMethod];
     const isIos = ios && ios[copyToClipboardMethod];
+    const isWeb = web && web[copyToClipboardMethod];
 
     if (isAndroid) {
       android[copyToClipboardMethod](reqId, text);
     } else if (isIos) {
       ios[copyToClipboardMethod].postMessage({ reqId, text });
+    } else if(isWeb) {
+      web[copyToClipboardMethod](reqId, text);
     } else if (typeof window !== 'undefined') {
-      console.log('--copyToClipboard-isWeb');
+      console.log('--copyToClipboard-isUnknown');
     }
   }
 
   const enableScreenCapture = (reqId) => {
     const isAndroid = android && android[enableScreenCaptureMethod];
     const isIos = ios && ios[enableScreenCaptureMethod];
+    const isWeb = web && web[enableScreenCaptureMethod];
 
     if (isAndroid) {
       android[enableScreenCaptureMethod](reqId);
     } else if (isIos) {
       ios[enableScreenCaptureMethod].postMessage({ reqId });
+    } else if (isWeb) {
+      web[enableScreenCaptureMethod](reqId);
     } else if (typeof window !== 'undefined') {
-      console.log('--enableScreenCapture-isWeb');
+      console.log('--enableScreenCapture-isUnknown');
     }
   }
 
   const disableScreenCapture = (reqId) => {
     const isAndroid = android && android[disableScreenCaptureMethod];
     const isIos = ios && ios[disableScreenCaptureMethod];
+    const isWeb = web && web[disableScreenCaptureMethod];
 
     if (isAndroid) {
       android[disableScreenCaptureMethod](reqId);
     } else if (isIos) {
       ios[disableScreenCaptureMethod].postMessage({ reqId });
+    } else if (isWeb) {
+      web[disableScreenCaptureMethod](reqId);
     } else if (typeof window !== 'undefined') {
-      console.log('--disableScreenCapture-isWeb');
+      console.log('--disableScreenCapture-isUnknown');
     }
   }
 
@@ -497,6 +518,7 @@ const buildBridge = (): AituBridge => {
 
     const isAndroid = android && android[setHeaderMenuItemsMethod];
     const isIos = ios && ios[setHeaderMenuItemsMethod];
+    const isWeb = web && web[setHeaderMenuItemsMethod];
 
     const itemsJsonArray = JSON.stringify(items);
 
@@ -504,56 +526,68 @@ const buildBridge = (): AituBridge => {
       android[setHeaderMenuItemsMethod](reqId, itemsJsonArray);
     } else if (isIos) {
       ios[setHeaderMenuItemsMethod].postMessage({ reqId, itemsJsonArray });
+    } else if (isWeb) {
+      web[setHeaderMenuItemsMethod](reqId, itemsJsonArray);
     } else if (typeof window !== 'undefined') {
-      console.log('--setHeaderMenuItems-isWeb');
+      console.log('--setHeaderMenuItems-isUnknown');
     }
   }
 
   const setHeaderMenuItemClickHandler = (handler: HeaderMenuItemClickHandlerType) => {
     const isAndroid = android && android[setHeaderMenuItemClickHandlerMethod];
     const isIos = ios && ios[setHeaderMenuItemClickHandlerMethod];
+    const isWeb = web && web[setHeaderMenuItemClickHandlerMethod];
 
-    if (isAndroid || isIos) {
+    if (isAndroid || isIos || isWeb) {
       (window as any).onAituBridgeHeaderMenuItemClick = handler;
     } else if (typeof window !== 'undefined') {
-      console.log('--setHeaderMenuItemClickHandler-isWeb');
+      console.log('--setHeaderMenuItemClickHandler-isUnknown');
     }
   }
 
   const setCustomBackArrowMode = (reqId, enabled: boolean) => {
     const isAndroid = android && android[setCustomBackArrowModeMethod];
     const isIos = ios && ios[setCustomBackArrowModeMethod];
+    const isWeb = web && web[setCustomBackArrowModeMethod];
 
     if (isAndroid) {
       android[setCustomBackArrowModeMethod](reqId, enabled);
     } else if (isIos) {
       ios[setCustomBackArrowModeMethod].postMessage({ reqId, enabled });
+    } else if(isWeb) {
+      web[setCustomBackArrowModeMethod](reqId, enabled);
     } else if (typeof window !== 'undefined') {
-      console.log('--setCustomBackArrowMode-isWeb');
+      console.log('--setCustomBackArrowMode-isUnknown');
     }
   }
 
   const getCustomBackArrowMode = (reqId) => {
     const isAndroid = android && android[getCustomBackArrowModeMethod];
     const isIos = ios && ios[getCustomBackArrowModeMethod];
+    const isWeb = web && web[getCustomBackArrowModeMethod];
 
     if (isAndroid) {
       android[getCustomBackArrowModeMethod](reqId);
     } else if (isIos) {
       ios[getCustomBackArrowModeMethod].postMessage({ reqId });
+    } else if (isWeb) {
+      web[getCustomBackArrowModeMethod](reqId);
     } else if (typeof window !== 'undefined') {
-      console.log('--getCustomBackArrowMode-isWeb');
+      console.log('--getCustomBackArrowMode-isUnknown');
     }
   }
 
   const setCustomBackArrowVisible = (reqId, visible: boolean) => {
     const isAndroid = android && android[setCustomBackArrowVisibleMethod];
     const isIos = ios && ios[setCustomBackArrowVisibleMethod];
+    const isWeb = web && web[setCustomBackArrowVisibleMethod];
 
     if (isAndroid) {
       android[setCustomBackArrowVisibleMethod](reqId, visible);
     } else if (isIos) {
       ios[setCustomBackArrowVisibleMethod].postMessage({ reqId, visible });
+    } else if (isWeb) {
+      web[setCustomBackArrowVisibleMethod](reqId, visible);
     } else if (typeof window !== 'undefined') {
       console.log('--setCustomBackArrowVisible-isWeb');
     }
@@ -562,11 +596,13 @@ const buildBridge = (): AituBridge => {
   const setCustomBackArrowOnClickHandler = (handler: BackArrowClickHandlerType) => {
     const isAndroid = android && android[setCustomBackArrowOnClickHandlerMethod];
     const isIos = ios && ios[setCustomBackArrowOnClickHandlerMethod];
+    const isWeb = web && web[setCustomBackArrowOnClickHandlerMethod];
 
-    if (isAndroid || isIos) {
+
+    if (isAndroid || isIos || isWeb) {
       (window as any).onAituBridgeBackArrowClick = handler;
     } else if (typeof window !== 'undefined') {
-      console.log('--setCustomBackArrowOnClickHandler-isWeb');
+      console.log('--setCustomBackArrowOnClickHandler-isUnknown');
     }
   }
 

@@ -1,8 +1,18 @@
 import { LIB_VERSION } from './version';
 
-import promisifyInvoke from './promisifyInvoke';
-import promisifyStorage from './promisifyStorage';
-import promisifyMethod from './promisifyMethod';
+import {
+  promisifyMethod,
+  promisifyStorage,
+  promisifyInvoke,
+} from './utils'
+
+/* eslint-disable */
+console.log(
+    '%c'+new Date().toISOString().slice(11)+'%c LOCAL BRIDGE %c HELLO!',
+    'color: white; font-weight: bold; background: BlueViolet',
+    'color: magenta',
+    'color: lime',
+)
 
 import WebBridge from './webBridge';
 
@@ -190,7 +200,7 @@ const buildBridge = (): AituBridge => {
     } else if (isIos) {
       ios[invokeMethod].postMessage({ reqId, method, data });
     } else if (web) {
-      web.execute(invokeMethod, reqId, data)
+      web.execute(invokeMethod, reqId, method, data)
     } else if (typeof window !== 'undefined') {
       console.log('--invoke-isUnknown');
     }
@@ -205,7 +215,7 @@ const buildBridge = (): AituBridge => {
     } else if (isIos) {
       ios[storageMethod].postMessage({ reqId, method, data });
     } else if (web) {
-      web.execute(storageMethod, reqId, { method, data });
+      web.execute(storageMethod, reqId, method, data);
     } else if (typeof window !== 'undefined') {
       console.log('--storage-isUnknown');
     }
@@ -310,7 +320,7 @@ const buildBridge = (): AituBridge => {
     } else if (isIos) {
       ios[shareMethod].postMessage({ reqId, text });
     } else if (web) {
-      web.execute(shareMethod, reqId, { text });
+      web.execute(shareMethod, reqId, text);
     } else if (typeof window !== 'undefined') {
       console.log('--share-isUnknown');
     }
@@ -325,7 +335,7 @@ const buildBridge = (): AituBridge => {
     } else if (isIos) {
       ios[setTitleMethod].postMessage({ reqId, text });
     } else if (web) {
-      web.execute(setTitleMethod, reqId, { text });
+      web.execute(setTitleMethod, reqId, text);
     } else if (typeof window !== 'undefined') {
       console.log('--setTitle-isUnknown');
     }
@@ -340,7 +350,7 @@ const buildBridge = (): AituBridge => {
     } else if (isIos) {
       ios[copyToClipboardMethod].postMessage({ reqId, text });
     } else if (web) {
-      web.execute(copyToClipboardMethod, reqId, { text });
+      web.execute(copyToClipboardMethod, reqId, text);
     } else if (typeof window !== 'undefined') {
       console.log('--copyToClipboard-isUnknown');
     }
@@ -422,7 +432,7 @@ const buildBridge = (): AituBridge => {
     } else if (isIos) {
       ios[shareFileMethod].postMessage({ reqId, text, filename, base64Data });
     } else if (web) {
-      web.execute(shareFileMethod, reqId, { text, filename, base64Data });
+      web.execute(shareFileMethod, reqId, text, filename, base64Data);
     } else if (typeof window !== 'undefined') {
       console.log('--shareFile-isUnknown');
     }
@@ -472,7 +482,7 @@ const buildBridge = (): AituBridge => {
     } else if (isIos) {
       ios[vibrateMethod].postMessage({ reqId, pattern });
     }  else if (web) {
-      web.execute(vibrateMethod, reqId, { pattern });
+      web.execute(vibrateMethod, reqId, pattern);
     } else if (typeof window !== 'undefined') {
       console.log('--vibrate-isUnknown');
     }
@@ -509,7 +519,7 @@ const buildBridge = (): AituBridge => {
     } else if (isIos) {
       ios[setHeaderMenuItemsMethod].postMessage({ reqId, itemsJsonArray });
     } else if (web) {
-      web.execute(setHeaderMenuItemsMethod, reqId, { itemsJsonArray });
+      web.execute(setHeaderMenuItemsMethod, reqId, itemsJsonArray);
     } else if (typeof window !== 'undefined') {
       console.log('--setHeaderMenuItems-isUnknown');
     }
@@ -535,7 +545,7 @@ const buildBridge = (): AituBridge => {
     } else if (isIos) {
       ios[setCustomBackArrowModeMethod].postMessage({ reqId, enabled });
     } else if (web) {
-      web.execute(setCustomBackArrowModeMethod, reqId, { enabled });
+      web.execute(setCustomBackArrowModeMethod, reqId, enabled);
     } else if (typeof window !== 'undefined') {
       console.log('--setCustomBackArrowMode-isUnknown');
     }
@@ -565,7 +575,7 @@ const buildBridge = (): AituBridge => {
     } else if (isIos) {
       ios[setCustomBackArrowVisibleMethod].postMessage({ reqId, visible });
     } else if (web) {
-      web.execute(setCustomBackArrowVisibleMethod, reqId, { visible });
+      web.execute(setCustomBackArrowVisibleMethod, reqId, visible);
     } else if (typeof window !== 'undefined') {
       console.log('--setCustomBackArrowVisible-isUnknown');
     }
@@ -584,24 +594,24 @@ const buildBridge = (): AituBridge => {
 
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);
-  const getGeoPromise = promisifyMethod(getGeo, sub);
-  const getQrPromise = promisifyMethod(getQr, sub);
-  const getSMSCodePromise = promisifyMethod(getSMSCode, sub);
-  const selectContactPromise = promisifyMethod(selectContact, sub);
-  const openSettingsPromise = promisifyMethod(openSettings, sub);
-  const closeApplicationPromise = promisifyMethod(closeApplication, sub);
-  const sharePromise = promisifyMethod(share, sub);
-  const setTitlePromise = promisifyMethod(setTitle, sub);
-  const copyToClipboardPromise = promisifyMethod(copyToClipboard, sub);
-  const shareImagePromise = promisifyMethod(shareImage, sub);
-  const shareFilePromise = promisifyMethod(shareFile, sub);
-  const vibratePromise = promisifyMethod(vibrate, sub);
-  const enableScreenCapturePromise = promisifyMethod(enableScreenCapture, sub);
-  const disableScreenCapturePromise = promisifyMethod(disableScreenCapture, sub);
-  const setHeaderMenuItemsPromise = promisifyMethod(setHeaderMenuItems, sub);
-  const setCustomBackArrowModePromise = promisifyMethod(setCustomBackArrowMode, sub);
-  const getCustomBackArrowModePromise = promisifyMethod(getCustomBackArrowMode, sub);
-  const setCustomBackArrowVisiblePromise = promisifyMethod(setCustomBackArrowVisible, sub);
+  const getGeoPromise = promisifyMethod(getGeo, getGeoMethod, sub);
+  const getQrPromise = promisifyMethod(getQr, getQrMethod, sub);
+  const getSMSCodePromise = promisifyMethod(getSMSCode, getSMSCodeMethod, sub);
+  const selectContactPromise = promisifyMethod(selectContact, selectContactMethod, sub);
+  const openSettingsPromise = promisifyMethod(openSettings, openSettingsMethod, sub);
+  const closeApplicationPromise = promisifyMethod(closeApplication, closeApplicationMethod, sub);
+  const sharePromise = promisifyMethod(share, shareMethod, sub);
+  const setTitlePromise = promisifyMethod(setTitle, setTitleMethod, sub);
+  const copyToClipboardPromise = promisifyMethod(copyToClipboard, copyToClipboardMethod, sub);
+  const shareImagePromise = promisifyMethod(shareImage, shareImageMethod, sub);
+  const shareFilePromise = promisifyMethod(shareFile, shareFileMethod, sub);
+  const vibratePromise = promisifyMethod(vibrate, vibrateMethod, sub);
+  const enableScreenCapturePromise = promisifyMethod(enableScreenCapture, enableScreenCaptureMethod, sub);
+  const disableScreenCapturePromise = promisifyMethod(disableScreenCapture, disableScreenCaptureMethod, sub);
+  const setHeaderMenuItemsPromise = promisifyMethod(setHeaderMenuItems, setHeaderMenuItemsMethod, sub);
+  const setCustomBackArrowModePromise = promisifyMethod(setCustomBackArrowMode, setCustomBackArrowModeMethod, sub);
+  const getCustomBackArrowModePromise = promisifyMethod(getCustomBackArrowMode, getCustomBackArrowModeMethod, sub);
+  const setCustomBackArrowVisiblePromise = promisifyMethod(setCustomBackArrowVisible,setCustomBackArrowVisibleMethod, sub);
 
   return {
     version: String(LIB_VERSION),

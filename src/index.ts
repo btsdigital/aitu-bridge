@@ -6,14 +6,6 @@ import {
   promisifyInvoke,
 } from './utils'
 
-/* eslint-disable */
-console.log(
-    '%c'+new Date().toISOString().slice(11)+'%c LOCAL BRIDGE %c HELLO!',
-    'color: white; font-weight: bold; background: BlueViolet',
-    'color: magenta',
-    'color: lime',
-)
-
 import WebBridge from './webBridge';
 
 enum EInvokeRequest {

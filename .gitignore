@@ -5,7 +5,7 @@
 .npm
 
 # Prod Bundle
-/dist0
+/dist
 
 .vscode
 .idea

@@ -181,6 +181,14 @@ const buildBridge = (): AituBridge => {
     window.addEventListener('aituEvents', (e: any) => {
       [...subs].map((fn) => fn.call(null, e));
     })
+
+    window.addEventListener('message', (e)=>{
+        if(e.data === 'setCustomBackArrowOnClickHandler'){
+          (window as any).onAituBridgeBackArrowClick()
+        }else if(e.data === 'setHeaderMenuItemClickHandler'){
+          (window as any).onAituBridgeHeaderMenuItemClick()
+        }
+    })
   }
 
   const invoke = (reqId, method, data = {}) => {
@@ -579,10 +587,11 @@ const buildBridge = (): AituBridge => {
 
     if (isAndroid || isIos || web) {
       (window as any).onAituBridgeBackArrowClick = handler;
-    } else if (typeof window !== 'undefined') {
+    }else if (typeof window !== 'undefined') {
       console.log('--setCustomBackArrowOnClickHandler-isUnknown');
     }
   }
+
 
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);

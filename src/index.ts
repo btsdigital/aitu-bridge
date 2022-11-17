@@ -183,11 +183,15 @@ const buildBridge = (): AituBridge => {
     })
 
     window.addEventListener('message', (e)=>{
-        if(e.data === 'setCustomBackArrowOnClickHandler'){
+      const message = JSON.parse(e.data)
+
+      if(message?.method){
+        if(message.method === 'setCustomBackArrowOnClickHandler'){
           (window as any).onAituBridgeBackArrowClick()
-        }else if(e.data === 'setHeaderMenuItemClickHandler'){
-          (window as any).onAituBridgeHeaderMenuItemClick()
+        }else if(message.method === 'setHeaderMenuItemClickHandler'){
+          (window as any).onAituBridgeHeaderMenuItemClick(message.param)
         }
+      }
     })
   }
 

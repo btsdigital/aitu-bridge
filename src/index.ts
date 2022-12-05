@@ -1,8 +1,12 @@
 import { LIB_VERSION } from './version';
 
-import promisifyInvoke from './promisifyInvoke';
-import promisifyStorage from './promisifyStorage';
-import promisifyMethod from './promisifyMethod';
+import {
+  promisifyMethod,
+  promisifyStorage,
+  promisifyInvoke,
+} from './utils'
+
+import WebBridge from './webBridge';
 
 enum EInvokeRequest {
   getMe = 'GetMe',
@@ -104,7 +108,7 @@ interface BridgeStorage {
   clear: ClearType
 }
 
-interface AituBridge {
+export interface AituBridge {
   version: string;
   invoke: BridgeInvoke<EInvokeRequest, ResponseObject>;
   storage: BridgeStorage;
@@ -168,29 +172,7 @@ const setCustomBackArrowOnClickHandlerMethod = 'setCustomBackArrowOnClickHandler
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
-const web = typeof window !== 'undefined' && (window.top !== window) && ((window as any).WebBridge = (window as any).WebBridge || {});
-
-if (web) {
-  const aituOrigin = (window as any).AITU_ORIGIN || 'https://aitu.io';
-
-  [invokeMethod, storageMethod].forEach((method) => {
-    if (!web[method]) {
-      web[method] = (...args) => window.top.postMessage(JSON.stringify({
-        method,
-        payload: args,
-      }), aituOrigin);
-    }
-  });
-
-  window.addEventListener('message', (event) => {
-    if (event.origin === aituOrigin && event.data) {
-      try {
-        const detail = JSON.parse(event.data);
-        window.dispatchEvent(new CustomEvent('aituEvents', { detail }));
-      } catch (e) { }
-    }
-  });
-}
+const web = typeof window !== 'undefined' && (window.top !== window) && WebBridge;
 
 const buildBridge = (): AituBridge => {
   const subs = [];
@@ -199,19 +181,30 @@ const buildBridge = (): AituBridge => {
     window.addEventListener('aituEvents', (e: any) => {
       [...subs].map((fn) => fn.call(null, e));
     })
+
+    window.addEventListener('message', (e)=>{
+      const message = JSON.parse(e.data)
+
+      if(message?.method){
+        if(message.method === 'setCustomBackArrowOnClickHandler'){
+          (window as any).onAituBridgeBackArrowClick()
+        }else if(message.method === 'setHeaderMenuItemClickHandler'){
+          (window as any).onAituBridgeHeaderMenuItemClick(message.param)
+        }
+      }
+    })
   }
 
   const invoke = (reqId, method, data = {}) => {
     const isAndroid = android && android[invokeMethod];
     const isIos = ios && ios[invokeMethod];
-    const isWeb = web && web[invokeMethod];
 
     if (isAndroid) {
       android[invokeMethod](reqId, method, JSON.stringify(data));
     } else if (isIos) {
       ios[invokeMethod].postMessage({ reqId, method, data });
-    } else if (isWeb) {
-      web[invokeMethod](reqId, method, data);
+    } else if (web) {
+      web.execute(invokeMethod, reqId, method, data)
     } else if (typeof window !== 'undefined') {
       console.log('--invoke-isUnknown');
     }
@@ -220,14 +213,13 @@ const buildBridge = (): AituBridge => {
   const storage = (reqId, method, data = {}) => {
     const isAndroid = android && android[storageMethod];
     const isIos = ios && ios[storageMethod];
-    const isWeb = web && web[storageMethod];
 
     if (isAndroid) {
       android[storageMethod](reqId, method, JSON.stringify(data));
     } else if (isIos) {
       ios[storageMethod].postMessage({ reqId, method, data });
-    } else if (isWeb) {
-      web[storageMethod](reqId, method, data);
+    } else if (web) {
+      web.execute(storageMethod, reqId, method, data);
     } else if (typeof window !== 'undefined') {
       console.log('--storage-isUnknown');
     }
@@ -241,8 +233,10 @@ const buildBridge = (): AituBridge => {
       android[getGeoMethod](reqId);
     } else if (isIos) {
       ios[getGeoMethod].postMessage({ reqId });
+    } else if (web) {
+      web.execute(getGeoMethod, reqId);
     } else if (typeof window !== 'undefined') {
-      console.log('--getGeo-isWeb');
+      console.log('--getGeo-isUnknown');
     }
   }
 
@@ -254,8 +248,10 @@ const buildBridge = (): AituBridge => {
       android[getQrMethod](reqId);
     } else if (isIos) {
       ios[getQrMethod].postMessage({ reqId });
+    } else if (web) {
+      web.execute(getQrMethod, reqId);
     } else if (typeof window !== 'undefined') {
-      console.log('--getQr-isWeb');
+      console.log('--getQr-isUnknown');
     }
   }
 
@@ -267,8 +263,10 @@ const buildBridge = (): AituBridge => {
       android[getSMSCodeMethod](reqId);
     } else if (isIos) {
       ios[getSMSCodeMethod].postMessage({ reqId });
+    } else if (web) {
+      web.execute(getSMSCodeMethod, reqId);
     } else if (typeof window !== 'undefined') {
-      console.log('--getSMSCode-isWeb');
+      console.log('--getSMSCode-isUnknown');
     }
   }
 
@@ -280,8 +278,10 @@ const buildBridge = (): AituBridge => {
       android[selectContactMethod](reqId);
     } else if (isIos) {
       ios[selectContactMethod].postMessage({ reqId });
+    } else if (web) {
+      web.execute(selectContactMethod, reqId);
     } else if (typeof window !== 'undefined') {
-      console.log('--selectContact-isWeb');
+      console.log('--selectContact-isUnknown');
     }
   }
 
@@ -293,8 +293,10 @@ const buildBridge = (): AituBridge => {
       android[openSettingsMethod](reqId);
     } else if (isIos) {
       ios[openSettingsMethod].postMessage({ reqId });
+    } else if (web) {
+      web.execute(openSettingsMethod, reqId);
     } else if (typeof window !== 'undefined') {
-      console.log('--openSettings-isWeb');
+      console.log('--openSettings-isUnknown');
     }
   }
 
@@ -306,8 +308,10 @@ const buildBridge = (): AituBridge => {
       android[closeApplicationMethod](reqId);
     } else if (isIos) {
       ios[closeApplicationMethod].postMessage({ reqId });
+    } else if (web) {
+      web.execute(closeApplicationMethod, reqId);
     } else if (typeof window !== 'undefined') {
-      console.log('--closeApplication-isWeb');
+      console.log('--closeApplication-isUnknown');
     }
   }
 
@@ -319,8 +323,10 @@ const buildBridge = (): AituBridge => {
       android[shareMethod](reqId, text);
     } else if (isIos) {
       ios[shareMethod].postMessage({ reqId, text });
+    } else if (web) {
+      web.execute(shareMethod, reqId, text);
     } else if (typeof window !== 'undefined') {
-      console.log('--share-isWeb');
+      console.log('--share-isUnknown');
     }
   }
 
@@ -332,8 +338,10 @@ const buildBridge = (): AituBridge => {
       android[setTitleMethod](reqId, text);
     } else if (isIos) {
       ios[setTitleMethod].postMessage({ reqId, text });
+    } else if (web) {
+      web.execute(setTitleMethod, reqId, text);
     } else if (typeof window !== 'undefined') {
-      console.log('--setTitle-isWeb');
+      console.log('--setTitle-isUnknown');
     }
   }
 
@@ -345,8 +353,10 @@ const buildBridge = (): AituBridge => {
       android[copyToClipboardMethod](reqId, text);
     } else if (isIos) {
       ios[copyToClipboardMethod].postMessage({ reqId, text });
+    } else if (web) {
+      web.execute(copyToClipboardMethod, reqId, text);
     } else if (typeof window !== 'undefined') {
-      console.log('--copyToClipboard-isWeb');
+      console.log('--copyToClipboard-isUnknown');
     }
   }
 
@@ -358,8 +368,10 @@ const buildBridge = (): AituBridge => {
       android[enableScreenCaptureMethod](reqId);
     } else if (isIos) {
       ios[enableScreenCaptureMethod].postMessage({ reqId });
+    } else if (web) {
+      web.execute(enableScreenCaptureMethod, reqId);
     } else if (typeof window !== 'undefined') {
-      console.log('--enableScreenCapture-isWeb');
+      console.log('--enableScreenCapture-isUnknown');
     }
   }
 
@@ -371,8 +383,10 @@ const buildBridge = (): AituBridge => {
       android[disableScreenCaptureMethod](reqId);
     } else if (isIos) {
       ios[disableScreenCaptureMethod].postMessage({ reqId });
+    } else if (web) {
+      web.execute(disableScreenCaptureMethod, reqId);
     } else if (typeof window !== 'undefined') {
-      console.log('--disableScreenCapture-isWeb');
+      console.log('--disableScreenCapture-isUnknown');
     }
   }
 
@@ -406,8 +420,10 @@ const buildBridge = (): AituBridge => {
       android[shareFileMethod](reqId, text, filename, base64Data);
     } else if (isIos) {
       ios[shareFileMethod].postMessage({ reqId, text, filename, base64Data });
+    } else if (web) {
+      web.execute(shareFileMethod, reqId, { text, filename, base64Data });
     } else if (typeof window !== 'undefined') {
-      console.log('--shareFile-isWeb');
+      console.log('--shareFile-isUnknown');
     }
   }
 
@@ -419,8 +435,10 @@ const buildBridge = (): AituBridge => {
       android[shareFileMethod](reqId, text, filename, base64Data);
     } else if (isIos) {
       ios[shareFileMethod].postMessage({ reqId, text, filename, base64Data });
+    } else if (web) {
+      web.execute(shareFileMethod, reqId, text, filename, base64Data);
     } else if (typeof window !== 'undefined') {
-      console.log('--shareFile-isWeb');
+      console.log('--shareFile-isUnknown');
     }
   }
 
@@ -432,10 +450,10 @@ const buildBridge = (): AituBridge => {
     const isAndroid = android && android[setShakeHandlerMethod];
     const isIos = ios && ios[setShakeHandlerMethod];
 
-    if (isAndroid || isIos) {
+    if (isAndroid || isIos || web) {
       (window as any).onAituBridgeShake = handler;
     } else if (typeof window !== 'undefined') {
-      console.log('--setShakeHandler-isWeb');
+      console.log('--setShakeHandler-isUnknown');
     }
   };
 
@@ -443,10 +461,10 @@ const buildBridge = (): AituBridge => {
     const isAndroid = android && android[setTabActiveHandlerMethod];
     const isIos = ios && ios[setTabActiveHandlerMethod];
 
-    if (isAndroid || isIos) {
+    if (isAndroid || isIos || web) {
       (window as any).onAituBridgeTabActive = handler;
     } else if (typeof window !== 'undefined') {
-      console.log('--setTabActiveHandler-isWeb');
+      console.log('--setTabActiveHandler-isUnknown');
     }
   };
 
@@ -467,8 +485,10 @@ const buildBridge = (): AituBridge => {
       android[vibrateMethod](reqId, JSON.stringify(pattern));
     } else if (isIos) {
       ios[vibrateMethod].postMessage({ reqId, pattern });
+    }  else if (web) {
+      web.execute(vibrateMethod, reqId, pattern);
     } else if (typeof window !== 'undefined') {
-      console.log('--vibrate-isWeb');
+      console.log('--vibrate-isUnknown');
     }
   }
 
@@ -477,6 +497,7 @@ const buildBridge = (): AituBridge => {
     return Boolean(android || iosSup || web);
   }
 
+  // TODO: implement web support
   const supports = (method) =>
     (android && typeof android[method] === 'function') ||
     (ios && ios[method] && typeof ios[method].postMessage === 'function') ||
@@ -501,8 +522,10 @@ const buildBridge = (): AituBridge => {
       android[setHeaderMenuItemsMethod](reqId, itemsJsonArray);
     } else if (isIos) {
       ios[setHeaderMenuItemsMethod].postMessage({ reqId, itemsJsonArray });
+    } else if (web) {
+      web.execute(setHeaderMenuItemsMethod, reqId, itemsJsonArray);
     } else if (typeof window !== 'undefined') {
-      console.log('--setHeaderMenuItems-isWeb');
+      console.log('--setHeaderMenuItems-isUnknown');
     }
   }
 
@@ -510,10 +533,10 @@ const buildBridge = (): AituBridge => {
     const isAndroid = android && android[setHeaderMenuItemClickHandlerMethod];
     const isIos = ios && ios[setHeaderMenuItemClickHandlerMethod];
 
-    if (isAndroid || isIos) {
+    if (isAndroid || isIos || web) {
       (window as any).onAituBridgeHeaderMenuItemClick = handler;
     } else if (typeof window !== 'undefined') {
-      console.log('--setHeaderMenuItemClickHandler-isWeb');
+      console.log('--setHeaderMenuItemClickHandler-isUnknown');
     }
   }
 
@@ -525,8 +548,10 @@ const buildBridge = (): AituBridge => {
       android[setCustomBackArrowModeMethod](reqId, enabled);
     } else if (isIos) {
       ios[setCustomBackArrowModeMethod].postMessage({ reqId, enabled });
+    } else if (web) {
+      web.execute(setCustomBackArrowModeMethod, reqId, enabled);
     } else if (typeof window !== 'undefined') {
-      console.log('--setCustomBackArrowMode-isWeb');
+      console.log('--setCustomBackArrowMode-isUnknown');
     }
   }
 
@@ -538,8 +563,10 @@ const buildBridge = (): AituBridge => {
       android[getCustomBackArrowModeMethod](reqId);
     } else if (isIos) {
       ios[getCustomBackArrowModeMethod].postMessage({ reqId });
+    } else if (web) {
+      web.execute(getCustomBackArrowModeMethod, reqId);
     } else if (typeof window !== 'undefined') {
-      console.log('--getCustomBackArrowMode-isWeb');
+      console.log('--getCustomBackArrowMode-isUnknown');
     }
   }
 
@@ -551,8 +578,10 @@ const buildBridge = (): AituBridge => {
       android[setCustomBackArrowVisibleMethod](reqId, visible);
     } else if (isIos) {
       ios[setCustomBackArrowVisibleMethod].postMessage({ reqId, visible });
+    } else if (web) {
+      web.execute(setCustomBackArrowVisibleMethod, reqId, visible);
     } else if (typeof window !== 'undefined') {
-      console.log('--setCustomBackArrowVisible-isWeb');
+      console.log('--setCustomBackArrowVisible-isUnknown');
     }
   }
 
@@ -560,33 +589,34 @@ const buildBridge = (): AituBridge => {
     const isAndroid = android && android[setCustomBackArrowOnClickHandlerMethod];
     const isIos = ios && ios[setCustomBackArrowOnClickHandlerMethod];
 
-    if (isAndroid || isIos) {
+    if (isAndroid || isIos || web) {
       (window as any).onAituBridgeBackArrowClick = handler;
-    } else if (typeof window !== 'undefined') {
-      console.log('--setCustomBackArrowOnClickHandler-isWeb');
+    }else if (typeof window !== 'undefined') {
+      console.log('--setCustomBackArrowOnClickHandler-isUnknown');
     }
   }
 
+
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);
-  const getGeoPromise = promisifyMethod(getGeo, sub);
-  const getQrPromise = promisifyMethod(getQr, sub);
-  const getSMSCodePromise = promisifyMethod(getSMSCode, sub);
-  const selectContactPromise = promisifyMethod(selectContact, sub);
-  const openSettingsPromise = promisifyMethod(openSettings, sub);
-  const closeApplicationPromise = promisifyMethod(closeApplication, sub);
-  const sharePromise = promisifyMethod(share, sub);
-  const setTitlePromise = promisifyMethod(setTitle, sub);
-  const copyToClipboardPromise = promisifyMethod(copyToClipboard, sub);
-  const shareImagePromise = promisifyMethod(shareImage, sub);
-  const shareFilePromise = promisifyMethod(shareFile, sub);
-  const vibratePromise = promisifyMethod(vibrate, sub);
-  const enableScreenCapturePromise = promisifyMethod(enableScreenCapture, sub);
-  const disableScreenCapturePromise = promisifyMethod(disableScreenCapture, sub);
-  const setHeaderMenuItemsPromise = promisifyMethod(setHeaderMenuItems, sub);
-  const setCustomBackArrowModePromise = promisifyMethod(setCustomBackArrowMode, sub);
-  const getCustomBackArrowModePromise = promisifyMethod(getCustomBackArrowMode, sub);
-  const setCustomBackArrowVisiblePromise = promisifyMethod(setCustomBackArrowVisible, sub);
+  const getGeoPromise = promisifyMethod(getGeo, getGeoMethod, sub);
+  const getQrPromise = promisifyMethod(getQr, getQrMethod, sub);
+  const getSMSCodePromise = promisifyMethod(getSMSCode, getSMSCodeMethod, sub);
+  const selectContactPromise = promisifyMethod(selectContact, selectContactMethod, sub);
+  const openSettingsPromise = promisifyMethod(openSettings, openSettingsMethod, sub);
+  const closeApplicationPromise = promisifyMethod(closeApplication, closeApplicationMethod, sub);
+  const sharePromise = promisifyMethod(share, shareMethod, sub);
+  const setTitlePromise = promisifyMethod(setTitle, setTitleMethod, sub);
+  const copyToClipboardPromise = promisifyMethod(copyToClipboard, copyToClipboardMethod, sub);
+  const shareImagePromise = promisifyMethod(shareImage, shareImageMethod, sub);
+  const shareFilePromise = promisifyMethod(shareFile, shareFileMethod, sub);
+  const vibratePromise = promisifyMethod(vibrate, vibrateMethod, sub);
+  const enableScreenCapturePromise = promisifyMethod(enableScreenCapture, enableScreenCaptureMethod, sub);
+  const disableScreenCapturePromise = promisifyMethod(disableScreenCapture, disableScreenCaptureMethod, sub);
+  const setHeaderMenuItemsPromise = promisifyMethod(setHeaderMenuItems, setHeaderMenuItemsMethod, sub);
+  const setCustomBackArrowModePromise = promisifyMethod(setCustomBackArrowMode, setCustomBackArrowModeMethod, sub);
+  const getCustomBackArrowModePromise = promisifyMethod(getCustomBackArrowMode, getCustomBackArrowModeMethod, sub);
+  const setCustomBackArrowVisiblePromise = promisifyMethod(setCustomBackArrowVisible,setCustomBackArrowVisibleMethod, sub);
 
   return {
     version: String(LIB_VERSION),

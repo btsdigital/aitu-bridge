@@ -185,7 +185,7 @@ const buildBridge = (): AituBridge => {
     window.addEventListener('message', (e)=>{
       const message = JSON.parse(e.data)
 
-      if(message?.method){
+      if(message && message['method']){
         if(message.method === 'setCustomBackArrowOnClickHandler'){
           (window as any).onAituBridgeBackArrowClick()
         }else if(message.method === 'setHeaderMenuItemClickHandler'){

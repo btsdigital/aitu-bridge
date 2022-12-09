@@ -4,8 +4,13 @@ const AITU_DOMAIN_PARAM = '__aitu-domain'
 
 const searchParams = new URLSearchParams(window.location.search)
 
-const aituOrigin = searchParams.get(AITU_DOMAIN_PARAM)
+let aituOrigin = searchParams.get(AITU_DOMAIN_PARAM)
 
+if(aituOrigin){
+    localStorage.setItem('mini-app-domain', aituOrigin)
+}else{
+    aituOrigin = localStorage.getItem('mini-app-domain')
+}
 interface WebBridge {
     execute(method: keyof AituBridge, reqId: string, ...payload: any[] ): void
     origin: string
@@ -28,7 +33,6 @@ if (aituOrigin) {
     }
 
     }
-
     window.addEventListener('message', event => {
         if (event.origin === aituOrigin && event.data) {
             window.dispatchEvent(new CustomEvent('aituEvents', { detail: event.data }));

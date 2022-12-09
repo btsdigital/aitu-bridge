@@ -228,7 +228,6 @@ const buildBridge = (): AituBridge => {
   const getGeo = (reqId) => {
     const isAndroid = android && android[getGeoMethod];
     const isIos = ios && ios[getGeoMethod];
-    const isWeb = web && web[getGeoMethod];
 
     if (isAndroid) {
       android[getGeoMethod](reqId);

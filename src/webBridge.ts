@@ -33,7 +33,6 @@ if (aituOrigin) {
     }
 
     }
-    
     window.addEventListener('message', event => {
         if (event.origin === aituOrigin && event.data) {
             window.dispatchEvent(new CustomEvent('aituEvents', { detail: event.data }));

@@ -206,7 +206,7 @@ const buildBridge = (): AituBridge => {
     } else if (web) {
       web.execute(invokeMethod, reqId, method, data)
     } else if (typeof window !== 'undefined') {
-      console.log('--invoke-isUnknown', {web,WebBridge});
+      console.log('--invoke-isUnknown');
     }
   };
 
@@ -349,7 +349,7 @@ const buildBridge = (): AituBridge => {
   const copyToClipboard = (reqId, text) => {
     const isAndroid = android && android[copyToClipboardMethod];
     const isIos = ios && ios[copyToClipboardMethod];
-console.log({web})
+
     if (isAndroid) {
       android[copyToClipboardMethod](reqId, text);
     } else if (isIos) {

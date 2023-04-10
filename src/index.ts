@@ -14,7 +14,9 @@ enum EInvokeRequest {
   getContacts = 'GetContacts',
   getUserProfile = 'GetUserProfile',
   enableNotifications = 'AllowNotifications',
-  disableNotifications = 'DisableNotifications'
+  disableNotifications = 'DisableNotifications',
+  enablePrivateMessaging = 'EnablePrivateMessaging',
+  disablePrivateMessaging = 'DisablePrivateMessaging',
 }
 
 type SetItemType = (keyName: string, keyValue: string) => Promise<void>;
@@ -127,6 +129,8 @@ export interface AituBridge {
   shareFile: (text: string, filename: string, base64Data: string) => Promise<ShareResponse>;
   enableNotifications: () => Promise<{}>;
   disableNotifications: () => Promise<{}>;
+  enablePrivateMessaging: (appId: string) => Promise<string>;
+  disablePrivateMessaging: (appId: string) => Promise<string>;
   openSettings: () => Promise<OpenSettingsResponse>;
   closeApplication: () => Promise<ResponseType>;
   setShakeHandler: (handler: any) => void;
@@ -182,13 +186,13 @@ const buildBridge = (): AituBridge => {
       [...subs].map((fn) => fn.call(null, e));
     })
 
-    window.addEventListener('message', (e)=>{
+    window.addEventListener('message', (e) => {
       const message = JSON.parse(e.data)
 
-      if(message && message['method']){
-        if(message.method === 'setCustomBackArrowOnClickHandler'){
+      if (message && message['method']) {
+        if (message.method === 'setCustomBackArrowOnClickHandler') {
           (window as any).onAituBridgeBackArrowClick()
-        }else if(message.method === 'setHeaderMenuItemClickHandler'){
+        } else if (message.method === 'setHeaderMenuItemClickHandler') {
           (window as any).onAituBridgeHeaderMenuItemClick(message.param)
         }
       }
@@ -485,7 +489,7 @@ const buildBridge = (): AituBridge => {
       android[vibrateMethod](reqId, JSON.stringify(pattern));
     } else if (isIos) {
       ios[vibrateMethod].postMessage({ reqId, pattern });
-    }  else if (web) {
+    } else if (web) {
       web.execute(vibrateMethod, reqId, pattern);
     } else if (typeof window !== 'undefined') {
       console.log('--vibrate-isUnknown');
@@ -591,7 +595,7 @@ const buildBridge = (): AituBridge => {
 
     if (isAndroid || isIos || web) {
       (window as any).onAituBridgeBackArrowClick = handler;
-    }else if (typeof window !== 'undefined') {
+    } else if (typeof window !== 'undefined') {
       console.log('--setCustomBackArrowOnClickHandler-isUnknown');
     }
   }
@@ -616,7 +620,7 @@ const buildBridge = (): AituBridge => {
   const setHeaderMenuItemsPromise = promisifyMethod(setHeaderMenuItems, setHeaderMenuItemsMethod, sub);
   const setCustomBackArrowModePromise = promisifyMethod(setCustomBackArrowMode, setCustomBackArrowModeMethod, sub);
   const getCustomBackArrowModePromise = promisifyMethod(getCustomBackArrowMode, getCustomBackArrowModeMethod, sub);
-  const setCustomBackArrowVisiblePromise = promisifyMethod(setCustomBackArrowVisible,setCustomBackArrowVisibleMethod, sub);
+  const setCustomBackArrowVisiblePromise = promisifyMethod(setCustomBackArrowVisible, setCustomBackArrowVisibleMethod, sub);
 
   return {
     version: String(LIB_VERSION),
@@ -633,6 +637,8 @@ const buildBridge = (): AituBridge => {
     selectContact: selectContactPromise,
     enableNotifications,
     disableNotifications,
+    enablePrivateMessaging: (appId: string) => invokePromise(EInvokeRequest.enablePrivateMessaging, { appId }),
+    disablePrivateMessaging: (appId: string) => invokePromise(EInvokeRequest.disablePrivateMessaging, { appId }),
     openSettings: openSettingsPromise,
     closeApplication: closeApplicationPromise,
     setTitle: setTitlePromise,

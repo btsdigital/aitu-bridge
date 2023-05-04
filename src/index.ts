@@ -187,6 +187,10 @@ const buildBridge = (): AituBridge => {
     })
 
     window.addEventListener('message', (e) => {
+      if(typeof e.data !== 'string') {
+        return;
+      }
+
       const message = JSON.parse(e.data)
 
       if (message && message['method']) {

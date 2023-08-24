@@ -146,6 +146,7 @@ export interface AituBridge {
   setCustomBackArrowMode: (enabled: boolean) => Promise<ResponseType>;
   getCustomBackArrowMode: () => Promise<boolean>;
   setCustomBackArrowVisible: (visible: boolean) => Promise<ResponseType>;
+  openPayment: (transactionId: string) => Promise<ResponseType>;
   setCustomBackArrowOnClickHandler: (handler: BackArrowClickHandlerType) => void;
 }
 
@@ -172,6 +173,7 @@ const setHeaderMenuItemClickHandlerMethod = 'setHeaderMenuItemClickHandler';
 const setCustomBackArrowModeMethod = 'setCustomBackArrowMode';
 const getCustomBackArrowModeMethod = 'getCustomBackArrowMode';
 const setCustomBackArrowVisibleMethod = 'setCustomBackArrowVisible';
+const openPaymentMethod = 'openPayment'
 const setCustomBackArrowOnClickHandlerMethod = 'setCustomBackArrowOnClickHandler';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
@@ -604,6 +606,19 @@ const buildBridge = (): AituBridge => {
     }
   }
 
+  const openPayment = (reqId, transactionId: string) => {
+    const isAndroid = android && android[openPaymentMethod];
+    const isIos = ios && ios[openPaymentMethod];
+
+    if (isAndroid) {
+      android[openPaymentMethod](reqId, transactionId);
+    } else if (isIos) {
+      ios[openPaymentMethod].postMessage({ reqId, transactionId });
+    } else {
+      console.log('--openPayment-isUnknown');
+    }
+  }
+
 
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);
@@ -625,6 +640,7 @@ const buildBridge = (): AituBridge => {
   const setCustomBackArrowModePromise = promisifyMethod(setCustomBackArrowMode, setCustomBackArrowModeMethod, sub);
   const getCustomBackArrowModePromise = promisifyMethod(getCustomBackArrowMode, getCustomBackArrowModeMethod, sub);
   const setCustomBackArrowVisiblePromise = promisifyMethod(setCustomBackArrowVisible, setCustomBackArrowVisibleMethod, sub);
+  const openPaymentPromise = promisifyMethod(openPayment, openPaymentMethod, sub);
 
   return {
     version: String(LIB_VERSION),
@@ -662,6 +678,7 @@ const buildBridge = (): AituBridge => {
     setCustomBackArrowMode: setCustomBackArrowModePromise,
     getCustomBackArrowMode: getCustomBackArrowModePromise,
     setCustomBackArrowVisible: setCustomBackArrowVisiblePromise,
+    openPayment: openPaymentPromise,
     setCustomBackArrowOnClickHandler,
   }
 }

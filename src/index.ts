@@ -37,6 +37,8 @@ interface GetMeResponse {
   id: string;
   avatar?: string;
   avatarThumb?: string;
+  notifications_allowed: boolean;
+  private_messaging_enabled: boolean;
   sign: string;
 }
 
@@ -189,7 +191,7 @@ const buildBridge = (): AituBridge => {
     })
 
     window.addEventListener('message', (e) => {
-      if(typeof e.data !== 'string') {
+      if (typeof e.data !== 'string') {
         return;
       }
 

@@ -76,6 +76,11 @@ interface GetUserProfileResponse {
   avatarThumb?: string;
 }
 
+interface CheckBiometryResponse {
+  data: boolean;
+  error?: string
+}
+
 const MAX_HEADER_MENU_ITEMS_COUNT = 3;
 
 export enum HeaderMenuIcon {
@@ -150,6 +155,7 @@ export interface AituBridge {
   setCustomBackArrowVisible: (visible: boolean) => Promise<ResponseType>;
   openPayment: (transactionId: string) => Promise<ResponseType>;
   setCustomBackArrowOnClickHandler: (handler: BackArrowClickHandlerType) => void;
+  checkBiometry: () => Promise<CheckBiometryResponse>;
 }
 
 const invokeMethod = 'invoke';
@@ -177,6 +183,7 @@ const getCustomBackArrowModeMethod = 'getCustomBackArrowMode';
 const setCustomBackArrowVisibleMethod = 'setCustomBackArrowVisible';
 const openPaymentMethod = 'openPayment'
 const setCustomBackArrowOnClickHandlerMethod = 'setCustomBackArrowOnClickHandler';
+const checkBiometryMethod = 'checkBiometry';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -621,6 +628,19 @@ const buildBridge = (): AituBridge => {
     }
   }
 
+  const checkBiometry = (reqId) => {
+    const isAndroid = android && android[checkBiometryMethod];
+    const isIos = ios && ios[checkBiometryMethod];
+
+    if (isAndroid) {
+      android[checkBiometryMethod](reqId);
+    } else if (isIos) {
+      ios[checkBiometryMethod].postMessage({ reqId });
+    } else {
+      console.log('--checkBiometry-isUnknown');
+    }
+  }
+
 
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);
@@ -643,6 +663,7 @@ const buildBridge = (): AituBridge => {
   const getCustomBackArrowModePromise = promisifyMethod(getCustomBackArrowMode, getCustomBackArrowModeMethod, sub);
   const setCustomBackArrowVisiblePromise = promisifyMethod(setCustomBackArrowVisible, setCustomBackArrowVisibleMethod, sub);
   const openPaymentPromise = promisifyMethod(openPayment, openPaymentMethod, sub);
+  const checkBiometryPromise = promisifyMethod(checkBiometry, checkBiometryMethod, sub);
 
   return {
     version: String(LIB_VERSION),
@@ -682,6 +703,7 @@ const buildBridge = (): AituBridge => {
     setCustomBackArrowVisible: setCustomBackArrowVisiblePromise,
     openPayment: openPaymentPromise,
     setCustomBackArrowOnClickHandler,
+    checkBiometry: checkBiometryPromise,
   }
 }
 

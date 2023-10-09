@@ -636,7 +636,9 @@ const buildBridge = (): AituBridge => {
       android[checkBiometryMethod](reqId);
     } else if (isIos) {
       ios[checkBiometryMethod].postMessage({ reqId });
-    } else {
+    } else if (web) {
+      web.execute(checkBiometryMethod, reqId);
+    } else if (typeof window !== 'undefined') {
       console.log('--checkBiometry-isUnknown');
     }
   }

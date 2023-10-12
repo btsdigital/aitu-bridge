@@ -76,11 +76,6 @@ interface GetUserProfileResponse {
   avatarThumb?: string;
 }
 
-interface CheckBiometryResponse {
-  data: boolean;
-  error?: string
-}
-
 const MAX_HEADER_MENU_ITEMS_COUNT = 3;
 
 export enum HeaderMenuIcon {
@@ -155,7 +150,7 @@ export interface AituBridge {
   setCustomBackArrowVisible: (visible: boolean) => Promise<ResponseType>;
   openPayment: (transactionId: string) => Promise<ResponseType>;
   setCustomBackArrowOnClickHandler: (handler: BackArrowClickHandlerType) => void;
-  checkBiometry: () => Promise<CheckBiometryResponse>;
+  checkBiometry: () => Promise<ResponseType>;
 }
 
 const invokeMethod = 'invoke';

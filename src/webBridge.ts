@@ -35,7 +35,28 @@ if (aituOrigin) {
     }
     window.addEventListener('message', event => {
         if (event.origin === aituOrigin && event.data) {
+
+            // dispatch aitu events
             window.dispatchEvent(new CustomEvent('aituEvents', { detail: event.data }));
+
+            // try to detect handler call
+            if (typeof event.data !== 'string' || event.data === '') {
+                return;
+            }
+
+            try {
+                const message = JSON.parse(event.data)
+
+                if (message && message['method']) {
+                    if (message.method === 'setCustomBackArrowOnClickHandler') {
+                        (window as any).onAituBridgeBackArrowClick()
+                    } else if (message.method === 'setHeaderMenuItemClickHandler') {
+                        (window as any).onAituBridgeHeaderMenuItemClick(message.param)
+                    }
+                }
+            } catch (e) {
+                console.log('Error parsing message data: ' + e);
+            }
         }
     })
 }

@@ -191,22 +191,6 @@ const buildBridge = (): AituBridge => {
     window.addEventListener('aituEvents', (e: any) => {
       [...subs].map((fn) => fn.call(null, e));
     })
-
-    window.addEventListener('message', (e) => {
-      if (typeof e.data !== 'string') {
-        return;
-      }
-
-      const message = JSON.parse(e.data)
-
-      if (message && message['method']) {
-        if (message.method === 'setCustomBackArrowOnClickHandler') {
-          (window as any).onAituBridgeBackArrowClick()
-        } else if (message.method === 'setHeaderMenuItemClickHandler') {
-          (window as any).onAituBridgeHeaderMenuItemClick(message.param)
-        }
-      }
-    })
   }
 
   const invoke = (reqId, method, data = {}) => {

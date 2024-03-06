@@ -151,6 +151,7 @@ export interface AituBridge {
   openPayment: (transactionId: string) => Promise<ResponseType>;
   setCustomBackArrowOnClickHandler: (handler: BackArrowClickHandlerType) => void;
   checkBiometry: () => Promise<ResponseType>;
+  openExternalUrl: (url: string) => Promise<ResponseType>;
 }
 
 const invokeMethod = 'invoke';
@@ -179,6 +180,7 @@ const setCustomBackArrowVisibleMethod = 'setCustomBackArrowVisible';
 const openPaymentMethod = 'openPayment'
 const setCustomBackArrowOnClickHandlerMethod = 'setCustomBackArrowOnClickHandler';
 const checkBiometryMethod = 'checkBiometry';
+const openExternalUrlMethod = 'openExternalUrl';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -622,6 +624,19 @@ const buildBridge = (): AituBridge => {
     }
   }
 
+  const openExternalUrl = (reqId, url: string) => {
+    const isAndroid = android && android[openExternalUrlMethod];
+    const isIos = ios && ios[openExternalUrlMethod];
+
+    if (isAndroid) {
+      android[openExternalUrlMethod](reqId, url);
+    } else if (isIos) {
+      ios[openExternalUrlMethod].postMessage({ reqId, url });
+    } else {
+      console.log("--openExternalUrlMethod-isUnknown");
+    }
+  };
+
 
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);
@@ -645,6 +660,7 @@ const buildBridge = (): AituBridge => {
   const setCustomBackArrowVisiblePromise = promisifyMethod(setCustomBackArrowVisible, setCustomBackArrowVisibleMethod, sub);
   const openPaymentPromise = promisifyMethod(openPayment, openPaymentMethod, sub);
   const checkBiometryPromise = promisifyMethod(checkBiometry, checkBiometryMethod, sub);
+  const openExternalUrlPromise = promisifyMethod(openExternalUrl, openExternalUrlMethod, sub);
 
   return {
     version: String(LIB_VERSION),
@@ -657,12 +673,15 @@ const buildBridge = (): AituBridge => {
     getGeo: getGeoPromise,
     getQr: getQrPromise,
     getSMSCode: getSMSCodePromise,
-    getUserProfile: (id: string) => invokePromise(EInvokeRequest.getUserProfile, { id }),
+    getUserProfile: (id: string) =>
+      invokePromise(EInvokeRequest.getUserProfile, { id }),
     selectContact: selectContactPromise,
     enableNotifications,
     disableNotifications,
-    enablePrivateMessaging: (appId: string) => invokePromise(EInvokeRequest.enablePrivateMessaging, { appId }),
-    disablePrivateMessaging: (appId: string) => invokePromise(EInvokeRequest.disablePrivateMessaging, { appId }),
+    enablePrivateMessaging: (appId: string) =>
+      invokePromise(EInvokeRequest.enablePrivateMessaging, { appId }),
+    disablePrivateMessaging: (appId: string) =>
+      invokePromise(EInvokeRequest.disablePrivateMessaging, { appId }),
     openSettings: openSettingsPromise,
     closeApplication: closeApplicationPromise,
     setTitle: setTitlePromise,
@@ -685,7 +704,8 @@ const buildBridge = (): AituBridge => {
     openPayment: openPaymentPromise,
     setCustomBackArrowOnClickHandler,
     checkBiometry: checkBiometryPromise,
-  }
+    openExternalUrl: openExternalUrlPromise,
+  };
 }
 
 const bridge = buildBridge();

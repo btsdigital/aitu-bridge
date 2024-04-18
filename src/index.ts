@@ -88,7 +88,8 @@ export enum HeaderMenuIcon {
   Error = "Error",
   Person = "Person",
   Sort = "Sort",
-  Filter = "Filter"
+  Filter = "Filter",
+  Close = "Close"
 }
 
 interface HeaderMenuItem {

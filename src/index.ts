@@ -153,6 +153,8 @@ export interface AituBridge {
   setCustomBackArrowOnClickHandler: (handler: BackArrowClickHandlerType) => void;
   checkBiometry: () => Promise<ResponseType>;
   openExternalUrl: (url: string) => Promise<ResponseType>;
+  enableSwipeBack: () => Promise<ResponseType>;
+  disableSwipeBack: () => Promise<ResponseType>;
 }
 
 const invokeMethod = 'invoke';
@@ -182,6 +184,8 @@ const openPaymentMethod = 'openPayment'
 const setCustomBackArrowOnClickHandlerMethod = 'setCustomBackArrowOnClickHandler';
 const checkBiometryMethod = 'checkBiometry';
 const openExternalUrlMethod = 'openExternalUrl';
+const enableSwipeBackMethod = 'enableSwipeBack'
+const disableSwipeBackMethod = 'disableSwipeBack'
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -638,6 +642,35 @@ const buildBridge = (): AituBridge => {
     }
   };
 
+  const enableSwipeBack = (reqId) => {
+    const isAndroid = android && android[enableSwipeBackMethod];
+    const isIos = ios && ios[enableSwipeBackMethod];
+
+    if (isAndroid) {
+      android[enableSwipeBackMethod](reqId);
+    } else if (isIos) {
+      ios[enableSwipeBackMethod].postMessage({ reqId });
+    } else if (web) {
+      web.execute(enableSwipeBackMethod, reqId);
+    } else if (typeof window !== 'undefined') {
+      console.log('--enableSwipeBack-isUnknown');
+    }
+  }
+
+  const disableSwipeBack = (reqId) => {
+    const isAndroid = android && android[disableSwipeBackMethod];
+    const isIos = ios && ios[disableSwipeBackMethod];
+
+    if (isAndroid) {
+      android[disableSwipeBackMethod](reqId);
+    } else if (isIos) {
+      ios[disableSwipeBackMethod].postMessage({ reqId });
+    } else if (web) {
+      web.execute(disableSwipeBackMethod, reqId);
+    } else if (typeof window !== 'undefined') {
+      console.log('--disableSwipeBack-isUnknown');
+    }
+  }
 
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);
@@ -662,6 +695,8 @@ const buildBridge = (): AituBridge => {
   const openPaymentPromise = promisifyMethod(openPayment, openPaymentMethod, sub);
   const checkBiometryPromise = promisifyMethod(checkBiometry, checkBiometryMethod, sub);
   const openExternalUrlPromise = promisifyMethod(openExternalUrl, openExternalUrlMethod, sub);
+  const enableSwipeBackPromise = promisifyMethod(enableSwipeBack, enableSwipeBackMethod, sub);
+  const disableSwipeBackPromise = promisifyMethod(disableSwipeBack, disableSwipeBackMethod, sub);
 
   return {
     version: String(LIB_VERSION),
@@ -706,6 +741,8 @@ const buildBridge = (): AituBridge => {
     setCustomBackArrowOnClickHandler,
     checkBiometry: checkBiometryPromise,
     openExternalUrl: openExternalUrlPromise,
+    enableSwipeBack: enableSwipeBackPromise,
+    disableSwipeBack: disableSwipeBackPromise,
   };
 }
 

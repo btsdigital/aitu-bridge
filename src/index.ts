@@ -151,7 +151,7 @@ export interface AituBridge {
   setCustomBackArrowVisible: (visible: boolean) => Promise<ResponseType>;
   openPayment: (transactionId: string) => Promise<ResponseType>;
   setCustomBackArrowOnClickHandler: (handler: BackArrowClickHandlerType) => void;
-  checkBiometry: () => Promise<ResponseType>;
+  checkBiometry: () => Promise<void>;
   openExternalUrl: (url: string) => Promise<ResponseType>;
   enableSwipeBack: () => Promise<ResponseType>;
   disableSwipeBack: () => Promise<ResponseType>;

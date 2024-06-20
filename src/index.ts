@@ -92,6 +92,13 @@ export enum HeaderMenuIcon {
   Close = "Close"
 }
 
+enum NavigationItemMode {
+  SystemBackArrow = "SystemBackArrow",
+  CustomBackArrow = "CustomBackArrow",
+  NoItem = "NoItem",
+  UserProfile = "UserProfile",
+}
+
 interface HeaderMenuItem {
   id: string;
   icon: HeaderMenuIcon;
@@ -155,6 +162,7 @@ export interface AituBridge {
   openExternalUrl: (url: string) => Promise<ResponseType>;
   enableSwipeBack: () => Promise<ResponseType>;
   disableSwipeBack: () => Promise<ResponseType>;
+  setNavigationItemMode: () => Promise<ResponseType>;
 }
 
 const invokeMethod = 'invoke';
@@ -186,6 +194,7 @@ const checkBiometryMethod = 'checkBiometry';
 const openExternalUrlMethod = 'openExternalUrl';
 const enableSwipeBackMethod = 'enableSwipeBack'
 const disableSwipeBackMethod = 'disableSwipeBack'
+const setNavigationItemModeMethod = 'setNavigationItemMode'
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -575,6 +584,10 @@ const buildBridge = (): AituBridge => {
     }
   }
 
+  /**
+   * @deprecated данный метод не рекомендуется использовать
+   * вместо него используйте setNavigationItemMode
+   */
   const setCustomBackArrowVisible = (reqId, visible: boolean) => {
     const isAndroid = android && android[setCustomBackArrowVisibleMethod];
     const isIos = ios && ios[setCustomBackArrowVisibleMethod];
@@ -672,6 +685,22 @@ const buildBridge = (): AituBridge => {
     }
   }
 
+  const setNavigationItemMode = (reqId, mode: NavigationItemMode) => {
+    const isAndroid = android && android[setNavigationItemModeMethod];
+    const isIos = ios && ios[setNavigationItemModeMethod];
+
+    if (isAndroid) {
+      android[setNavigationItemModeMethod](reqId, mode);
+    } else if (isIos) {
+      ios[setNavigationItemModeMethod].postMessage({ reqId, mode });
+    } else if (web) {
+      web.execute(setNavigationItemModeMethod, reqId, mode);
+    } else if (typeof window !== 'undefined') {
+      console.log('--setNavigationItemMode-isUnknown');
+    }
+  }
+
+
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);
   const getGeoPromise = promisifyMethod(getGeo, getGeoMethod, sub);
@@ -697,6 +726,7 @@ const buildBridge = (): AituBridge => {
   const openExternalUrlPromise = promisifyMethod(openExternalUrl, openExternalUrlMethod, sub);
   const enableSwipeBackPromise = promisifyMethod(enableSwipeBack, enableSwipeBackMethod, sub);
   const disableSwipeBackPromise = promisifyMethod(disableSwipeBack, disableSwipeBackMethod, sub);
+  const setNavigationItemModePromise = promisifyMethod(setNavigationItemMode, setNavigationItemModeMethod, sub);
 
   return {
     version: String(LIB_VERSION),
@@ -743,6 +773,7 @@ const buildBridge = (): AituBridge => {
     openExternalUrl: openExternalUrlPromise,
     enableSwipeBack: enableSwipeBackPromise,
     disableSwipeBack: disableSwipeBackPromise,
+    setNavigationItemMode: setNavigationItemModePromise,
   };
 }
 

@@ -92,7 +92,7 @@ export enum HeaderMenuIcon {
   Close = "Close"
 }
 
-enum NavigationItemMode {
+export enum NavigationItemMode {
   SystemBackArrow = "SystemBackArrow",
   CustomBackArrow = "CustomBackArrow",
   NoItem = "NoItem",

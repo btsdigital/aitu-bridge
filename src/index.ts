@@ -164,6 +164,7 @@ export interface AituBridge {
   disableSwipeBack: () => Promise<ResponseType>;
   setNavigationItemMode: () => Promise<void>;
   getNavigationItemMode: () => Promise<NavigationItemMode>;
+  getUserStepInfo: (startDate: string, endDate: string) => Promise<number>;
 }
 
 const invokeMethod = 'invoke';
@@ -197,6 +198,7 @@ const enableSwipeBackMethod = 'enableSwipeBack';
 const disableSwipeBackMethod = 'disableSwipeBack';
 const setNavigationItemModeMethod = 'setNavigationItemMode';
 const getNavigationItemModeMethod = 'getNavigationItemMode';
+const getUserStepInfoMethod = 'getUserStepInfo'
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -725,6 +727,21 @@ const buildBridge = (): AituBridge => {
     }
   }
 
+  const getUserStepInfo = (reqId, startDate, endDate) => {
+    const isAndroid = android && android[getUserStepInfoMethod];
+    const isIos = ios && ios[getUserStepInfoMethod];
+
+    if (isAndroid) {
+      android[getUserStepInfoMethod](reqId, startDate, endDate);
+    } else if (isIos) {
+      ios[getUserStepInfoMethod].postMessage({ reqId, startDate, endDate });
+    } else if (web) {
+      console.log('--getUserStepInfo-isWeb');
+    } else if (typeof window !== 'undefined') {
+      console.log('--getUserStepInfo-isUnknown');
+    }
+  }
+
 
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);
@@ -753,6 +770,7 @@ const buildBridge = (): AituBridge => {
   const disableSwipeBackPromise = promisifyMethod(disableSwipeBack, disableSwipeBackMethod, sub);
   const setNavigationItemModePromise = promisifyMethod(setNavigationItemMode, setNavigationItemModeMethod, sub);
   const getNavigationItemModePromise = promisifyMethod(getNavigationItemMode, getNavigationItemModeMethod, sub);
+  const getUserStepInfoPromise = promisifyMethod(getUserStepInfo, getUserStepInfoMethod, sub);
 
   return {
     version: String(LIB_VERSION),
@@ -801,6 +819,7 @@ const buildBridge = (): AituBridge => {
     disableSwipeBack: disableSwipeBackPromise,
     setNavigationItemMode: setNavigationItemModePromise,
     getNavigationItemMode: getNavigationItemModePromise,
+    getUserStepInfo: getUserStepInfoPromise,
   };
 }
 

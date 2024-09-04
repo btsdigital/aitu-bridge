@@ -166,7 +166,7 @@ export interface AituBridge {
   openExternalUrl: (url: string) => Promise<ResponseType>;
   enableSwipeBack: () => Promise<ResponseType>;
   disableSwipeBack: () => Promise<ResponseType>;
-  setNavigationItemMode: () => Promise<void>;
+  setNavigationItemMode: (mode: NavigationItemMode) => Promise<void>;
   getNavigationItemMode: () => Promise<NavigationItemMode>;
   getUserStepInfo: (startDate: string, endDate: string) => Promise<UserStepInfoResponse>;
 }

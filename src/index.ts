@@ -26,12 +26,12 @@ type ClearType = () => Promise<void>;
 type HeaderMenuItemClickHandlerType = (id: string) => Promise<void>;
 type BackArrowClickHandlerType = () => Promise<void>;
 
-interface GetPhoneResponse {
+export interface GetPhoneResponse {
   phone: string;
   sign: string;
 }
 
-interface GetMeResponse {
+export interface GetMeResponse {
   name: string;
   lastname: string;
   id: string;
@@ -42,18 +42,18 @@ interface GetMeResponse {
   sign: string;
 }
 
-interface ResponseObject {
+export interface ResponseObject {
   phone?: string;
   name?: string;
   lastname?: string;
 }
 
-interface GetGeoResponse {
+export interface GetGeoResponse {
   latitude: number;
   longitude: number;
 }
 
-interface GetContactsResponse {
+export interface GetContactsResponse {
   contacts: Array<{
     first_name: string;
     last_name: string;
@@ -62,13 +62,13 @@ interface GetContactsResponse {
   sign: string;
 }
 
-interface SelectContactResponse {
+export interface SelectContactResponse {
   phone: string;
   name: string;
   lastname: string;
 }
 
-interface GetUserProfileResponse {
+export interface GetUserProfileResponse {
   name: string;
   lastname?: string;
   phone?: string;
@@ -99,14 +99,25 @@ export enum NavigationItemMode {
   UserProfile = "UserProfile",
 }
 
-interface HeaderMenuItem {
+export interface HeaderMenuItem {
   id: string;
   icon: HeaderMenuIcon;
   badge?: string;
 }
 
-interface UserStepInfoResponse {
-  steps: number
+export interface UserStepsPerDay {
+  date: string;
+  steps: number;
+}
+
+export interface UserStepInfoResponse {
+  steps: UserStepsPerDay[];
+}
+
+export class PermissionDeniedError extends Error {
+  constructor() {
+    super("No permission");
+  }
 }
 
 type OpenSettingsResponse = 'success' | 'failed';
@@ -168,7 +179,7 @@ export interface AituBridge {
   disableSwipeBack: () => Promise<ResponseType>;
   setNavigationItemMode: (mode: NavigationItemMode) => Promise<void>;
   getNavigationItemMode: () => Promise<NavigationItemMode>;
-  getUserStepInfo: (startDate: string, endDate: string) => Promise<UserStepInfoResponse>;
+  getUserStepInfo: () => Promise<UserStepInfoResponse>;
 }
 
 const invokeMethod = 'invoke';
@@ -731,14 +742,14 @@ const buildBridge = (): AituBridge => {
     }
   }
 
-  const getUserStepInfo = (reqId, startDate, endDate) => {
+  const getUserStepInfo = (reqId) => {
     const isAndroid = android && android[getUserStepInfoMethod];
     const isIos = ios && ios[getUserStepInfoMethod];
 
     if (isAndroid) {
-      android[getUserStepInfoMethod](reqId, startDate, endDate);
+      android[getUserStepInfoMethod](reqId);
     } else if (isIos) {
-      ios[getUserStepInfoMethod].postMessage({ reqId, startDate, endDate });
+      ios[getUserStepInfoMethod].postMessage({ reqId });
     } else if (web) {
       console.log('--getUserStepInfo-isWeb');
     } else if (typeof window !== 'undefined') {

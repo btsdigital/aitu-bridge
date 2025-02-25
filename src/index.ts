@@ -114,9 +114,27 @@ export interface UserStepInfoResponse {
   steps: UserStepsPerDay[];
 }
 
-export class PermissionDeniedError extends Error {
+export class BiometryFailedError extends Error {
   constructor() {
-    super("No permission");
+    super("Biometry failed");
+  }
+}
+
+export class BiometryCanceledError extends Error {
+  constructor() {
+    super("Biometry cancelled");
+  }
+}
+
+export class BiometryUnavailableError extends Error {
+  constructor() {
+    super("Biometry is unavailable");
+  }
+}
+
+export class BiometryOtherError extends Error {
+  constructor() {
+    super("Biometry error");
   }
 }
 
@@ -173,6 +191,9 @@ export interface AituBridge {
   setCustomBackArrowVisible: (visible: boolean) => Promise<ResponseType>;
   openPayment: (transactionId: string) => Promise<ResponseType>;
   setCustomBackArrowOnClickHandler: (handler: BackArrowClickHandlerType) => void;
+  /**
+   * @deprecated, use checkUserBiometry method
+   */
   checkBiometry: () => Promise<ResponseType>;
   openExternalUrl: (url: string) => Promise<ResponseType>;
   enableSwipeBack: () => Promise<ResponseType>;
@@ -180,6 +201,9 @@ export interface AituBridge {
   setNavigationItemMode: (mode: NavigationItemMode) => Promise<void>;
   getNavigationItemMode: () => Promise<NavigationItemMode>;
   getUserStepInfo: () => Promise<UserStepInfoResponse>;
+
+  isBiometryAvailable: () => Promise<boolean>;
+  checkUserBiometry: () => Promise<void>;
 }
 
 const invokeMethod = 'invoke';
@@ -213,7 +237,9 @@ const enableSwipeBackMethod = 'enableSwipeBack';
 const disableSwipeBackMethod = 'disableSwipeBack';
 const setNavigationItemModeMethod = 'setNavigationItemMode';
 const getNavigationItemModeMethod = 'getNavigationItemMode';
-const getUserStepInfoMethod = 'getUserStepInfo'
+const getUserStepInfoMethod = 'getUserStepInfo';
+const isBiometryAvailableMethod = 'isBiometryAvailable';
+const checkUserBiometryMethod = 'checkUserBiometry';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -757,6 +783,36 @@ const buildBridge = (): AituBridge => {
     }
   }
 
+  const isBiometryAvailable = (reqId) => {
+    const isAndroid = android && android[isBiometryAvailableMethod];
+    const isIos = ios && ios[isBiometryAvailableMethod];
+
+    if (isAndroid) {
+      android[isBiometryAvailableMethod](reqId);
+    } else if (isIos) {
+      ios[isBiometryAvailableMethod].postMessage({ reqId });
+    } else if (web) {
+      web.execute(isBiometryAvailableMethod, reqId);
+    } else if (typeof window !== 'undefined') {
+      console.log('--isBiometryAvailable-isUnknown');
+    }
+  }
+
+  const checkUserBiometry = (reqId) => {
+    const isAndroid = android && android[checkUserBiometryMethod];
+    const isIos = ios && ios[checkUserBiometryMethod];
+
+    if (isAndroid) {
+      android[checkUserBiometryMethod](reqId);
+    } else if (isIos) {
+      ios[checkUserBiometryMethod].postMessage({ reqId });
+    } else if (web) {
+      web.execute(checkUserBiometryMethod, reqId);
+    } else if (typeof window !== 'undefined') {
+      console.log('--checkUserBiometry-isUnknown');
+    }
+  }
+
 
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);
@@ -786,6 +842,8 @@ const buildBridge = (): AituBridge => {
   const setNavigationItemModePromise = promisifyMethod(setNavigationItemMode, setNavigationItemModeMethod, sub);
   const getNavigationItemModePromise = promisifyMethod(getNavigationItemMode, getNavigationItemModeMethod, sub);
   const getUserStepInfoPromise = promisifyMethod(getUserStepInfo, getUserStepInfoMethod, sub);
+  const isBiometryAvailablePromise = promisifyMethod(isBiometryAvailable, isBiometryAvailableMethod, sub);
+  const checkUserBiometryPromise = promisifyMethod(checkUserBiometry, checkUserBiometryMethod, sub);
 
   return {
     version: String(LIB_VERSION),
@@ -835,6 +893,8 @@ const buildBridge = (): AituBridge => {
     setNavigationItemMode: setNavigationItemModePromise,
     getNavigationItemMode: getNavigationItemModePromise,
     getUserStepInfo: getUserStepInfoPromise,
+    isBiometryAvailable: isBiometryAvailablePromise,
+    checkUserBiometry: checkUserBiometryPromise,
   };
 }
 

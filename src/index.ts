@@ -114,18 +114,13 @@ export interface UserStepInfoResponse {
   steps: UserStepsPerDay[];
 }
 
-export class PermissionDeniedError extends Error {
-  constructor() {
-    super("No permission");
-  }
-}
-
 type OpenSettingsResponse = 'success' | 'failed';
 type ShareResponse = 'success' | 'failed';
 type CopyToClipboardResponse = 'success' | 'failed';
 type VibrateResponse = 'success' | 'failed';
 // todo: remove duplicates
 type ResponseType = 'success' | 'failed';
+type BiometryResponse = 'success' | 'failed' | 'unavailable' | 'cancelled';
 
 type BridgeInvoke<T extends EInvokeRequest, R> = (method: T, data?: {}) => Promise<R>;
 
@@ -173,13 +168,14 @@ export interface AituBridge {
   setCustomBackArrowVisible: (visible: boolean) => Promise<ResponseType>;
   openPayment: (transactionId: string) => Promise<ResponseType>;
   setCustomBackArrowOnClickHandler: (handler: BackArrowClickHandlerType) => void;
-  checkBiometry: () => Promise<ResponseType>;
+  checkBiometry: () => Promise<BiometryResponse>;
   openExternalUrl: (url: string) => Promise<ResponseType>;
   enableSwipeBack: () => Promise<ResponseType>;
   disableSwipeBack: () => Promise<ResponseType>;
   setNavigationItemMode: (mode: NavigationItemMode) => Promise<void>;
   getNavigationItemMode: () => Promise<NavigationItemMode>;
   getUserStepInfo: () => Promise<UserStepInfoResponse>;
+  isBiometryAvailable: () =>Promise<boolean>;
 }
 
 const invokeMethod = 'invoke';
@@ -213,7 +209,8 @@ const enableSwipeBackMethod = 'enableSwipeBack';
 const disableSwipeBackMethod = 'disableSwipeBack';
 const setNavigationItemModeMethod = 'setNavigationItemMode';
 const getNavigationItemModeMethod = 'getNavigationItemMode';
-const getUserStepInfoMethod = 'getUserStepInfo'
+const getUserStepInfoMethod = 'getUserStepInfo';
+const isBiometryAvailableMethod = 'isBiometryAvailable';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -757,6 +754,21 @@ const buildBridge = (): AituBridge => {
     }
   }
 
+  const isBiometryAvailable = (reqId) => {
+    const isAndroid = android && android[isBiometryAvailableMethod];
+    const isIos = ios && ios[isBiometryAvailableMethod];
+
+    if (isAndroid) {
+      android[isBiometryAvailableMethod](reqId);
+    } else if (isIos) {
+      ios[isBiometryAvailableMethod].postMessage({ reqId });
+    } else if (web) {
+      console.log('--isBiometryAvailable-isWeb');
+    } else if (typeof window !== 'undefined') {
+      console.log('--isBiometryAvailable-isUnknown');
+    }
+  }
+
 
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);
@@ -786,6 +798,7 @@ const buildBridge = (): AituBridge => {
   const setNavigationItemModePromise = promisifyMethod(setNavigationItemMode, setNavigationItemModeMethod, sub);
   const getNavigationItemModePromise = promisifyMethod(getNavigationItemMode, getNavigationItemModeMethod, sub);
   const getUserStepInfoPromise = promisifyMethod(getUserStepInfo, getUserStepInfoMethod, sub);
+  const isBiometryAvailablePromise = promisifyMethod(isBiometryAvailable, isBiometryAvailableMethod, sub);
 
   return {
     version: String(LIB_VERSION),
@@ -835,6 +848,7 @@ const buildBridge = (): AituBridge => {
     setNavigationItemMode: setNavigationItemModePromise,
     getNavigationItemMode: getNavigationItemModePromise,
     getUserStepInfo: getUserStepInfoPromise,
+    isBiometryAvailable: isBiometryAvailablePromise,
   };
 }
 

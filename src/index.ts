@@ -175,7 +175,6 @@ export interface AituBridge {
   setNavigationItemMode: (mode: NavigationItemMode) => Promise<void>;
   getNavigationItemMode: () => Promise<NavigationItemMode>;
   getUserStepInfo: () => Promise<UserStepInfoResponse>;
-  isBiometryAvailable: () =>Promise<boolean>;
 }
 
 const invokeMethod = 'invoke';
@@ -210,7 +209,6 @@ const disableSwipeBackMethod = 'disableSwipeBack';
 const setNavigationItemModeMethod = 'setNavigationItemMode';
 const getNavigationItemModeMethod = 'getNavigationItemMode';
 const getUserStepInfoMethod = 'getUserStepInfo';
-const isBiometryAvailableMethod = 'isBiometryAvailable';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -754,22 +752,6 @@ const buildBridge = (): AituBridge => {
     }
   }
 
-  const isBiometryAvailable = (reqId) => {
-    const isAndroid = android && android[isBiometryAvailableMethod];
-    const isIos = ios && ios[isBiometryAvailableMethod];
-
-    if (isAndroid) {
-      android[isBiometryAvailableMethod](reqId);
-    } else if (isIos) {
-      ios[isBiometryAvailableMethod].postMessage({ reqId });
-    } else if (web) {
-      console.log('--isBiometryAvailable-isWeb');
-    } else if (typeof window !== 'undefined') {
-      console.log('--isBiometryAvailable-isUnknown');
-    }
-  }
-
-
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);
   const getGeoPromise = promisifyMethod(getGeo, getGeoMethod, sub);
@@ -798,7 +780,6 @@ const buildBridge = (): AituBridge => {
   const setNavigationItemModePromise = promisifyMethod(setNavigationItemMode, setNavigationItemModeMethod, sub);
   const getNavigationItemModePromise = promisifyMethod(getNavigationItemMode, getNavigationItemModeMethod, sub);
   const getUserStepInfoPromise = promisifyMethod(getUserStepInfo, getUserStepInfoMethod, sub);
-  const isBiometryAvailablePromise = promisifyMethod(isBiometryAvailable, isBiometryAvailableMethod, sub);
 
   return {
     version: String(LIB_VERSION),
@@ -848,7 +829,6 @@ const buildBridge = (): AituBridge => {
     setNavigationItemMode: setNavigationItemModePromise,
     getNavigationItemMode: getNavigationItemModePromise,
     getUserStepInfo: getUserStepInfoPromise,
-    isBiometryAvailable: isBiometryAvailablePromise,
   };
 }
 

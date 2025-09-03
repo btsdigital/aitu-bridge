@@ -89,7 +89,8 @@ export enum HeaderMenuIcon {
   Person = "Person",
   Sort = "Sort",
   Filter = "Filter",
-  Close = "Close"
+  Close = "Close",
+  SystemNotifications = "SystemNotifications"
 }
 
 export enum NavigationItemMode {

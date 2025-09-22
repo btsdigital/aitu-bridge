@@ -7,6 +7,7 @@ import {
 } from './utils'
 
 import WebBridge from './webBridge';
+export * from './error';
 
 enum EInvokeRequest {
   getMe = 'GetMe',

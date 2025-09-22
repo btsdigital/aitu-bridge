@@ -1,6 +1,6 @@
 {
   "name": "@btsd/aitu-bridge",
-  "version": "0.3.58",
+  "version": "0.3.59",
   "description": "",
   "source": "src/index.ts",
   "main": "dist/index.js",
@@ -30,6 +30,6 @@
   },
   "homepage": "https://github.com/btsdigital/aitu-bridge#readme",
   "devDependencies": {
-    "microbundle": "^0.12.2"
+    "microbundle": "^0.15.1"
   }
 }

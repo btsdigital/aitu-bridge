@@ -1,10 +1,6 @@
 import { LIB_VERSION } from './version';
 
-import {
-  promisifyMethod,
-  promisifyStorage,
-  promisifyInvoke,
-} from './utils'
+import { promisifyMethod, promisifyStorage, promisifyInvoke } from './utils';
 
 import WebBridge from './webBridge';
 export * from './error';
@@ -80,25 +76,25 @@ export interface GetUserProfileResponse {
 const MAX_HEADER_MENU_ITEMS_COUNT = 3;
 
 export enum HeaderMenuIcon {
-  Search = "Search",
-  ShoppingCart = "ShoppingCart",
-  Menu = "Menu",
-  Share = "Share",
-  Notifications = "Notifications",
-  Help = "Help",
-  Error = "Error",
-  Person = "Person",
-  Sort = "Sort",
-  Filter = "Filter",
-  Close = "Close",
-  SystemNotifications = "SystemNotifications"
+  Search = 'Search',
+  ShoppingCart = 'ShoppingCart',
+  Menu = 'Menu',
+  Share = 'Share',
+  Notifications = 'Notifications',
+  Help = 'Help',
+  Error = 'Error',
+  Person = 'Person',
+  Sort = 'Sort',
+  Filter = 'Filter',
+  Close = 'Close',
+  SystemNotifications = 'SystemNotifications',
 }
 
 export enum NavigationItemMode {
-  SystemBackArrow = "SystemBackArrow",
-  CustomBackArrow = "CustomBackArrow",
-  NoItem = "NoItem",
-  UserProfile = "UserProfile",
+  SystemBackArrow = 'SystemBackArrow',
+  CustomBackArrow = 'CustomBackArrow',
+  NoItem = 'NoItem',
+  UserProfile = 'UserProfile',
 }
 
 export interface HeaderMenuItem {
@@ -119,7 +115,6 @@ export interface UserStepInfoResponse {
 type OpenSettingsResponse = 'success' | 'failed';
 type ShareResponse = 'success' | 'failed';
 type CopyToClipboardResponse = 'success' | 'failed';
-type VibrateResponse = 'success' | 'failed';
 // todo: remove duplicates
 type ResponseType = 'success' | 'failed';
 type BiometryResponse = 'success' | 'failed' | 'unavailable' | 'cancelled';
@@ -127,9 +122,9 @@ type BiometryResponse = 'success' | 'failed' | 'unavailable' | 'cancelled';
 type BridgeInvoke<T extends EInvokeRequest, R> = (method: T, data?: {}) => Promise<R>;
 
 interface BridgeStorage {
-  setItem: SetItemType,
-  getItem: GetItemType,
-  clear: ClearType
+  setItem: SetItemType;
+  getItem: GetItemType;
+  clear: ClearType;
 }
 
 export interface AituBridge {
@@ -177,6 +172,8 @@ export interface AituBridge {
   setNavigationItemMode: (mode: NavigationItemMode) => Promise<void>;
   getNavigationItemMode: () => Promise<NavigationItemMode>;
   getUserStepInfo: () => Promise<UserStepInfoResponse>;
+  isESimSupported: () => Promise<ResponseType>;
+  activateESim: (activationCode: string) => Promise<ResponseType>;
 }
 
 const invokeMethod = 'invoke';
@@ -202,7 +199,7 @@ const setHeaderMenuItemClickHandlerMethod = 'setHeaderMenuItemClickHandler';
 const setCustomBackArrowModeMethod = 'setCustomBackArrowMode';
 const getCustomBackArrowModeMethod = 'getCustomBackArrowMode';
 const setCustomBackArrowVisibleMethod = 'setCustomBackArrowVisible';
-const openPaymentMethod = 'openPayment'
+const openPaymentMethod = 'openPayment';
 const setCustomBackArrowOnClickHandlerMethod = 'setCustomBackArrowOnClickHandler';
 const checkBiometryMethod = 'checkBiometry';
 const openExternalUrlMethod = 'openExternalUrl';
@@ -214,7 +211,7 @@ const getUserStepInfoMethod = 'getUserStepInfo';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
-const web = typeof window !== 'undefined' && (window.top !== window) && WebBridge;
+const web = typeof window !== 'undefined' && window.top !== window && WebBridge;
 
 const buildBridge = (): AituBridge => {
   const subs = [];
@@ -222,7 +219,7 @@ const buildBridge = (): AituBridge => {
   if (typeof window !== 'undefined') {
     window.addEventListener('aituEvents', (e: any) => {
       [...subs].map((fn) => fn.call(null, e));
-    })
+    });
   }
 
   const invoke = (reqId, method, data = {}) => {
@@ -234,7 +231,7 @@ const buildBridge = (): AituBridge => {
     } else if (isIos) {
       ios[invokeMethod].postMessage({ reqId, method, data });
     } else if (web) {
-      web.execute(invokeMethod, reqId, method, data)
+      web.execute(invokeMethod, reqId, method, data);
     } else if (typeof window !== 'undefined') {
       console.log('--invoke-isUnknown');
     }
@@ -253,7 +250,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--storage-isUnknown');
     }
-  }
+  };
 
   const getGeo = (reqId) => {
     const isAndroid = android && android[getGeoMethod];
@@ -268,7 +265,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--getGeo-isUnknown');
     }
-  }
+  };
 
   const getQr = (reqId) => {
     const isAndroid = android && android[getQrMethod];
@@ -283,7 +280,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--getQr-isUnknown');
     }
-  }
+  };
 
   const getSMSCode = (reqId) => {
     const isAndroid = android && android[getSMSCodeMethod];
@@ -298,7 +295,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--getSMSCode-isUnknown');
     }
-  }
+  };
 
   const selectContact = (reqId) => {
     const isAndroid = android && android[selectContactMethod];
@@ -313,7 +310,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--selectContact-isUnknown');
     }
-  }
+  };
 
   const openSettings = (reqId) => {
     const isAndroid = android && android[openSettingsMethod];
@@ -328,7 +325,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--openSettings-isUnknown');
     }
-  }
+  };
 
   const closeApplication = (reqId) => {
     const isAndroid = android && android[closeApplicationMethod];
@@ -343,7 +340,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--closeApplication-isUnknown');
     }
-  }
+  };
 
   const share = (reqId, text) => {
     const isAndroid = android && android[shareMethod];
@@ -358,7 +355,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--share-isUnknown');
     }
-  }
+  };
 
   const setTitle = (reqId, text) => {
     const isAndroid = android && android[setTitleMethod];
@@ -373,7 +370,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--setTitle-isUnknown');
     }
-  }
+  };
 
   const copyToClipboard = (reqId, text) => {
     const isAndroid = android && android[copyToClipboardMethod];
@@ -388,7 +385,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--copyToClipboard-isUnknown');
     }
-  }
+  };
 
   const enableScreenCapture = (reqId) => {
     const isAndroid = android && android[enableScreenCaptureMethod];
@@ -403,7 +400,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--enableScreenCapture-isUnknown');
     }
-  }
+  };
 
   const disableScreenCapture = (reqId) => {
     const isAndroid = android && android[disableScreenCaptureMethod];
@@ -418,7 +415,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--disableScreenCapture-isUnknown');
     }
-  }
+  };
 
   const shareImage = (reqId, text, image) => {
     // !!!======================!!!
@@ -455,7 +452,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--shareFile-isUnknown');
     }
-  }
+  };
 
   const shareFile = (reqId, text, filename, base64Data) => {
     const isAndroid = android && android[shareFileMethod];
@@ -470,7 +467,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--shareFile-isUnknown');
     }
-  }
+  };
 
   const enableNotifications = () => invokePromise(EInvokeRequest.enableNotifications);
 
@@ -520,12 +517,12 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--vibrate-isUnknown');
     }
-  }
+  };
 
   const isSupported = () => {
     const iosSup = ios && (window as any).webkit.messageHandlers.invoke;
     return Boolean(android || iosSup || web);
-  }
+  };
 
   // TODO: implement web support
   const supports = (method) =>
@@ -535,7 +532,26 @@ const buildBridge = (): AituBridge => {
 
   const sub = (listener: any) => {
     subs.push(listener);
-  }
+  };
+
+  const createMethod = <Params extends unknown[], Result>(name: string, transform?: (args: Params) => Record<string, Params[number]>) => {
+    const method = (reqId: string, ...args: Params) => {
+      const isAndroid = android && android[name];
+      const isIos = ios && ios[name];
+
+      if (isAndroid) {
+        android[name](reqId, ...args);
+      } else if (isIos) {
+        ios[name].postMessage({ reqId, ...transform?.(args) });
+      } else if (web) {
+        web.execute(name as unknown as keyof AituBridge, reqId, ...args);
+      } else if (typeof window !== 'undefined') {
+        console.log(`--${name}-isUnknown`);
+      }
+    };
+
+    return promisifyMethod(method, name, sub) as (...args: Params) => Promise<Result>;
+  };
 
   const setHeaderMenuItems = (reqId, items: Array<HeaderMenuItem>) => {
     if (items.length > MAX_HEADER_MENU_ITEMS_COUNT) {
@@ -557,7 +573,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--setHeaderMenuItems-isUnknown');
     }
-  }
+  };
 
   const setHeaderMenuItemClickHandler = (handler: HeaderMenuItemClickHandlerType) => {
     const isAndroid = android && android[setHeaderMenuItemClickHandlerMethod];
@@ -568,7 +584,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--setHeaderMenuItemClickHandler-isUnknown');
     }
-  }
+  };
 
   /**
    * @deprecated данный метод не рекомендуется использовать
@@ -587,7 +603,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--setCustomBackArrowMode-isUnknown');
     }
-  }
+  };
 
   /**
    * @deprecated данный метод не рекомендуется использовать
@@ -606,7 +622,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--getCustomBackArrowMode-isUnknown');
     }
-  }
+  };
 
   /**
    * @deprecated данный метод не рекомендуется использовать
@@ -625,7 +641,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--setCustomBackArrowVisible-isUnknown');
     }
-  }
+  };
 
   const setCustomBackArrowOnClickHandler = (handler: BackArrowClickHandlerType) => {
     const isAndroid = android && android[setCustomBackArrowOnClickHandlerMethod];
@@ -636,7 +652,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--setCustomBackArrowOnClickHandler-isUnknown');
     }
-  }
+  };
 
   const openPayment = (reqId, transactionId: string) => {
     const isAndroid = android && android[openPaymentMethod];
@@ -649,7 +665,7 @@ const buildBridge = (): AituBridge => {
     } else {
       console.log('--openPayment-isUnknown');
     }
-  }
+  };
 
   const checkBiometry = (reqId) => {
     const isAndroid = android && android[checkBiometryMethod];
@@ -664,7 +680,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--checkBiometry-isUnknown');
     }
-  }
+  };
 
   const openExternalUrl = (reqId, url: string) => {
     const isAndroid = android && android[openExternalUrlMethod];
@@ -675,7 +691,7 @@ const buildBridge = (): AituBridge => {
     } else if (isIos) {
       ios[openExternalUrlMethod].postMessage({ reqId, url });
     } else {
-      console.log("--openExternalUrlMethod-isUnknown");
+      console.log('--openExternalUrlMethod-isUnknown');
     }
   };
 
@@ -692,7 +708,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--enableSwipeBack-isUnknown');
     }
-  }
+  };
 
   const disableSwipeBack = (reqId) => {
     const isAndroid = android && android[disableSwipeBackMethod];
@@ -707,7 +723,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--disableSwipeBack-isUnknown');
     }
-  }
+  };
 
   const setNavigationItemMode = (reqId, mode: NavigationItemMode) => {
     const isAndroid = android && android[setNavigationItemModeMethod];
@@ -722,7 +738,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--setNavigationItemMode-isUnknown');
     }
-  }
+  };
 
   const getNavigationItemMode = (reqId) => {
     const isAndroid = android && android[getNavigationItemModeMethod];
@@ -737,7 +753,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--getNavigationItemMode-isUnknown');
     }
-  }
+  };
 
   const getUserStepInfo = (reqId) => {
     const isAndroid = android && android[getUserStepInfoMethod];
@@ -752,7 +768,7 @@ const buildBridge = (): AituBridge => {
     } else if (typeof window !== 'undefined') {
       console.log('--getUserStepInfo-isUnknown');
     }
-  }
+  };
 
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);
@@ -782,6 +798,10 @@ const buildBridge = (): AituBridge => {
   const setNavigationItemModePromise = promisifyMethod(setNavigationItemMode, setNavigationItemModeMethod, sub);
   const getNavigationItemModePromise = promisifyMethod(getNavigationItemMode, getNavigationItemModeMethod, sub);
   const getUserStepInfoPromise = promisifyMethod(getUserStepInfo, getUserStepInfoMethod, sub);
+  const isESimSupported = createMethod<never, ResponseType>('isESimSupported');
+  const activateESim = createMethod<[activationCode: string], ResponseType>('activateESim', ([activationCode]) => ({
+    activationCode,
+  }));
 
   return {
     version: String(LIB_VERSION),
@@ -794,15 +814,12 @@ const buildBridge = (): AituBridge => {
     getGeo: getGeoPromise,
     getQr: getQrPromise,
     getSMSCode: getSMSCodePromise,
-    getUserProfile: (id: string) =>
-      invokePromise(EInvokeRequest.getUserProfile, { id }),
+    getUserProfile: (id: string) => invokePromise(EInvokeRequest.getUserProfile, { id }),
     selectContact: selectContactPromise,
     enableNotifications,
     disableNotifications,
-    enablePrivateMessaging: (appId: string) =>
-      invokePromise(EInvokeRequest.enablePrivateMessaging, { appId }),
-    disablePrivateMessaging: (appId: string) =>
-      invokePromise(EInvokeRequest.disablePrivateMessaging, { appId }),
+    enablePrivateMessaging: (appId: string) => invokePromise(EInvokeRequest.enablePrivateMessaging, { appId }),
+    disablePrivateMessaging: (appId: string) => invokePromise(EInvokeRequest.disablePrivateMessaging, { appId }),
     openSettings: openSettingsPromise,
     closeApplication: closeApplicationPromise,
     setTitle: setTitlePromise,
@@ -831,8 +848,10 @@ const buildBridge = (): AituBridge => {
     setNavigationItemMode: setNavigationItemModePromise,
     getNavigationItemMode: getNavigationItemModePromise,
     getUserStepInfo: getUserStepInfoPromise,
+    isESimSupported,
+    activateESim,
   };
-}
+};
 
 const bridge = buildBridge();
 

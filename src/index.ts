@@ -174,6 +174,7 @@ export interface AituBridge {
   getUserStepInfo: () => Promise<UserStepInfoResponse>;
   isESimSupported: () => Promise<ResponseType>;
   activateESim: (activationCode: string) => Promise<ResponseType>;
+  readNFCData: () => Promise<string>;
 }
 
 const invokeMethod = 'invoke';
@@ -208,6 +209,7 @@ const disableSwipeBackMethod = 'disableSwipeBack';
 const setNavigationItemModeMethod = 'setNavigationItemMode';
 const getNavigationItemModeMethod = 'getNavigationItemMode';
 const getUserStepInfoMethod = 'getUserStepInfo';
+const readNFCDataMethod = 'readNFCData';
 
 const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
 const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
@@ -770,6 +772,21 @@ const buildBridge = (): AituBridge => {
     }
   };
 
+  const readNFCData = (reqId) => {
+    const isAndroid = android && android[readNFCDataMethod];
+    const isIos = ios && ios[readNFCDataMethod];
+
+    if (isAndroid) {
+        android[readNFCDataMethod](reqId);
+    } else if (isIos) {
+        ios[readNFCDataMethod].postMessage({ reqId });
+    } else if (web) {
+        web.execute(readNFCDataMethod, reqId);
+    } else if (typeof window !== 'undefined') {
+        console.log('--readNFCData-isUnknown');
+    }
+  };
+
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);
   const getGeoPromise = promisifyMethod(getGeo, getGeoMethod, sub);
@@ -802,6 +819,7 @@ const buildBridge = (): AituBridge => {
   const activateESim = createMethod<[activationCode: string], ResponseType>('activateESim', ([activationCode]) => ({
     activationCode,
   }));
+  const readNFCDataPromise = promisifyMethod(readNFCData, readNFCDataMethod, sub);
 
   return {
     version: String(LIB_VERSION),
@@ -850,6 +868,7 @@ const buildBridge = (): AituBridge => {
     getUserStepInfo: getUserStepInfoPromise,
     isESimSupported,
     activateESim,
+    readNFCData: readNFCDataPromise,
   };
 };
 

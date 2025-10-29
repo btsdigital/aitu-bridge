@@ -174,6 +174,7 @@ export interface AituBridge {
   getUserStepInfo: () => Promise<UserStepInfoResponse>;
   isESimSupported: () => Promise<ResponseType>;
   activateESim: (activationCode: string) => Promise<ResponseType>;
+  readNFCData: () => Promise<string>;
 }
 
 const invokeMethod = 'invoke';
@@ -802,6 +803,7 @@ const buildBridge = (): AituBridge => {
   const activateESim = createMethod<[activationCode: string], ResponseType>('activateESim', ([activationCode]) => ({
     activationCode,
   }));
+  const readNFCData = createMethod<never, string>('readNFCData');
 
   return {
     version: String(LIB_VERSION),
@@ -850,6 +852,7 @@ const buildBridge = (): AituBridge => {
     getUserStepInfo: getUserStepInfoPromise,
     isESimSupported,
     activateESim,
+    readNFCData,
   };
 };
 

@@ -119,6 +119,104 @@ type CopyToClipboardResponse = 'success' | 'failed';
 type ResponseType = 'success' | 'failed';
 type BiometryResponse = 'success' | 'failed' | 'unavailable' | 'cancelled';
 
+export interface PassportDataResponse {
+    passportData: PassportData;
+}
+export interface PassportCertificate {
+    "itemsAsDict": {
+        "Certificate fingerprint": string | null
+        "Issuer": string | null
+        "Subject": string | null
+        "Serial number": string | null
+        "Signature algorithm": string | null
+        "Public key algorithm": string | null
+        "Valid from": string | null
+        "Valid to": string | null
+    };
+    certToPEM: string | null;
+    fingerprint: string | null;
+    notBeforeDate: string | null;
+    getSerialNumber: string | null;
+    getSignatureAlgorithm: string | null;
+    getPublicKeyAlgorithm: string | null;
+    getIssuerName: string | null;
+    getSubjectName: string | null;
+}
+
+export interface FaceImageInfo {
+    // Expression code based on Section 5.5.7 of ISO 19794-5.
+    expression: number;
+    // Eye color code based on Section 5.5.4 of ISO 19794-5.
+    eyeColor: number;
+    // Face image type code based on Section 5.7.1 of ISO 19794-5.
+    faceImageType: number;
+    // Feature flags meaning based on Section 5.5.6 of ISO 19794-5.
+    features: number;
+    // Hair color code based on Section 5.5.5 of ISO 19794-5.
+    hairColor: number;
+    // Color space code based on Section 5.7.4 of ISO 19794-5.
+    imageColorSpace: number;
+    // Image data type code based on Section 5.7.2 of ISO 19794-5.
+    imageDataType: number;
+    // Source type based on Section 5.7.6 of ISO 19794-5.
+    sourceType: number;
+}
+
+export interface PassportData {
+    documentNumber: string;
+    // format YYMMDD
+    dateOfBirth: string;
+    // format YYMMDD
+    dateOfExpiry: string;
+    firstName: string;
+    lastName: string;
+    gender: string;
+    // nationality as 3 digit string
+    nationality: string;
+    sod: string;
+    additionalData: string;
+    // "P"
+    documentType: string;
+    // card holder first name(s)
+    secondaryIdentifier: string;
+    // document code (1 or 2 digit, has to start with "P" or "V")
+    documentCode: string;
+    // issuing state as 3 digit string
+    issuingState: string;
+    nameOfHolder: string;
+    fullDateOfBirth: string;
+    permanentAddress: string;
+    profession: string;
+    title: string;
+    personalSummary: string;
+    otherValidTDNumbers: string;
+    custodyInformation: string;
+    dateAndTimeOfPersonalization: string;
+    dateOfIssue: string;
+    personalizationSystemSerialNumber: string;
+    // "["DG1", "DG2", "DG3", "DG13", "DG14"]"
+    "dataGroupsPresent": string;
+    "residenceAddress": string | null;
+    // bool "true"/"false"
+    isPACESupported: string;
+    phoneNumber: string | null;
+    // example "P<SIIVANIV<<IVAN<<<<<<<<<<<<<<<<<<<<1234567890KZ991231M123456<<<<<<<<<<<<<<07"
+    passportMRZ: string;
+    placeOfBirth: string | null;
+    // "<"
+    "documentSubType": string;
+    // bool "true"/"false"
+    isChipAuthenticationSupported: string;
+    // "KZ"
+    issuingAuthority: string;
+    personalNumber: string | null;
+    // "1.7"
+    LDSVersion: string;
+    "countrySigningCertificate": PassportCertificate | null;
+    "documentSigningCertificate": PassportCertificate | null;
+    "faceImageInfo": FaceImageInfo | null;
+}
+
 type BridgeInvoke<T extends EInvokeRequest, R> = (method: T, data?: {}) => Promise<R>;
 
 interface BridgeStorage {
@@ -175,6 +273,7 @@ export interface AituBridge {
   isESimSupported: () => Promise<ResponseType>;
   activateESim: (activationCode: string) => Promise<ResponseType>;
   readNFCData: () => Promise<string>;
+  readNFCPassport: (passportNumber: string, dateOfBirth: string, expirationDate: string) => Promise<PassportDataResponse>;
 }
 
 const invokeMethod = 'invoke';
@@ -804,6 +903,7 @@ const buildBridge = (): AituBridge => {
     activationCode,
   }));
   const readNFCData = createMethod<never, string>('readNFCData');
+  const readNFCPassport = createMethod<[passportNumber: string, dateOfBirth: string, expirationDate: string], PassportDataResponse>('readNFCPassport');
 
   return {
     version: String(LIB_VERSION),
@@ -853,6 +953,7 @@ const buildBridge = (): AituBridge => {
     isESimSupported,
     activateESim,
     readNFCData,
+    readNFCPassport,
   };
 };
 

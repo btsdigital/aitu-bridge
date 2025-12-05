@@ -112,12 +112,11 @@ export interface UserStepInfoResponse {
   steps: UserStepsPerDay[];
 }
 
-type OpenSettingsResponse = 'success' | 'failed';
-type ShareResponse = 'success' | 'failed';
-type CopyToClipboardResponse = 'success' | 'failed';
-// todo: remove duplicates
+/**
+ * @typedef {'success' | 'failed'} ResponseType
+ */
 type ResponseType = 'success' | 'failed';
-type BiometryResponse = 'success' | 'failed' | 'unavailable' | 'cancelled';
+type BiometryResponse = ResponseType | 'unavailable' | 'cancelled';
 
 type BridgeInvoke<T extends EInvokeRequest, R> = (method: T, data?: {}) => Promise<R>;
 
@@ -139,16 +138,16 @@ export interface AituBridge {
   getQr: () => Promise<string>;
   getSMSCode: () => Promise<string>;
   getUserProfile: (userId: string) => Promise<GetUserProfileResponse>;
-  share: (text: string) => Promise<ShareResponse>;
+  share: (text: string) => Promise<ResponseType>;
   setTitle: (text: string) => Promise<ResponseType>;
-  copyToClipboard: (text: string) => Promise<CopyToClipboardResponse>;
-  shareImage: (text: string, image: string) => Promise<ShareResponse>;
-  shareFile: (text: string, filename: string, base64Data: string) => Promise<ShareResponse>;
+  copyToClipboard: (text: string) => Promise<ResponseType>;
+  shareImage: (text: string, image: string) => Promise<ResponseType>;
+  shareFile: (text: string, filename: string, base64Data: string) => Promise<ResponseType>;
   enableNotifications: () => Promise<{}>;
   disableNotifications: () => Promise<{}>;
   enablePrivateMessaging: (appId: string) => Promise<string>;
   disablePrivateMessaging: (appId: string) => Promise<string>;
-  openSettings: () => Promise<OpenSettingsResponse>;
+  openSettings: () => Promise<ResponseType>;
   closeApplication: () => Promise<ResponseType>;
   setShakeHandler: (handler: any) => void;
   setTabActiveHandler: (handler: (tabname: string) => void) => void;
@@ -175,6 +174,8 @@ export interface AituBridge {
   isESimSupported: () => Promise<ResponseType>;
   activateESim: (activationCode: string) => Promise<ResponseType>;
   readNFCData: () => Promise<string>;
+  subscribeUserStepInfo: () => Promise<ResponseType>;
+  unsubscribeUserStepInfo: () => Promise<ResponseType>;
 }
 
 const invokeMethod = 'invoke';
@@ -535,16 +536,26 @@ const buildBridge = (): AituBridge => {
     subs.push(listener);
   };
 
-  const createMethod = <Params extends unknown[], Result>(name: string, transform?: (args: Params) => Record<string, Params[number]>) => {
+  const createMethod = <Params extends unknown[], Result>(
+    name: string,
+    options?: {
+      transformToObject?: (args: Params) => Record<string, Params[number]>;
+      isWebSupported?: boolean;
+    }
+  ) => {
     const method = (reqId: string, ...args: Params) => {
-      const isAndroid = android && android[name];
-      const isIos = ios && ios[name];
+      const isAndroid = !!android && !!android[name];
+      const isIos = !!ios && !!ios[name];
+      const isWeb = !!options?.isWebSupported && !!web;
 
       if (isAndroid) {
         android[name](reqId, ...args);
       } else if (isIos) {
-        ios[name].postMessage({ reqId, ...transform?.(args) });
-      } else if (web) {
+        ios[name].postMessage({
+          reqId,
+          ...options?.transformToObject?.(args),
+        });
+      } else if (isWeb) {
         web.execute(name as unknown as keyof AituBridge, reqId, ...args);
       } else if (typeof window !== 'undefined') {
         console.log(`--${name}-isUnknown`);
@@ -800,10 +811,24 @@ const buildBridge = (): AituBridge => {
   const getNavigationItemModePromise = promisifyMethod(getNavigationItemMode, getNavigationItemModeMethod, sub);
   const getUserStepInfoPromise = promisifyMethod(getUserStepInfo, getUserStepInfoMethod, sub);
   const isESimSupported = createMethod<never, ResponseType>('isESimSupported');
-  const activateESim = createMethod<[activationCode: string], ResponseType>('activateESim', ([activationCode]) => ({
-    activationCode,
-  }));
+  const activateESim = createMethod<[activationCode: string], ResponseType>('activateESim', {
+    transformToObject: ([activationCode]) => ({
+      activationCode,
+    }),
+  });
   const readNFCData = createMethod<never, string>('readNFCData');
+
+  /**
+   * Subscribes to user step updates from HealthKit/Google Fit.
+   * @returns {ResponseType} Operation result status.
+   */
+  const subscribeUserStepInfo = createMethod<never, ResponseType>('subscribeUserStepInfo');
+
+  /**
+   * Unsubscribes from user step updates from HealthKit/Google Fit.
+   * @returns {ResponseType} Operation result status.
+   */
+  const unsubscribeUserStepInfo = createMethod<never, ResponseType>('unsubscribeUserStepInfo');
 
   return {
     version: String(LIB_VERSION),
@@ -853,6 +878,8 @@ const buildBridge = (): AituBridge => {
     isESimSupported,
     activateESim,
     readNFCData,
+    subscribeUserStepInfo,
+    unsubscribeUserStepInfo,
   };
 };
 

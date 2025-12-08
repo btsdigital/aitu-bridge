@@ -24,12 +24,26 @@ type HeaderMenuItemClickHandlerType = (id: string) => Promise<void>;
 type BackArrowClickHandlerType = () => Promise<void>;
 
 /**
- * @typedef {Object} NFCPassportError
- * @property {'nfc_passport_mismatch' | 'nfc_document_read_failure' | 'nfc_session_timeout' | 'nfc_permission_denied' | 'nfc_session_cancelled'} code - Error code
- * @property {string} msg - Error message
+ * Represents an error that can occur during NFC passport operations.
  */
 export type NFCPassportError = {
+  /**
+   * Error code indicating the type of NFC passport issue.
+   *
+   * - `nfc_passport_mismatch` — The passport does not match the requested parameters
+   *   (date of birth, passport number, expiration date).
+   * - `nfc_document_read_failure` — Document reading error
+   *   (read errors, algorithm errors, unknown algorithms, other documents that are not passports, etc.).
+   * - `nfc_session_timeout` — Session timeout: the document reading was not completed
+   *   in time (depends on the OS).
+   * - `nfc_permission_denied` — The user denied NFC permission or the device has no NFC chip.
+   * - `nfc_session_cancelled` — The user cancelled the NFC session (iOS).
+   */
   code: 'nfc_passport_mismatch' | 'nfc_document_read_failure' | 'nfc_session_timeout' | 'nfc_permission_denied' | 'nfc_session_cancelled';
+
+  /**
+   * Human-readable error message describing the issue.
+   */
   msg: string;
 };
 
@@ -123,9 +137,11 @@ export interface UserStepInfoResponse {
 }
 
 /**
- * @typedef {'success' | 'failed'} ResponseType
+ * Represents the status of a response.
+ *
+ * - `success` — The operation completed successfully.
+ * - `failed` — The operation failed.
  */
-type ResponseType = 'success' | 'failed';
 type BiometryResponse = ResponseType | 'unavailable' | 'cancelled';
 
 export interface PassportDataResponse {
@@ -195,8 +211,51 @@ export interface AituBridge {
   isESimSupported: () => Promise<ResponseType>;
   activateESim: (activationCode: string) => Promise<ResponseType>;
   readNFCData: () => Promise<string>;
+  /**
+   * Subscribes to user step updates from HealthKit/Google Fit.
+   *
+   * Establishes a real-time subscription that listens for step count changes
+   * from the underlying health data provider. The promise resolves once the
+   * subscription request has been processed. To stop receiving updates, call
+   * {@link unsubscribeUserStepInfo}.
+   *
+   * @returns A promise that resolves with a `ResponseType` indicating
+   *          whether the subscription was successfully created.
+   */
   subscribeUserStepInfo: () => Promise<ResponseType>;
+  /**
+   * Unsubscribes from user step updates from HealthKit/Google Fit.
+   *
+   * Stops the active step-count subscription created by
+   * {@link subscribeUserStepInfo}. Once unsubscribed, no further step updates
+   * will be delivered.
+   *
+   * @returns A promise that resolves with a `ResponseType` indicating
+   *          whether the unsubscription was successful.
+   */
   unsubscribeUserStepInfo: () => Promise<ResponseType>;
+  /**
+   * Reads data from the NFC chip of an ePassport using BAC (Basic Access Control).
+   *
+   * Initiates a BAC-protected NFC read operation on an ePassport. The caller must
+   * provide the passport number, date of birth, and expiration date—values taken
+   * from the machine-readable zone (MRZ). These values are used to derive the
+   * cryptographic access keys required by BAC to open a secure session with the
+   * passport’s NFC chip.
+   *
+   * Once BAC is successfully established, the function retrieves data groups
+   * from the chip, typically including the holder’s biographical information
+   * (DG1) and, if supported and permitted, biometric data such as the facial
+   * image (DG2).
+   *
+   * @param options - Parameters required to derive the BAC keys.
+   * @param options.passportNumber - Passport number taken from the MRZ.
+   * @param options.dateOfBirth - Holder’s date of birth (MRZ format: YYMMDD).
+   * @param options.expirationDate - Passport expiration date (MRZ format: YYMMDD).
+   *
+   * @returns A promise resolving to a `PassportDataResponse` containing the decoded
+   *          data groups read from the passport’s NFC chip.
+   */
   readNFCPassport: (options: { passportNumber: string; dateOfBirth: string; expirationDate: string }) => Promise<PassportDataResponse>;
 }
 
@@ -840,33 +899,12 @@ const buildBridge = (): AituBridge => {
   });
   const readNFCData = createMethod<never, string>('readNFCData');
 
-  /**
-   * Reads data from the NFC chip of a passport.
-   *
-   * @function readNFCPassport
-   * @param {Object} params - Parameters for reading the passport.
-   * @param {string} params.passportNumber - Passport number.
-   * @param {string} params.dateOfBirth - Date of birth in YYMMDD format.
-   * @param {string} params.expirationDate - Passport expiration date in YYMMDD format.
-   * @returns {Promise<PassportDataResponse>} An object containing the passport data.
-   * @throws {NFCPassportError} If NFC fails for any reason.
-   */
   const readNFCPassport = createMethod<[{ passportNumber: string; dateOfBirth: string; expirationDate: string }], PassportDataResponse>(
     'readNFCPassport'
   );
 
-  /**
-   * Subscribes to user step updates from HealthKit/Google Fit.
-   * @function subscribeUserStepInfo
-   * @returns {ResponseType} Operation result status.
-   */
   const subscribeUserStepInfo = createMethod<never, ResponseType>('subscribeUserStepInfo');
 
-  /**
-   * Unsubscribes from user step updates from HealthKit/Google Fit.
-   * @function unsubscribeUserStepInfo
-   * @returns {ResponseType} Operation result status.
-   */
   const unsubscribeUserStepInfo = createMethod<never, ResponseType>('unsubscribeUserStepInfo');
 
   return {

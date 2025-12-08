@@ -23,6 +23,16 @@ type ClearType = () => Promise<void>;
 type HeaderMenuItemClickHandlerType = (id: string) => Promise<void>;
 type BackArrowClickHandlerType = () => Promise<void>;
 
+/**
+ * @typedef {Object} NFCPassportError
+ * @property {'nfc_passport_mismatch' | 'nfc_document_read_failure' | 'nfc_session_timeout' | 'nfc_permission_denied' | 'nfc_session_cancelled'} code - Error code
+ * @property {string} msg - Error message
+ */
+export type NFCPassportError = {
+  code: 'nfc_passport_mismatch' | 'nfc_document_read_failure' | 'nfc_session_timeout' | 'nfc_permission_denied' | 'nfc_session_cancelled';
+  msg: string;
+};
+
 export interface GetPhoneResponse {
   phone: string;
   sign: string;
@@ -118,6 +128,17 @@ export interface UserStepInfoResponse {
 type ResponseType = 'success' | 'failed';
 type BiometryResponse = ResponseType | 'unavailable' | 'cancelled';
 
+export interface PassportDataResponse {
+  documentNumber: string;
+  dateOfBirth: string;
+  dateOfExpiry: string;
+  firstName: string;
+  lastName: string;
+  gender: string;
+  nationality: string;
+  documentType: string;
+}
+
 type BridgeInvoke<T extends EInvokeRequest, R> = (method: T, data?: {}) => Promise<R>;
 
 interface BridgeStorage {
@@ -176,6 +197,7 @@ export interface AituBridge {
   readNFCData: () => Promise<string>;
   subscribeUserStepInfo: () => Promise<ResponseType>;
   unsubscribeUserStepInfo: () => Promise<ResponseType>;
+  readNFCPassport: (options: { passportNumber: string; dateOfBirth: string; expirationDate: string }) => Promise<PassportDataResponse>;
 }
 
 const invokeMethod = 'invoke';
@@ -553,7 +575,7 @@ const buildBridge = (): AituBridge => {
       } else if (isIos) {
         ios[name].postMessage({
           reqId,
-          ...options?.transformToObject?.(args),
+          ...(options?.transformToObject ? options?.transformToObject?.(args) : (args[0] as Record<string, unknown>)),
         });
       } else if (isWeb) {
         web.execute(name as unknown as keyof AituBridge, reqId, ...args);
@@ -819,13 +841,30 @@ const buildBridge = (): AituBridge => {
   const readNFCData = createMethod<never, string>('readNFCData');
 
   /**
+   * Reads data from the NFC chip of a passport.
+   *
+   * @function readNFCPassport
+   * @param {Object} params - Parameters for reading the passport.
+   * @param {string} params.passportNumber - Passport number.
+   * @param {string} params.dateOfBirth - Date of birth in YYMMDD format.
+   * @param {string} params.expirationDate - Passport expiration date in YYMMDD format.
+   * @returns {Promise<PassportDataResponse>} An object containing the passport data.
+   * @throws {NFCPassportError} If NFC fails for any reason.
+   */
+  const readNFCPassport = createMethod<[{ passportNumber: string; dateOfBirth: string; expirationDate: string }], PassportDataResponse>(
+    'readNFCPassport'
+  );
+
+  /**
    * Subscribes to user step updates from HealthKit/Google Fit.
+   * @function subscribeUserStepInfo
    * @returns {ResponseType} Operation result status.
    */
   const subscribeUserStepInfo = createMethod<never, ResponseType>('subscribeUserStepInfo');
 
   /**
    * Unsubscribes from user step updates from HealthKit/Google Fit.
+   * @function unsubscribeUserStepInfo
    * @returns {ResponseType} Operation result status.
    */
   const unsubscribeUserStepInfo = createMethod<never, ResponseType>('unsubscribeUserStepInfo');
@@ -880,6 +919,7 @@ const buildBridge = (): AituBridge => {
     readNFCData,
     subscribeUserStepInfo,
     unsubscribeUserStepInfo,
+    readNFCPassport,
   };
 };
 

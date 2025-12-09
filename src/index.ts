@@ -248,15 +248,15 @@ export interface AituBridge {
    * (DG1) and, if supported and permitted, biometric data such as the facial
    * image (DG2).
    *
-   * @param options - Parameters required to derive the BAC keys.
-   * @param options.passportNumber - Passport number taken from the MRZ.
-   * @param options.dateOfBirth - Holder’s date of birth (MRZ format: YYMMDD).
-   * @param options.expirationDate - Passport expiration date (MRZ format: YYMMDD).
+
+   * @param passportNumber - Passport number taken from the MRZ.
+   * @param dateOfBirth - Holder’s date of birth (MRZ format: YYMMDD).
+   * @param expirationDate - Passport expiration date (MRZ format: YYMMDD).
    *
    * @returns A promise resolving to a `PassportDataResponse` containing the decoded
    *          data groups read from the passport’s NFC chip.
    */
-  readNFCPassport: (options: { passportNumber: string; dateOfBirth: string; expirationDate: string }) => Promise<PassportDataResponse>;
+  readNFCPassport: (passportNumber: string, dateOfBirth: string, expirationDate: string) => Promise<PassportDataResponse>;
 }
 
 const invokeMethod = 'invoke';
@@ -634,7 +634,7 @@ const buildBridge = (): AituBridge => {
       } else if (isIos) {
         ios[name].postMessage({
           reqId,
-          ...(options?.transformToObject ? options?.transformToObject?.(args) : (args[0] as Record<string, unknown>)),
+          ...options?.transformToObject?.(args),
         });
       } else if (isWeb) {
         web.execute(name as unknown as keyof AituBridge, reqId, ...args);
@@ -899,8 +899,15 @@ const buildBridge = (): AituBridge => {
   });
   const readNFCData = createMethod<never, string>('readNFCData');
 
-  const readNFCPassport = createMethod<[{ passportNumber: string; dateOfBirth: string; expirationDate: string }], PassportDataResponse>(
-    'readNFCPassport'
+  const readNFCPassport = createMethod<[passportNumber: string, dateOfBirth: string, expirationDate: string], PassportDataResponse>(
+    'readNFCPassport',
+    {
+      transformToObject: ([passportOfNumber, dateOfBirth, expirationDate]) => ({
+        passportOfNumber,
+        dateOfBirth,
+        expirationDate,
+      }),
+    }
   );
 
   const subscribeUserStepInfo = createMethod<never, ResponseType>('subscribeUserStepInfo');

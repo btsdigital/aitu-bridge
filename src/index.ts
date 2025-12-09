@@ -248,13 +248,19 @@ export interface AituBridge {
    * (DG1) and, if supported and permitted, biometric data such as the facial
    * image (DG2).
    *
-
    * @param passportNumber - Passport number taken from the MRZ.
    * @param dateOfBirth - Holder’s date of birth (MRZ format: YYMMDD).
    * @param expirationDate - Passport expiration date (MRZ format: YYMMDD).
    *
    * @returns A promise resolving to a `PassportDataResponse` containing the decoded
    *          data groups read from the passport’s NFC chip.
+   *
+   * @throws {NFCPassportError} When an NFC passport operation fails. Possible codes:
+   * - `nfc_passport_mismatch` — Passport does not match the provided MRZ values.
+   * - `nfc_document_read_failure` — General failure to read the document.
+   * - `nfc_session_timeout` — NFC session timed out before completion.
+   * - `nfc_permission_denied` — NFC permission denied or NFC unavailable.
+   * - `nfc_session_cancelled` — User cancelled the NFC session (iOS).
    */
   readNFCPassport: (passportNumber: string, dateOfBirth: string, expirationDate: string) => Promise<PassportDataResponse>;
 }

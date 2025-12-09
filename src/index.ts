@@ -908,8 +908,8 @@ const buildBridge = (): AituBridge => {
   const readNFCPassport = createMethod<[passportNumber: string, dateOfBirth: string, expirationDate: string], PassportDataResponse>(
     'readNFCPassport',
     {
-      transformToObject: ([passportOfNumber, dateOfBirth, expirationDate]) => ({
-        passportOfNumber,
+      transformToObject: ([passportNumber, dateOfBirth, expirationDate]) => ({
+        passportNumber,
         dateOfBirth,
         expirationDate,
       }),

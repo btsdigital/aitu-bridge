@@ -26,7 +26,7 @@ type BackArrowClickHandlerType = () => Promise<void>;
 /**
  * Represents an error that can occur during NFC passport operations.
  */
-export type NFCPassportError = {
+export interface NFCPassportError {
   /**
    * Error code indicating the type of NFC passport issue.
    *

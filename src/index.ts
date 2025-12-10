@@ -142,6 +142,8 @@ export interface UserStepInfoResponse {
  * - `success` — The operation completed successfully.
  * - `failed` — The operation failed.
  */
+type ResponseType = 'success' | 'failed';
+
 type BiometryResponse = ResponseType | 'unavailable' | 'cancelled';
 
 export interface PassportDataResponse {

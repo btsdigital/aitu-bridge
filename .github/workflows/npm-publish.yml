@@ -22,10 +22,11 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "Using VERSION=$VERSION"
           npm run build -- --define VERSION=$VERSION
+          npm pack
       - uses: actions/upload-artifact@v4
         with:
           name: artifact
-          path: dist
+          path: btsd-aitu-bridge-*.tgz
       - run: |
           VERSION=$(node -p "require('./package.json').version")
           echo "Package version: $VERSION"

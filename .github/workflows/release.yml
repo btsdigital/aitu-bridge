@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Choose version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
+
+    env:
+      VERSION_BUMP: ${{ github.event.inputs.version || 'canary' }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - run: npm ci
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump canary version
+        if: github.event_name == 'push'
+        run: npm version prerelease --preid=canary -m "Release %s version"
+
+      - name: Bump stable version
+        if: github.event_name == 'workflow_dispatch'
+        run: npm version ${{ github.event.inputs.version }} -m "Release %s version"
+
+      - name: Build & pack
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Using VERSION=$VERSION"
+          npm run build -- --define VERSION=$VERSION
+          npm pack
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artifact
+          path: btsd-aitu-bridge-*.tgz  
+
+      - name: Push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: git push origin HEAD --follow-tags

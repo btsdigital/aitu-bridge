@@ -2,7 +2,7 @@ name: NPM Publish
 
 on:
   workflow_run:
-    workflows: ["Canary Release", "Stable release"]
+    workflows: ["Release"]
     types: [completed]
 
 jobs:

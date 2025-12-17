@@ -49,9 +49,7 @@ jobs:
 
       - name: Build & pack
         run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "Using VERSION=$VERSION"
-          npm run build -- --define VERSION=$VERSION
+          npm run build
           npm pack
 
       - uses: actions/upload-artifact@v4

@@ -923,7 +923,7 @@ const buildBridge = (): AituBridge => {
   const unsubscribeUserStepInfo = createMethod<never, ResponseType>('unsubscribeUserStepInfo');
 
   return {
-    version: String(VERSION),
+    version: VERSION,
     copyToClipboard: copyToClipboardPromise,
     invoke: invokePromise,
     storage: storagePromise,

@@ -1,23 +1,41 @@
-name: Node.js Package
+name: NPM Publish
 
 on:
-  # Trigger the workflow on push or pull request,
-  # but only for the master branch
-  push:
-    branches:
-      - master
+  workflow_run:
+    workflows: ["Canary Release", "Stable release"]
+    types: [completed]
 
 jobs:
   publish-npm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v6
+        with:
+          ref: master
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org/
       - run: npm ci
-      - run: npm run build
-      - run: npm publish --access public
+      - run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Using VERSION=$VERSION"
+          npm run build -- --define VERSION=$VERSION
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artifact
+          path: dist
+      - run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Package version: $VERSION"
+
+          if [[ "$VERSION" == *"-canary."* ]]; then
+            echo "Publishing canary version"
+            npm publish --tag canary --access public
+          else
+            echo "Publishing latest version"
+            npm publish --access public
+          fi
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}

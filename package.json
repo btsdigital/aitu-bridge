@@ -6,6 +6,9 @@
   "main": "dist/index.js",
   "module": "dist/index.module.js",
   "unpkg": "dist/index.umd.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
     "test": "echo \"Error: no test specified\" && exit 1",

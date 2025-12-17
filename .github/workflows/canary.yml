@@ -20,7 +20,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
       - name: Bump canary version
-        run: npm version prerelease --preid=canary -m "Bump to %s version"
+        run: npm version prerelease --preid=canary -m "Release %s version"
       - name: Push changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

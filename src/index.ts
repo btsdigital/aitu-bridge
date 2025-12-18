@@ -1,9 +1,9 @@
-import { LIB_VERSION } from './version';
-
 import { promisifyMethod, promisifyStorage, promisifyInvoke } from './utils';
 
 import WebBridge from './webBridge';
 export * from './error';
+
+declare const VERSION: string;
 
 enum EInvokeRequest {
   getMe = 'GetMe',
@@ -923,7 +923,7 @@ const buildBridge = (): AituBridge => {
   const unsubscribeUserStepInfo = createMethod<never, ResponseType>('unsubscribeUserStepInfo');
 
   return {
-    version: String(LIB_VERSION),
+    version: VERSION,
     copyToClipboard: copyToClipboardPromise,
     invoke: invokePromise,
     storage: storagePromise,

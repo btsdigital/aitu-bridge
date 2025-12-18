@@ -22,17 +22,18 @@ jobs:
     runs-on: ubuntu-latest
     if: github.actor != 'github-actions[bot]'
 
-    env:
-      VERSION_BUMP: ${{ github.event.inputs.version || 'canary' }}
-
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout Git
+        uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v6
+      - name: Setup Nodejs
+        uses: actions/setup-node@v6
         with:
           node-version: 24
+          registry-url: https://registry.npmjs.org/
 
-      - run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
       - name: Configure Git
         run: |
@@ -52,7 +53,23 @@ jobs:
           npm run build
           npm pack
 
-      - uses: actions/upload-artifact@v4
+      - name: Publish package
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Package version: $VERSION"
+
+          if [[ "$VERSION" == *"-canary."* ]]; then
+            echo "Publishing canary version"
+            npm publish --tag canary --access public
+          else
+            echo "Publishing latest version"
+            npm publish --access public
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
           name: artifact
           path: btsd-aitu-bridge-*.tgz  

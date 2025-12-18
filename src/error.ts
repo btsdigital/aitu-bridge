@@ -1,9 +1,15 @@
+/**
+ * @public
+ */
 export enum BridgeErrors {
     PermissionDenyError,
     PermissionSecurityDenyError,
     OtherError
 }
 
+/**
+ * @public
+ */
 export const classifyBridgeError = (e: any): BridgeErrors => {
     const permissionDeny = "permission deny";
     const permissionSecurityDeny = "permission security deny";

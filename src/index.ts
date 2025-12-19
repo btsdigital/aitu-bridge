@@ -24,6 +24,7 @@ type HeaderMenuItemClickHandlerType = (id: string) => Promise<void>;
 type BackArrowClickHandlerType = () => Promise<void>;
 
 /**
+ * @public
  * Represents an error that can occur during NFC passport operations.
  */
 export interface NFCPassportError {
@@ -47,11 +48,17 @@ export interface NFCPassportError {
   msg: string;
 };
 
+/**
+ * @public
+ */
 export interface GetPhoneResponse {
   phone: string;
   sign: string;
 }
 
+/**
+ * @public
+ */
 export interface GetMeResponse {
   name: string;
   lastname: string;
@@ -63,17 +70,26 @@ export interface GetMeResponse {
   sign: string;
 }
 
+/**
+ * @public
+ */
 export interface ResponseObject {
   phone?: string;
   name?: string;
   lastname?: string;
 }
 
+/**
+ * @public
+ */
 export interface GetGeoResponse {
   latitude: number;
   longitude: number;
 }
 
+/**
+ * @public
+ */
 export interface GetContactsResponse {
   contacts: Array<{
     first_name: string;
@@ -83,12 +99,18 @@ export interface GetContactsResponse {
   sign: string;
 }
 
+/**
+ * @public
+ */
 export interface SelectContactResponse {
   phone: string;
   name: string;
   lastname: string;
 }
 
+/**
+ * @public
+ */
 export interface GetUserProfileResponse {
   name: string;
   lastname?: string;
@@ -99,6 +121,9 @@ export interface GetUserProfileResponse {
 
 const MAX_HEADER_MENU_ITEMS_COUNT = 3;
 
+/**
+ * @public
+ */
 export enum HeaderMenuIcon {
   Search = 'Search',
   ShoppingCart = 'ShoppingCart',
@@ -114,6 +139,9 @@ export enum HeaderMenuIcon {
   SystemNotifications = 'SystemNotifications',
 }
 
+/**
+ * @public
+ */
 export enum NavigationItemMode {
   SystemBackArrow = 'SystemBackArrow',
   CustomBackArrow = 'CustomBackArrow',
@@ -121,17 +149,26 @@ export enum NavigationItemMode {
   UserProfile = 'UserProfile',
 }
 
+/**
+ * @public
+ */
 export interface HeaderMenuItem {
   id: string;
   icon: HeaderMenuIcon;
   badge?: string;
 }
 
+/**
+ * @public
+ */
 export interface UserStepsPerDay {
   date: string;
   steps: number;
 }
 
+/**
+ * @public
+ */
 export interface UserStepInfoResponse {
   steps: UserStepsPerDay[];
 }
@@ -144,8 +181,14 @@ export interface UserStepInfoResponse {
  */
 type ResponseType = 'success' | 'failed';
 
+/**
+ * @public
+ */
 type BiometryResponse = ResponseType | 'unavailable' | 'cancelled';
 
+/**
+ * @public
+ */
 export interface PassportDataResponse {
   documentNumber: string;
   dateOfBirth: string;
@@ -165,6 +208,9 @@ interface BridgeStorage {
   clear: ClearType;
 }
 
+/**
+ * @public
+ */
 export interface AituBridge {
   version: string;
   invoke: BridgeInvoke<EInvokeRequest, ResponseObject>;
@@ -219,7 +265,7 @@ export interface AituBridge {
    * Establishes a real-time subscription that listens for step count changes
    * from the underlying health data provider. The promise resolves once the
    * subscription request has been processed. To stop receiving updates, call
-   * {@link unsubscribeUserStepInfo}.
+   * {@link AituBridge.unsubscribeUserStepInfo}.
    *
    * @returns A promise that resolves with a `ResponseType` indicating
    *          whether the subscription was successfully created.
@@ -229,7 +275,7 @@ export interface AituBridge {
    * Unsubscribes from user step updates from HealthKit/Google Fit.
    *
    * Stops the active step-count subscription created by
-   * {@link subscribeUserStepInfo}. Once unsubscribed, no further step updates
+   * {@link AituBridge.subscribeUserStepInfo}. Once unsubscribed, no further step updates
    * will be delivered.
    *
    * @returns A promise that resolves with a `ResponseType` indicating
@@ -257,7 +303,7 @@ export interface AituBridge {
    * @returns A promise resolving to a `PassportDataResponse` containing the decoded
    *          data groups read from the passport’s NFC chip.
    *
-   * @throws {NFCPassportError} When an NFC passport operation fails. Possible codes:
+   * @throws {@link NFCPassportError} When an NFC passport operation fails. Possible codes:
    * - `nfc_passport_mismatch` — Passport does not match the provided MRZ values.
    * - `nfc_document_read_failure` — General failure to read the document.
    * - `nfc_session_timeout` — NFC session timed out before completion.
@@ -976,6 +1022,9 @@ const buildBridge = (): AituBridge => {
   };
 };
 
+/**
+ * @public
+ */
 const bridge = buildBridge();
 
 export default bridge;

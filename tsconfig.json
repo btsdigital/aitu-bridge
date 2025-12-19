@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "declaration": true,
+    "sourceMap": true,
+    "declarationMap": true,
+    "strict": false,
+    "types": [
+    ],
+    "importHelpers": true,
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "es2020"
+    ],
+    "outDir": "dist"
+  },
+}

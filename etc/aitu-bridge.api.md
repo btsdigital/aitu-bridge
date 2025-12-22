@@ -39,8 +39,6 @@ export interface AituBridge {
     // (undocumented)
     getGeo: () => Promise<GetGeoResponse>;
     // (undocumented)
-    getMe: () => Promise<GetMeResponse>;
-    // (undocumented)
     getNavigationItemMode: () => Promise<NavigationItemMode>;
     // (undocumented)
     getPhone: () => Promise<GetPhoneResponse>;

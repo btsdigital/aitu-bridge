@@ -46,7 +46,7 @@ export interface NFCPassportError {
    * Human-readable error message describing the issue.
    */
   msg: string;
-};
+}
 
 /**
  * @public
@@ -174,12 +174,13 @@ export interface UserStepInfoResponse {
 }
 
 /**
+ * @public
  * Represents the status of a response.
  *
  * - `success` — The operation completed successfully.
  * - `failed` — The operation failed.
  */
-type ResponseType = 'success' | 'failed';
+export type ResponseType = 'success' | 'failed';
 
 /**
  * @public
@@ -223,6 +224,11 @@ export interface AituBridge {
   getQr: () => Promise<string>;
   getSMSCode: () => Promise<string>;
   getUserProfile: (userId: string) => Promise<GetUserProfileResponse>;
+  /**
+   * Opens the user's profile within the host application.
+   * @returns A promise that resolves with a {@link ResponseType} indicating the result of the operation.
+   */
+  openUserProfile: () => Promise<ResponseType>;
   share: (text: string) => Promise<ResponseType>;
   setTitle: (text: string) => Promise<ResponseType>;
   copyToClipboard: (text: string) => Promise<ResponseType>;
@@ -968,6 +974,8 @@ const buildBridge = (): AituBridge => {
 
   const unsubscribeUserStepInfo = createMethod<never, ResponseType>('unsubscribeUserStepInfo');
 
+  const openUserProfile = createMethod<never, ResponseType>('openUserProfile');
+
   return {
     version: VERSION,
     copyToClipboard: copyToClipboardPromise,
@@ -980,6 +988,7 @@ const buildBridge = (): AituBridge => {
     getQr: getQrPromise,
     getSMSCode: getSMSCodePromise,
     getUserProfile: (id: string) => invokePromise(EInvokeRequest.getUserProfile, { id }),
+    openUserProfile,
     selectContact: selectContactPromise,
     enableNotifications,
     disableNotifications,

@@ -67,6 +67,7 @@ export interface AituBridge {
     openPayment: (transactionId: string) => Promise<ResponseType_2>;
     // (undocumented)
     openSettings: () => Promise<ResponseType_2>;
+    openUserProfile: () => Promise<ResponseType_2>;
     // (undocumented)
     readNFCData: () => Promise<string>;
     readNFCPassport: (passportNumber: string, dateOfBirth: string, expirationDate: string) => Promise<PassportDataResponse>;
@@ -94,8 +95,6 @@ export interface AituBridge {
     setTabActiveHandler: (handler: (tabname: string) => void) => void;
     // (undocumented)
     setTitle: (text: string) => Promise<ResponseType_2>;
-    // Warning: (ae-forgotten-export) The symbol "ResponseType_2" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     share: (text: string) => Promise<ResponseType_2>;
     // (undocumented)
@@ -282,6 +281,10 @@ export interface ResponseObject {
     // (undocumented)
     phone?: string;
 }
+
+// @public
+type ResponseType_2 = 'success' | 'failed';
+export { ResponseType_2 as ResponseType }
 
 // @public (undocumented)
 export interface SelectContactResponse {

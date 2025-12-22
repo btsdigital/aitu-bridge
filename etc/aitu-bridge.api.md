@@ -4,118 +4,69 @@
 
 ```ts
 
-// @public (undocumented)
+// @public
 export interface AituBridge {
-    // (undocumented)
     activateESim: (activationCode: string) => Promise<ResponseType_2>;
     // Warning: (ae-forgotten-export) The symbol "BiometryResponse" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
     checkBiometry: () => Promise<BiometryResponse>;
-    // (undocumented)
     closeApplication: () => Promise<ResponseType_2>;
-    // (undocumented)
     copyToClipboard: (text: string) => Promise<ResponseType_2>;
-    // (undocumented)
     disableNotifications: () => Promise<{}>;
-    // (undocumented)
     disablePrivateMessaging: (appId: string) => Promise<string>;
-    // (undocumented)
     disableScreenCapture: () => Promise<{}>;
-    // (undocumented)
     disableSwipeBack: () => Promise<ResponseType_2>;
-    // (undocumented)
     enableNotifications: () => Promise<{}>;
-    // (undocumented)
     enablePrivateMessaging: (appId: string) => Promise<string>;
-    // (undocumented)
     enableScreenCapture: () => Promise<{}>;
-    // (undocumented)
     enableSwipeBack: () => Promise<ResponseType_2>;
-    // (undocumented)
     getContacts: () => Promise<GetContactsResponse>;
-    // (undocumented)
     getCustomBackArrowMode: () => Promise<boolean>;
-    // (undocumented)
     getGeo: () => Promise<GetGeoResponse>;
-    // (undocumented)
+    getMe: () => Promise<GetMeResponse>;
     getNavigationItemMode: () => Promise<NavigationItemMode>;
-    // (undocumented)
     getPhone: () => Promise<GetPhoneResponse>;
-    // (undocumented)
     getQr: () => Promise<string>;
-    // (undocumented)
     getSMSCode: () => Promise<string>;
-    // (undocumented)
     getUserProfile: (userId: string) => Promise<GetUserProfileResponse>;
-    // (undocumented)
     getUserStepInfo: () => Promise<UserStepInfoResponse>;
     // Warning: (ae-forgotten-export) The symbol "BridgeInvoke" needs to be exported by the entry point index.d.ts
     // Warning: (ae-forgotten-export) The symbol "EInvokeRequest" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
     invoke: BridgeInvoke<EInvokeRequest, ResponseObject>;
-    // (undocumented)
     isESimSupported: () => Promise<ResponseType_2>;
-    // (undocumented)
     isSupported: () => boolean;
-    // (undocumented)
     openExternalUrl: (url: string) => Promise<ResponseType_2>;
-    // (undocumented)
     openPayment: (transactionId: string) => Promise<ResponseType_2>;
-    // (undocumented)
     openSettings: () => Promise<ResponseType_2>;
     openUserProfile: () => Promise<ResponseType_2>;
-    // (undocumented)
     readNFCData: () => Promise<string>;
     readNFCPassport: (passportNumber: string, dateOfBirth: string, expirationDate: string) => Promise<PassportDataResponse>;
-    // (undocumented)
     selectContact: () => Promise<SelectContactResponse>;
-    // (undocumented)
     setCustomBackArrowMode: (enabled: boolean) => Promise<ResponseType_2>;
     // Warning: (ae-forgotten-export) The symbol "BackArrowClickHandlerType" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
     setCustomBackArrowOnClickHandler: (handler: BackArrowClickHandlerType) => void;
-    // (undocumented)
     setCustomBackArrowVisible: (visible: boolean) => Promise<ResponseType_2>;
     // Warning: (ae-forgotten-export) The symbol "HeaderMenuItemClickHandlerType" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
     setHeaderMenuItemClickHandler: (handler: HeaderMenuItemClickHandlerType) => void;
-    // (undocumented)
     setHeaderMenuItems: (items: Array<HeaderMenuItem>) => Promise<ResponseType_2>;
-    // (undocumented)
     setNavigationItemMode: (mode: NavigationItemMode) => Promise<void>;
-    // (undocumented)
     setShakeHandler: (handler: any) => void;
-    // (undocumented)
     setTabActiveHandler: (handler: (tabname: string) => void) => void;
-    // (undocumented)
     setTitle: (text: string) => Promise<ResponseType_2>;
-    // (undocumented)
     share: (text: string) => Promise<ResponseType_2>;
-    // (undocumented)
     shareFile: (text: string, filename: string, base64Data: string) => Promise<ResponseType_2>;
-    // (undocumented)
+    // @deprecated
     shareImage: (text: string, image: string) => Promise<ResponseType_2>;
     // Warning: (ae-forgotten-export) The symbol "BridgeStorage" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
     storage: BridgeStorage;
-    // (undocumented)
     sub: any;
     subscribeUserStepInfo: () => Promise<ResponseType_2>;
-    // (undocumented)
     supports: (method: string) => boolean;
     unsubscribeUserStepInfo: () => Promise<ResponseType_2>;
-    // (undocumented)
     version: string;
-    // (undocumented)
-    vibrate: (pattern: number[]) => Promise<VibratePattern>;
+    vibrate: (pattern: number[]) => Promise<SuccessResponse>;
 }
 
-// @public (undocumented)
+// @public
 const bridge: AituBridge;
 export default bridge;
 
@@ -132,7 +83,7 @@ export enum BridgeErrors {
 // @public (undocumented)
 export const classifyBridgeError: (e: any) => BridgeErrors;
 
-// @public (undocumented)
+// @public
 export interface GetContactsResponse {
     // (undocumented)
     contacts: Array<{
@@ -144,7 +95,7 @@ export interface GetContactsResponse {
     sign: string;
 }
 
-// @public (undocumented)
+// @public
 export interface GetGeoResponse {
     // (undocumented)
     latitude: number;
@@ -152,7 +103,7 @@ export interface GetGeoResponse {
     longitude: number;
 }
 
-// @public (undocumented)
+// @public
 export interface GetMeResponse {
     // (undocumented)
     avatar?: string;
@@ -172,7 +123,7 @@ export interface GetMeResponse {
     sign: string;
 }
 
-// @public (undocumented)
+// @public
 export interface GetPhoneResponse {
     // (undocumented)
     phone: string;
@@ -180,7 +131,7 @@ export interface GetPhoneResponse {
     sign: string;
 }
 
-// @public (undocumented)
+// @public
 export interface GetUserProfileResponse {
     // (undocumented)
     avatar?: string;
@@ -194,7 +145,7 @@ export interface GetUserProfileResponse {
     phone?: string;
 }
 
-// @public (undocumented)
+// @public
 export enum HeaderMenuIcon {
     // (undocumented)
     Close = "Close",
@@ -222,7 +173,7 @@ export enum HeaderMenuIcon {
     SystemNotifications = "SystemNotifications"
 }
 
-// @public (undocumented)
+// @public
 export interface HeaderMenuItem {
     // (undocumented)
     badge?: string;
@@ -232,7 +183,7 @@ export interface HeaderMenuItem {
     id: string;
 }
 
-// @public (undocumented)
+// @public
 export enum NavigationItemMode {
     // (undocumented)
     CustomBackArrow = "CustomBackArrow",
@@ -250,7 +201,7 @@ export interface NFCPassportError {
     msg: string;
 }
 
-// @public (undocumented)
+// @public
 export interface PassportDataResponse {
     // (undocumented)
     dateOfBirth: string;
@@ -270,7 +221,19 @@ export interface PassportDataResponse {
     nationality: string;
 }
 
-// @public (undocumented)
+// @public
+export interface PermissionDeniedError {
+    // (undocumented)
+    code: 'permission_denied';
+    // (undocumented)
+    meta: {
+        can_retry: boolean;
+    };
+    // (undocumented)
+    msg: string;
+}
+
+// @public
 export interface ResponseObject {
     // (undocumented)
     lastname?: string;
@@ -281,10 +244,10 @@ export interface ResponseObject {
 }
 
 // @public
-type ResponseType_2 = 'success' | 'failed';
+type ResponseType_2 = SuccessResponse | 'failed';
 export { ResponseType_2 as ResponseType }
 
-// @public (undocumented)
+// @public
 export interface SelectContactResponse {
     // (undocumented)
     lastname: string;
@@ -294,13 +257,16 @@ export interface SelectContactResponse {
     phone: string;
 }
 
-// @public (undocumented)
+// @public
+export type SuccessResponse = 'success';
+
+// @public
 export interface UserStepInfoResponse {
     // (undocumented)
     steps: UserStepsPerDay[];
 }
 
-// @public (undocumented)
+// @public
 export interface UserStepsPerDay {
     // (undocumented)
     date: string;

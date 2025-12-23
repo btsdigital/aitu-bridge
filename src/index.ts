@@ -1,3 +1,10 @@
+/**
+ * Aitu Bridge is a JavaScript library designed to simplify integration with the Aitu Superapp.
+ * It allows your application to access platform features such as retrieving a user’s phone number or geolocation.
+ * {@link https://docs.aitu.io/aituapps/aitu.apps/methods | Read the official documentation to learn more.}
+ * @packageDocumentation
+ */
+
 import { promisifyMethod, promisifyStorage, promisifyInvoke } from './utils';
 
 import WebBridge from './webBridge';

@@ -310,6 +310,4 @@ export interface UserStepsPerDay {
     steps: number;
 }
 
-// (No @packageDocumentation comment for this package)
-
 ```

@@ -7,7 +7,6 @@
 // @public
 export interface AituBridge {
     activateESim: (activationCode: string) => Promise<ResponseType_2>;
-    // Warning: (ae-forgotten-export) The symbol "BiometryResponse" needs to be exported by the entry point index.d.ts
     checkBiometry: () => Promise<BiometryResponse>;
     closeApplication: () => Promise<ResponseType_2>;
     copyToClipboard: (text: string) => Promise<ResponseType_2>;
@@ -29,8 +28,6 @@ export interface AituBridge {
     getSMSCode: () => Promise<string>;
     getUserProfile: (userId: string) => Promise<GetUserProfileResponse>;
     getUserStepInfo: () => Promise<UserStepInfoResponse>;
-    // Warning: (ae-forgotten-export) The symbol "BridgeInvoke" needs to be exported by the entry point index.d.ts
-    // Warning: (ae-forgotten-export) The symbol "EInvokeRequest" needs to be exported by the entry point index.d.ts
     invoke: BridgeInvoke<EInvokeRequest, ResponseObject>;
     isESimSupported: () => Promise<ResponseType_2>;
     isSupported: () => boolean;
@@ -42,10 +39,8 @@ export interface AituBridge {
     readNFCPassport: (passportNumber: string, dateOfBirth: string, expirationDate: string) => Promise<PassportDataResponse>;
     selectContact: () => Promise<SelectContactResponse>;
     setCustomBackArrowMode: (enabled: boolean) => Promise<ResponseType_2>;
-    // Warning: (ae-forgotten-export) The symbol "BackArrowClickHandlerType" needs to be exported by the entry point index.d.ts
     setCustomBackArrowOnClickHandler: (handler: BackArrowClickHandlerType) => void;
     setCustomBackArrowVisible: (visible: boolean) => Promise<ResponseType_2>;
-    // Warning: (ae-forgotten-export) The symbol "HeaderMenuItemClickHandlerType" needs to be exported by the entry point index.d.ts
     setHeaderMenuItemClickHandler: (handler: HeaderMenuItemClickHandlerType) => void;
     setHeaderMenuItems: (items: Array<HeaderMenuItem>) => Promise<ResponseType_2>;
     setNavigationItemMode: (mode: NavigationItemMode) => Promise<void>;
@@ -56,7 +51,6 @@ export interface AituBridge {
     shareFile: (text: string, filename: string, base64Data: string) => Promise<ResponseType_2>;
     // @deprecated
     shareImage: (text: string, image: string) => Promise<ResponseType_2>;
-    // Warning: (ae-forgotten-export) The symbol "BridgeStorage" needs to be exported by the entry point index.d.ts
     storage: BridgeStorage;
     sub: any;
     subscribeUserStepInfo: () => Promise<ResponseType_2>;
@@ -65,6 +59,12 @@ export interface AituBridge {
     version: string;
     vibrate: (pattern: number[]) => Promise<SuccessResponse>;
 }
+
+// @public
+export type BackArrowClickHandlerType = () => Promise<void>;
+
+// @public
+export type BiometryResponse = ResponseType_2 | 'unavailable' | 'cancelled';
 
 // @public
 const bridge: AituBridge;
@@ -80,8 +80,41 @@ export enum BridgeErrors {
     PermissionSecurityDenyError = 1
 }
 
+// @public
+export type BridgeInvoke<T extends EInvokeRequest, R> = (method: T, data?: {}) => Promise<R>;
+
+// @public
+export interface BridgeStorage {
+    // (undocumented)
+    clear: () => Promise<void>;
+    // (undocumented)
+    getItem: (keyName: string) => Promise<string | null>;
+    // (undocumented)
+    setItem: (keyName: string, keyValue: string) => Promise<void>;
+}
+
 // @public (undocumented)
 export const classifyBridgeError: (e: any) => BridgeErrors;
+
+// @public (undocumented)
+export enum EInvokeRequest {
+    // (undocumented)
+    disableNotifications = "DisableNotifications",
+    // (undocumented)
+    disablePrivateMessaging = "DisablePrivateMessaging",
+    // (undocumented)
+    enableNotifications = "AllowNotifications",
+    // (undocumented)
+    enablePrivateMessaging = "EnablePrivateMessaging",
+    // (undocumented)
+    getContacts = "GetContacts",
+    // (undocumented)
+    getMe = "GetMe",
+    // (undocumented)
+    getPhone = "GetPhone",
+    // (undocumented)
+    getUserProfile = "GetUserProfile"
+}
 
 // @public
 export interface GetContactsResponse {
@@ -182,6 +215,9 @@ export interface HeaderMenuItem {
     // (undocumented)
     id: string;
 }
+
+// @public
+export type HeaderMenuItemClickHandlerType = (id: string) => Promise<void>;
 
 // @public
 export enum NavigationItemMode {

@@ -61,6 +61,14 @@ export interface AituBridge {
 }
 
 // @public
+export interface AppUrlDoesntMatchError {
+    // (undocumented)
+    code: 'url_does_not_match';
+    // (undocumented)
+    msg: string;
+}
+
+// @public
 export type BackArrowClickHandlerType = () => Promise<void>;
 
 // @public

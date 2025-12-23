@@ -65,6 +65,15 @@ export interface NFCPassportError {
 
 /**
  * @public
+ * Represents an error indicating that the app URL does not match the expected value.
+ */
+export interface AppUrlDoesntMatchError {
+  code: 'url_does_not_match';
+  msg: string;
+}
+
+/**
+ * @public
  * Represents a permission denied error.
  */
 export interface PermissionDeniedError {

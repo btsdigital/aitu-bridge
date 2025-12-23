@@ -362,7 +362,7 @@ export interface AituBridge {
   /**
    * Shares an image with an optional text description.
    *
-   * @deprecated Use {@link shareFile} instead.
+   * @deprecated Use {@link AituBridge.shareFile} instead.
    * @param text - Description text
    * @param image - Image data encoded in Base64
    * @returns A promise resolving to a {@link ResponseType} indicating the result of the sharing operation.
@@ -468,7 +468,7 @@ export interface AituBridge {
    * Sets custom menu items in the mini-app header.
    *
    * @param items - Header menu configuration
-   * @returns A promise resolving to a ResponseType indicating the result of the operation.
+   * @returns A promise resolving to a {@link ResponseType} indicating the result of the operation.
    */
   setHeaderMenuItems: (items: Array<HeaderMenuItem>) => Promise<ResponseType>;
 
@@ -496,13 +496,13 @@ export interface AituBridge {
    * Controls the visibility of the custom back arrow.
    *
    * @param visible - Arrow visibility state
-   * @returns A promise resolving to a ResponseType indicating the result of the operation.
+   * @returns A promise resolving to a {@link ResponseType} indicating the result of the operation.
    */
   setCustomBackArrowVisible: (visible: boolean) => Promise<ResponseType>;
   /**
    * Opens the payment interface for a specified transaction.
-   * @param transactionId
-   * @returns A promise resolving to a ResponseType indicating the result of the payment operation.
+   * @param transactionId - Transaction identifier
+   * @returns A promise resolving to a {@link ResponseType} indicating the result of the payment operation.
    */
   openPayment: (transactionId: string) => Promise<ResponseType>;
   /**
@@ -512,7 +512,7 @@ export interface AituBridge {
   setCustomBackArrowOnClickHandler: (handler: BackArrowClickHandlerType) => void;
   /**
    * Checks biometric authentication status.
-   * @returns  A promise resolving to a BiometryResponse indicating the result of the check.
+   * @returns  A promise resolving to a {@link BiometryResponse} indicating the result of the check.
    */
   checkBiometry: () => Promise<BiometryResponse>;
 
@@ -520,19 +520,19 @@ export interface AituBridge {
    * Opens an external URL outside the mini-app context.
    *
    * @param url - External URL to open
-   * @returns A promise resolving to a ResponseType indicating the result of the operation.
+   * @returns A promise resolving to a {@link ResponseType} indicating the result of the operation.
    */
   openExternalUrl: (url: string) => Promise<ResponseType>;
 
   /**
    * Enables swipe-back navigation gesture.
-   * @returns A promise that resolves when the gesture is enabled.
+   * @returns A promise resolving to a {@link ResponseType} when the gesture is enabled.
    */
   enableSwipeBack: () => Promise<ResponseType>;
 
   /**
    * Disables swipe-back navigation gesture.
-   * @returns A promise that resolves when the gesture is disabled.
+   * @returns A promise resolving to a {@link ResponseType} when the gesture is disabled.
    */
   disableSwipeBack: () => Promise<ResponseType>;
 
@@ -546,19 +546,19 @@ export interface AituBridge {
 
   /**
    * Returns the current navigation item mode.
-   * @returns A promise resolving to the current NavigationItemMode.
+   * @returns A promise resolving to the current {@link NavigationItemMode}.
    */
   getNavigationItemMode: () => Promise<NavigationItemMode>;
 
   /**
    * Retrieves step count data from HealthKit or Google Fit.
-   * @returns A promise resolving to a UserStepInfoResponse containing the user's step data.
+   * @returns A promise resolving to a {@link UserStepInfoResponse} containing the user's step data.
    */
   getUserStepInfo: () => Promise<UserStepInfoResponse>;
 
   /**
    * Checks whether eSIM is supported on the device.
-   * @returns A promise resolving to a ResponseType indicating if eSIM is supported.
+   * @returns A promise resolving to a {@link ResponseType} indicating if eSIM is supported.
    */
   isESimSupported: () => Promise<ResponseType>;
 
@@ -566,7 +566,7 @@ export interface AituBridge {
    * Activates an eSIM using the provided activation code.
    *
    * @param activationCode - eSIM activation code
-   * @returns A promise resolving to a ResponseType indicating the result of the activation.
+   * @returns A promise resolving to a {@link ResponseType} indicating the result of the activation.
    */
   activateESim: (activationCode: string) => Promise<ResponseType>;
 

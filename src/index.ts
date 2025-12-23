@@ -5,7 +5,10 @@ export * from './error';
 
 declare const VERSION: string;
 
-enum EInvokeRequest {
+/**
+ * @public
+ */
+export enum EInvokeRequest {
   getMe = 'GetMe',
   getPhone = 'GetPhone',
   getContacts = 'GetContacts',
@@ -16,12 +19,17 @@ enum EInvokeRequest {
   disablePrivateMessaging = 'DisablePrivateMessaging',
 }
 
-type SetItemType = (keyName: string, keyValue: string) => Promise<void>;
-type GetItemType = (keyName: string) => Promise<string | null>;
-type ClearType = () => Promise<void>;
+/**
+ * @public
+ * Represents a header menu item click handler.
+ */
+export type HeaderMenuItemClickHandlerType = (id: string) => Promise<void>;
 
-type HeaderMenuItemClickHandlerType = (id: string) => Promise<void>;
-type BackArrowClickHandlerType = () => Promise<void>;
+/**
+ * @public
+ * Represents a back arrow click handler.
+ */
+export type BackArrowClickHandlerType = () => Promise<void>;
 
 /**
  * @public
@@ -62,7 +70,7 @@ export interface PermissionDeniedError {
 
 /**
  * @public
- * Represents a vibration pattern response.
+ * Represents phone number response.
  */
 export interface GetPhoneResponse {
   phone: string;
@@ -172,7 +180,7 @@ export enum NavigationItemMode {
 
 /**
  * @public
- * Represents a vibration pattern response.
+ * Represents a header menu item.
  */
 export interface HeaderMenuItem {
   id: string;
@@ -182,7 +190,7 @@ export interface HeaderMenuItem {
 
 /**
  * @public
- * Represents a vibration pattern response.
+ * Represents user steps per day.
  */
 export interface UserStepsPerDay {
   date: string;
@@ -216,7 +224,7 @@ export type ResponseType = SuccessResponse | 'failed';
  * @public
  * Represents biometry check response.
  */
-type BiometryResponse = ResponseType | 'unavailable' | 'cancelled';
+export type BiometryResponse = ResponseType | 'unavailable' | 'cancelled';
 
 /**
  * @public
@@ -233,12 +241,20 @@ export interface PassportDataResponse {
   documentType: string;
 }
 
-type BridgeInvoke<T extends EInvokeRequest, R> = (method: T, data?: {}) => Promise<R>;
+/**
+ * @public
+ * Generic bridge invocation type.
+ */
+export type BridgeInvoke<T extends EInvokeRequest, R> = (method: T, data?: {}) => Promise<R>;
 
-interface BridgeStorage {
-  setItem: SetItemType;
-  getItem: GetItemType;
-  clear: ClearType;
+/**
+ * @public
+ * Interface for persistent key-value storage.
+ */
+export interface BridgeStorage {
+  setItem: (keyName: string, keyValue: string) => Promise<void>;
+  getItem: (keyName: string) => Promise<string | null>;
+  clear: () => Promise<void>;
 }
 
 /**

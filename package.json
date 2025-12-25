@@ -8,7 +8,8 @@
   "module": "dist/index.module.js",
   "unpkg": "dist/index.umd.js",
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.map"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

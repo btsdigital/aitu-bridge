@@ -44,7 +44,7 @@ export interface AituBridge {
     setHeaderMenuItemClickHandler: (handler: HeaderMenuItemClickHandlerType) => void;
     setHeaderMenuItems: (items: Array<HeaderMenuItem>) => Promise<ResponseType_2>;
     setNavigationItemMode: (mode: NavigationItemMode) => Promise<void>;
-    setShakeHandler: (handler: any) => void;
+    setShakeHandler: (handler: (() => void) | null) => void;
     setTabActiveHandler: (handler: (tabname: string) => void) => void;
     setTitle: (text: string) => Promise<ResponseType_2>;
     share: (text: string) => Promise<ResponseType_2>;
@@ -52,13 +52,16 @@ export interface AituBridge {
     // @deprecated
     shareImage: (text: string, image: string) => Promise<ResponseType_2>;
     storage: BridgeStorage;
-    sub: any;
+    sub: (listener: AituEventHandler) => void;
     subscribeUserStepInfo: () => Promise<ResponseType_2>;
     supports: (method: string) => boolean;
     unsubscribeUserStepInfo: () => Promise<ResponseType_2>;
     version: string;
     vibrate: (pattern: number[]) => Promise<SuccessResponse>;
 }
+
+// @public
+export type AituEventHandler = (event: WindowEventMap['aituEvents']) => void;
 
 // @public
 export interface AppUrlDoesntMatchError {

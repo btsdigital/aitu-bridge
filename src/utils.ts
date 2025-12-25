@@ -1,3 +1,5 @@
+import type { AituEventHandler } from "./types";
+
 function createCounter(prefix = 'm:') {
     return {
         current: 0,
@@ -17,13 +19,13 @@ function createRequestResolver(prefix: string) {
     const promiseControllers: Record<string, PromiseController | null> = {};
 
     return {
-        add(controller: PromiseController, customId = ''): number | string {
+        add(controller: PromiseController, customId = ''): string {
             const id = customId + counter.next()
             promiseControllers[id] = controller;
             return id;
         },
 
-        resolve<T>(reqId: number | string, data: T, isSuccess: (data: T) => boolean, error: any) {
+        resolve<T>(reqId: string, data: T, isSuccess: (data: T) => boolean, error: any) {
             const requestPromise = promiseControllers[reqId];
 
             if (requestPromise) {
@@ -39,7 +41,7 @@ function createRequestResolver(prefix: string) {
     };
 }
 
-function handleSubscribe(subscribe: (handler: (event: any) => void) => void, requestResolver: ReturnType<typeof createRequestResolver>) {
+function handleSubscribe(subscribe: (handler: AituEventHandler) => void, requestResolver: ReturnType<typeof createRequestResolver>) {
     subscribe(event => {
         if (!event.detail) {
             return;
@@ -55,7 +57,7 @@ function handleSubscribe(subscribe: (handler: (event: any) => void) => void, req
     })
 }
 
-export function promisifyStorage(storage, subscribe: (fn: any) => void) {
+export function promisifyStorage(storage: (reqId: string, method: string, props: Record<string, string>) => void, subscribe: (fn: AituEventHandler) => void) {
     const requestResolver = createRequestResolver('storage:');
 
     handleSubscribe(subscribe, requestResolver)
@@ -82,7 +84,7 @@ export function promisifyStorage(storage, subscribe: (fn: any) => void) {
     }
 }
 
-export function promisifyInvoke(invoke, subscribe: (fn: any) => void) {
+export function promisifyInvoke(invoke: (reqId: string, methodName: string, props: any) => void, subscribe: (fn: AituEventHandler) => void) {
     const requestResolver = createRequestResolver('invoke:');
 
     handleSubscribe(subscribe, requestResolver)
@@ -96,12 +98,12 @@ export function promisifyInvoke(invoke, subscribe: (fn: any) => void) {
     };
 }
 
-export function promisifyMethod(method: Function, methodName: string, subscribe: (fn: any) => void) {
+export function promisifyMethod<Result, Fn extends (...args: any[]) => any = (...args: any) => any>(method: Fn, methodName: string, subscribe: (fn: AituEventHandler) => void) {
     const requestResolver = createRequestResolver(methodName + ':');
 
     handleSubscribe(subscribe, requestResolver)
 
-    return function promisifiedFunc(...args: any[]): Promise<any | void> {
+    return function promisifiedFunc(...args: Parameters<Fn>): Promise<Result> {
         return new Promise((resolve, reject) => {
             const reqId = requestResolver.add({ resolve, reject });
             method(reqId, ...args);

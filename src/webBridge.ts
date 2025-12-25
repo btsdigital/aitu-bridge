@@ -1,4 +1,4 @@
-import type { AituBridge } from './index';
+import type { RequestMethods } from './types';
 
 const AITU_DOMAIN_PARAM = '__aitu-domain'
 
@@ -12,23 +12,25 @@ if(aituOrigin){
     aituOrigin = localStorage.getItem('mini-app-domain')
 }
 interface WebBridge {
-    execute(method: keyof AituBridge, reqId: string, ...payload: any[] ): void
+    execute(method: RequestMethods, reqId: string, ...payload: unknown[] ): void
     origin: string
 }
 
 let WebBridge: WebBridge | null = null
 
 if (aituOrigin) {
+    const origin = aituOrigin;
+
     WebBridge = {
         origin: aituOrigin,
         execute: (method, reqId, ...payload) => {
-            window.top.postMessage({
+            window?.top?.postMessage({
                     source: 'aitu-bridge',
                     method,
                     reqId,
                     payload: [...payload],
                 },
-                WebBridge.origin
+                origin
             )
     }
 
@@ -49,9 +51,9 @@ if (aituOrigin) {
 
                 if (message && message['method']) {
                     if (message.method === 'setCustomBackArrowOnClickHandler') {
-                        (window as any).onAituBridgeBackArrowClick()
+                        window.onAituBridgeBackArrowClick?.()
                     } else if (message.method === 'setHeaderMenuItemClickHandler') {
-                        (window as any).onAituBridgeHeaderMenuItemClick(message.param)
+                        window.onAituBridgeHeaderMenuItemClick?.(message.param)
                     }
                 }
             } catch (e) {

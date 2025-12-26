@@ -169,7 +169,13 @@ export interface HeaderMenuItem {
  * Represents user steps per day.
  */
 export interface UserStepsPerDay {
+  /**
+   * The date for which the number of steps was received, in the format DD.MM.YYYY.
+   */
   date: string;
+  /**
+   * The number of steps taken by the user on the specified date.
+   */
   steps: number;
 }
 
@@ -537,7 +543,7 @@ export interface AituBridge {
   getNavigationItemMode: () => Promise<NavigationItemMode>;
 
   /**
-   * Retrieves step count data from HealthKit or Google Fit.
+   * Retrieves step count data from HealthKit or Google Fit over the past 10 days.
    * @returns A promise resolving to a {@link UserStepInfoResponse} containing the user's step data.
    */
   getUserStepInfo: () => Promise<UserStepInfoResponse>;

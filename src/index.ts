@@ -8,7 +8,25 @@
 import { promisifyMethod, promisifyStorage, promisifyInvoke } from './utils';
 
 import WebBridge from './webBridge';
+import type {
+  AituEventHandler,
+  RequestMethods,
+  IosParams,
+  BackArrowClickHandlerType,
+  HeaderMenuItemClickHandlerType,
+  UnsafeAndroidBridge,
+  UnsafeIosBridge,
+} from './types';
 export * from './error';
+
+export type {
+  BackArrowClickHandlerType,
+  HeaderMenuItemClickHandlerType,
+  NFCPassportError,
+  PermissionDeniedError,
+  AppUrlDoesntMatchError,
+  AituEventHandler,
+} from './types';
 
 declare const VERSION: string;
 
@@ -24,64 +42,6 @@ export enum EInvokeRequest {
   disableNotifications = 'DisableNotifications',
   enablePrivateMessaging = 'EnablePrivateMessaging',
   disablePrivateMessaging = 'DisablePrivateMessaging',
-}
-
-/**
- * @public
- * Represents a header menu item click handler.
- */
-export type HeaderMenuItemClickHandlerType = (id: string) => Promise<void>;
-
-/**
- * @public
- * Represents a back arrow click handler.
- */
-export type BackArrowClickHandlerType = () => Promise<void>;
-
-/**
- * @public
- * Represents an error that can occur during NFC passport operations.
- */
-export interface NFCPassportError {
-  /**
-   * Error code indicating the type of NFC passport issue.
-   *
-   * - `nfc_passport_mismatch` — The passport does not match the requested parameters
-   *   (date of birth, passport number, expiration date).
-   * - `nfc_document_read_failure` — Document reading error
-   *   (read errors, algorithm errors, unknown algorithms, other documents that are not passports, etc.).
-   * - `nfc_session_timeout` — Session timeout: the document reading was not completed
-   *   in time (depends on the OS).
-   * - `nfc_permission_denied` — The user denied NFC permission or the device has no NFC chip.
-   * - `nfc_session_cancelled` — The user cancelled the NFC session (iOS).
-   */
-  code: 'nfc_passport_mismatch' | 'nfc_document_read_failure' | 'nfc_session_timeout' | 'nfc_permission_denied' | 'nfc_session_cancelled';
-
-  /**
-   * Human-readable error message describing the issue.
-   */
-  msg: string;
-}
-
-/**
- * @public
- * Represents an error indicating that the app URL does not match the expected value.
- */
-export interface AppUrlDoesntMatchError {
-  code: 'url_does_not_match';
-  msg: string;
-}
-
-/**
- * @public
- * Represents a permission denied error.
- */
-export interface PermissionDeniedError {
-  code: 'permission_denied';
-  msg: string;
-  meta: {
-    can_retry: boolean;
-  };
 }
 
 /**
@@ -209,7 +169,13 @@ export interface HeaderMenuItem {
  * Represents user steps per day.
  */
 export interface UserStepsPerDay {
+  /**
+   * The date for which the number of steps was received, in the format DD.MM.YYYY.
+   */
   date: string;
+  /**
+   * The number of steps taken by the user on the specified date.
+   */
   steps: number;
 }
 
@@ -272,6 +238,16 @@ export interface BridgeStorage {
   getItem: (keyName: string) => Promise<string | null>;
   clear: () => Promise<void>;
 }
+
+/**
+ * @internal
+ */
+type PublicApiMethods = Exclude<keyof Pick<AituBridge, RequestMethods>, 'storage'>;
+
+/**
+ * @internal
+ */
+type BridgeMethodResult<T extends PublicApiMethods> = Awaited<ReturnType<AituBridge[T]>>;
 
 /**
  * @public
@@ -435,7 +411,7 @@ export interface AituBridge {
    * Registers a handler that is triggered when the device is shaken.
    * @param handler - Shake event handler
    */
-  setShakeHandler: (handler: any) => void;
+  setShakeHandler: (handler: (() => void) | null) => void;
 
   /**
    * Registers a handler that is triggered when a tab becomes active.
@@ -468,7 +444,7 @@ export interface AituBridge {
   /**
    * Subscribes to Aitu Bridge events.
    */
-  sub: any;
+  sub: (listener: AituEventHandler) => void;
 
   /**
    * Enables protection against screenshots and screen recording.
@@ -567,7 +543,7 @@ export interface AituBridge {
   getNavigationItemMode: () => Promise<NavigationItemMode>;
 
   /**
-   * Retrieves step count data from HealthKit or Google Fit.
+   * Retrieves step count data from HealthKit or Google Fit over the past 10 days.
    * @returns A promise resolving to a {@link UserStepInfoResponse} containing the user's step data.
    */
   getUserStepInfo: () => Promise<UserStepInfoResponse>;
@@ -678,20 +654,20 @@ const setNavigationItemModeMethod = 'setNavigationItemMode';
 const getNavigationItemModeMethod = 'getNavigationItemMode';
 const getUserStepInfoMethod = 'getUserStepInfo';
 
-const android = typeof window !== 'undefined' && (window as any).AndroidBridge;
-const ios = typeof window !== 'undefined' && (window as any).webkit && (window as any).webkit.messageHandlers;
+const android = typeof window !== 'undefined' && window.AndroidBridge;
+const ios = typeof window !== 'undefined' && window.webkit && window.webkit.messageHandlers;
 const web = typeof window !== 'undefined' && window.top !== window && WebBridge;
 
 const buildBridge = (): AituBridge => {
-  const subs = [];
+  const subs: AituEventHandler[] = [];
 
   if (typeof window !== 'undefined') {
-    window.addEventListener('aituEvents', (e: any) => {
+    window.addEventListener('aituEvents', (e) => {
       [...subs].map((fn) => fn.call(null, e));
     });
   }
 
-  const invoke = (reqId, method, data = {}) => {
+  const invoke = (reqId: string, method: string, data = {}) => {
     const isAndroid = android && android[invokeMethod];
     const isIos = ios && ios[invokeMethod];
 
@@ -706,7 +682,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const storage = (reqId, method, data = {}) => {
+  const storage = (reqId: string, method: string, data = {}) => {
     const isAndroid = android && android[storageMethod];
     const isIos = ios && ios[storageMethod];
 
@@ -721,7 +697,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const getGeo = (reqId) => {
+  const getGeo = (reqId: string) => {
     const isAndroid = android && android[getGeoMethod];
     const isIos = ios && ios[getGeoMethod];
 
@@ -736,7 +712,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const getQr = (reqId) => {
+  const getQr = (reqId: string) => {
     const isAndroid = android && android[getQrMethod];
     const isIos = ios && ios[getQrMethod];
 
@@ -751,7 +727,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const getSMSCode = (reqId) => {
+  const getSMSCode = (reqId: string) => {
     const isAndroid = android && android[getSMSCodeMethod];
     const isIos = ios && ios[getSMSCodeMethod];
 
@@ -766,7 +742,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const selectContact = (reqId) => {
+  const selectContact = (reqId: string) => {
     const isAndroid = android && android[selectContactMethod];
     const isIos = ios && ios[selectContactMethod];
 
@@ -781,7 +757,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const openSettings = (reqId) => {
+  const openSettings = (reqId: string) => {
     const isAndroid = android && android[openSettingsMethod];
     const isIos = ios && ios[openSettingsMethod];
 
@@ -796,7 +772,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const closeApplication = (reqId) => {
+  const closeApplication = (reqId: string) => {
     const isAndroid = android && android[closeApplicationMethod];
     const isIos = ios && ios[closeApplicationMethod];
 
@@ -811,7 +787,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const share = (reqId, text) => {
+  const share = (reqId: string, text: string) => {
     const isAndroid = android && android[shareMethod];
     const isIos = ios && ios[shareMethod];
 
@@ -826,7 +802,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const setTitle = (reqId, text) => {
+  const setTitle = (reqId: string, text: string) => {
     const isAndroid = android && android[setTitleMethod];
     const isIos = ios && ios[setTitleMethod];
 
@@ -841,7 +817,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const copyToClipboard = (reqId, text) => {
+  const copyToClipboard = (reqId: string, text: string) => {
     const isAndroid = android && android[copyToClipboardMethod];
     const isIos = ios && ios[copyToClipboardMethod];
 
@@ -856,7 +832,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const enableScreenCapture = (reqId) => {
+  const enableScreenCapture = (reqId: string) => {
     const isAndroid = android && android[enableScreenCaptureMethod];
     const isIos = ios && ios[enableScreenCaptureMethod];
 
@@ -871,7 +847,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const disableScreenCapture = (reqId) => {
+  const disableScreenCapture = (reqId: string) => {
     const isAndroid = android && android[disableScreenCaptureMethod];
     const isIos = ios && ios[disableScreenCaptureMethod];
 
@@ -886,7 +862,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const shareImage = (reqId, text, image) => {
+  const shareImage = (reqId: string, text: string, image: string) => {
     // !!!======================!!!
     // !!!===== Deprecated =====!!!
     // !!!======================!!!
@@ -907,7 +883,7 @@ const buildBridge = (): AituBridge => {
     const isIos = ios && ios[shareFileMethod];
 
     // get extension from base64 mime type and merge with name
-    const ext = image.split(';')[0].split('/')[1];
+    const ext = image.split(';')?.[0]?.split('/')[1] ?? '';
     const filename = 'image.' + ext;
     // remove mime type
     const base64Data = image.substr(image.indexOf(',') + 1);
@@ -923,7 +899,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const shareFile = (reqId, text, filename, base64Data) => {
+  const shareFile = (reqId: string, text: string, filename: string, base64Data: string) => {
     const isAndroid = android && android[shareFileMethod];
     const isIos = ios && ios[shareFileMethod];
 
@@ -942,12 +918,12 @@ const buildBridge = (): AituBridge => {
 
   const disableNotifications = () => invokePromise(EInvokeRequest.disableNotifications);
 
-  const setShakeHandler = (handler) => {
+  const setShakeHandler = (handler: (() => void) | null) => {
     const isAndroid = android && android[setShakeHandlerMethod];
     const isIos = ios && ios[setShakeHandlerMethod];
 
     if (isAndroid || isIos || web) {
-      (window as any).onAituBridgeShake = handler;
+      window.onAituBridgeShake = handler;
     } else if (typeof window !== 'undefined') {
       console.log('--setShakeHandler-isUnknown');
     }
@@ -958,13 +934,13 @@ const buildBridge = (): AituBridge => {
     const isIos = ios && ios[setTabActiveHandlerMethod];
 
     if (isAndroid || isIos || web) {
-      (window as any).onAituBridgeTabActive = handler;
+      window.onAituBridgeTabActive = handler;
     } else if (typeof window !== 'undefined') {
       console.log('--setTabActiveHandler-isUnknown');
     }
   };
 
-  const vibrate = (reqId, pattern) => {
+  const vibrate = (reqId: string, pattern: number[]) => {
     if (
       !Array.isArray(pattern) ||
       pattern.some((timing) => timing < 1 || timing !== Math.floor(timing)) ||
@@ -989,50 +965,50 @@ const buildBridge = (): AituBridge => {
   };
 
   const isSupported = () => {
-    const iosSup = ios && (window as any).webkit.messageHandlers.invoke;
+    const iosSup = ios && window.webkit?.messageHandlers?.invoke;
     return Boolean(android || iosSup || web);
   };
 
   // TODO: implement web support
-  const supports = (method) =>
-    (android && typeof android[method] === 'function') ||
-    (ios && ios[method] && typeof ios[method].postMessage === 'function') ||
-    (web && typeof web[method] === 'function');
+  const supports = (method: string) =>
+    (!!android && typeof android[method as RequestMethods] === 'function') ||
+    (!!ios && !!ios[method as RequestMethods] && typeof ios[method as RequestMethods].postMessage === 'function') ||
+    (!!web && typeof web[method as keyof WebBridge] === 'function');
 
-  const sub = (listener: any) => {
+  const sub = (listener: AituEventHandler) => {
     subs.push(listener);
   };
 
-  const createMethod = <Params extends unknown[], Result>(
-    name: string,
+  const createMethod = <Name extends PublicApiMethods>(
+    name: Name,
     options?: {
-      transformToObject?: (args: Params) => Record<string, Params[number]>;
+      transformToObject?: (args: Parameters<AituBridge[Name]>) => IosParams<Name>;
       isWebSupported?: boolean;
     }
   ) => {
-    const method = (reqId: string, ...args: Params) => {
+    const method = (reqId: string, ...args: Parameters<AituBridge[Name]>): void => {
       const isAndroid = !!android && !!android[name];
       const isIos = !!ios && !!ios[name];
       const isWeb = !!options?.isWebSupported && !!web;
 
       if (isAndroid) {
-        android[name](reqId, ...args);
+        (android as UnsafeAndroidBridge)[name](reqId, ...args);
       } else if (isIos) {
-        ios[name].postMessage({
+        (ios as UnsafeIosBridge)[name].postMessage({
           reqId,
           ...options?.transformToObject?.(args),
         });
       } else if (isWeb) {
-        web.execute(name as unknown as keyof AituBridge, reqId, ...args);
+        web.execute(name, reqId, ...args);
       } else if (typeof window !== 'undefined') {
         console.log(`--${name}-isUnknown`);
       }
     };
 
-    return promisifyMethod(method, name, sub) as (...args: Params) => Promise<Result>;
+    return promisifyMethod<Awaited<ReturnType<AituBridge[Name]>>>(method, name, sub);
   };
 
-  const setHeaderMenuItems = (reqId, items: Array<HeaderMenuItem>) => {
+  const setHeaderMenuItems = (reqId: string, items: Array<HeaderMenuItem>) => {
     if (items.length > MAX_HEADER_MENU_ITEMS_COUNT) {
       console.error('SetHeaderMenuItems: items count should not be more than ' + MAX_HEADER_MENU_ITEMS_COUNT);
       return;
@@ -1059,7 +1035,7 @@ const buildBridge = (): AituBridge => {
     const isIos = ios && ios[setHeaderMenuItemClickHandlerMethod];
 
     if (isAndroid || isIos || web) {
-      (window as any).onAituBridgeHeaderMenuItemClick = handler;
+      window.onAituBridgeHeaderMenuItemClick = handler;
     } else if (typeof window !== 'undefined') {
       console.log('--setHeaderMenuItemClickHandler-isUnknown');
     }
@@ -1069,7 +1045,7 @@ const buildBridge = (): AituBridge => {
    * @deprecated данный метод не рекомендуется использовать
    * вместо него используйте setNavigationItemMode
    */
-  const setCustomBackArrowMode = (reqId, enabled: boolean) => {
+  const setCustomBackArrowMode = (reqId: string, enabled: boolean) => {
     const isAndroid = android && android[setCustomBackArrowModeMethod];
     const isIos = ios && ios[setCustomBackArrowModeMethod];
 
@@ -1088,7 +1064,7 @@ const buildBridge = (): AituBridge => {
    * @deprecated данный метод не рекомендуется использовать
    * вместо него используйте getNavigationItemMode
    */
-  const getCustomBackArrowMode = (reqId) => {
+  const getCustomBackArrowMode = (reqId: string) => {
     const isAndroid = android && android[getCustomBackArrowModeMethod];
     const isIos = ios && ios[getCustomBackArrowModeMethod];
 
@@ -1107,7 +1083,7 @@ const buildBridge = (): AituBridge => {
    * @deprecated данный метод не рекомендуется использовать
    * вместо него используйте setNavigationItemMode
    */
-  const setCustomBackArrowVisible = (reqId, visible: boolean) => {
+  const setCustomBackArrowVisible = (reqId: string, visible: boolean) => {
     const isAndroid = android && android[setCustomBackArrowVisibleMethod];
     const isIos = ios && ios[setCustomBackArrowVisibleMethod];
 
@@ -1127,13 +1103,13 @@ const buildBridge = (): AituBridge => {
     const isIos = ios && ios[setCustomBackArrowOnClickHandlerMethod];
 
     if (isAndroid || isIos || web) {
-      (window as any).onAituBridgeBackArrowClick = handler;
+      window.onAituBridgeBackArrowClick = handler;
     } else if (typeof window !== 'undefined') {
       console.log('--setCustomBackArrowOnClickHandler-isUnknown');
     }
   };
 
-  const openPayment = (reqId, transactionId: string) => {
+  const openPayment = (reqId: string, transactionId: string) => {
     const isAndroid = android && android[openPaymentMethod];
     const isIos = ios && ios[openPaymentMethod];
 
@@ -1146,7 +1122,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const checkBiometry = (reqId) => {
+  const checkBiometry = (reqId: string) => {
     const isAndroid = android && android[checkBiometryMethod];
     const isIos = ios && ios[checkBiometryMethod];
 
@@ -1161,7 +1137,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const openExternalUrl = (reqId, url: string) => {
+  const openExternalUrl = (reqId: string, url: string) => {
     const isAndroid = android && android[openExternalUrlMethod];
     const isIos = ios && ios[openExternalUrlMethod];
 
@@ -1174,7 +1150,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const enableSwipeBack = (reqId) => {
+  const enableSwipeBack = (reqId: string) => {
     const isAndroid = android && android[enableSwipeBackMethod];
     const isIos = ios && ios[enableSwipeBackMethod];
 
@@ -1189,7 +1165,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const disableSwipeBack = (reqId) => {
+  const disableSwipeBack = (reqId: string) => {
     const isAndroid = android && android[disableSwipeBackMethod];
     const isIos = ios && ios[disableSwipeBackMethod];
 
@@ -1204,7 +1180,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const setNavigationItemMode = (reqId, mode: NavigationItemMode) => {
+  const setNavigationItemMode = (reqId: string, mode: NavigationItemMode) => {
     const isAndroid = android && android[setNavigationItemModeMethod];
     const isIos = ios && ios[setNavigationItemModeMethod];
 
@@ -1219,7 +1195,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const getNavigationItemMode = (reqId) => {
+  const getNavigationItemMode = (reqId: string) => {
     const isAndroid = android && android[getNavigationItemModeMethod];
     const isIos = ios && ios[getNavigationItemModeMethod];
 
@@ -1234,7 +1210,7 @@ const buildBridge = (): AituBridge => {
     }
   };
 
-  const getUserStepInfo = (reqId) => {
+  const getUserStepInfo = (reqId: string) => {
     const isAndroid = android && android[getUserStepInfoMethod];
     const isIos = ios && ios[getUserStepInfoMethod];
 
@@ -1251,56 +1227,85 @@ const buildBridge = (): AituBridge => {
 
   const invokePromise = promisifyInvoke(invoke, sub);
   const storagePromise = promisifyStorage(storage, sub);
-  const getGeoPromise = promisifyMethod(getGeo, getGeoMethod, sub);
-  const getQrPromise = promisifyMethod(getQr, getQrMethod, sub);
-  const getSMSCodePromise = promisifyMethod(getSMSCode, getSMSCodeMethod, sub);
-  const selectContactPromise = promisifyMethod(selectContact, selectContactMethod, sub);
-  const openSettingsPromise = promisifyMethod(openSettings, openSettingsMethod, sub);
-  const closeApplicationPromise = promisifyMethod(closeApplication, closeApplicationMethod, sub);
-  const sharePromise = promisifyMethod(share, shareMethod, sub);
-  const setTitlePromise = promisifyMethod(setTitle, setTitleMethod, sub);
-  const copyToClipboardPromise = promisifyMethod(copyToClipboard, copyToClipboardMethod, sub);
-  const shareImagePromise = promisifyMethod(shareImage, shareImageMethod, sub);
-  const shareFilePromise = promisifyMethod(shareFile, shareFileMethod, sub);
-  const vibratePromise = promisifyMethod(vibrate, vibrateMethod, sub);
-  const enableScreenCapturePromise = promisifyMethod(enableScreenCapture, enableScreenCaptureMethod, sub);
-  const disableScreenCapturePromise = promisifyMethod(disableScreenCapture, disableScreenCaptureMethod, sub);
-  const setHeaderMenuItemsPromise = promisifyMethod(setHeaderMenuItems, setHeaderMenuItemsMethod, sub);
-  const setCustomBackArrowModePromise = promisifyMethod(setCustomBackArrowMode, setCustomBackArrowModeMethod, sub);
-  const getCustomBackArrowModePromise = promisifyMethod(getCustomBackArrowMode, getCustomBackArrowModeMethod, sub);
-  const setCustomBackArrowVisiblePromise = promisifyMethod(setCustomBackArrowVisible, setCustomBackArrowVisibleMethod, sub);
-  const openPaymentPromise = promisifyMethod(openPayment, openPaymentMethod, sub);
-  const checkBiometryPromise = promisifyMethod(checkBiometry, checkBiometryMethod, sub);
-  const openExternalUrlPromise = promisifyMethod(openExternalUrl, openExternalUrlMethod, sub);
-  const enableSwipeBackPromise = promisifyMethod(enableSwipeBack, enableSwipeBackMethod, sub);
-  const disableSwipeBackPromise = promisifyMethod(disableSwipeBack, disableSwipeBackMethod, sub);
-  const setNavigationItemModePromise = promisifyMethod(setNavigationItemMode, setNavigationItemModeMethod, sub);
-  const getNavigationItemModePromise = promisifyMethod(getNavigationItemMode, getNavigationItemModeMethod, sub);
-  const getUserStepInfoPromise = promisifyMethod(getUserStepInfo, getUserStepInfoMethod, sub);
-  const isESimSupported = createMethod<never, ResponseType>('isESimSupported');
-  const activateESim = createMethod<[activationCode: string], ResponseType>('activateESim', {
+  const getGeoPromise = promisifyMethod<BridgeMethodResult<'getGeo'>>(getGeo, getGeoMethod, sub);
+  const getQrPromise = promisifyMethod<BridgeMethodResult<'getQr'>>(getQr, getQrMethod, sub);
+  const getSMSCodePromise = promisifyMethod<BridgeMethodResult<'getSMSCode'>>(getSMSCode, getSMSCodeMethod, sub);
+  const selectContactPromise = promisifyMethod<BridgeMethodResult<'selectContact'>>(selectContact, selectContactMethod, sub);
+  const openSettingsPromise = promisifyMethod<BridgeMethodResult<'openSettings'>>(openSettings, openSettingsMethod, sub);
+  const closeApplicationPromise = promisifyMethod<BridgeMethodResult<'closeApplication'>>(closeApplication, closeApplicationMethod, sub);
+  const sharePromise = promisifyMethod<BridgeMethodResult<'share'>>(share, shareMethod, sub);
+  const setTitlePromise = promisifyMethod<BridgeMethodResult<'setTitle'>>(setTitle, setTitleMethod, sub);
+  const copyToClipboardPromise = promisifyMethod<BridgeMethodResult<'copyToClipboard'>>(copyToClipboard, copyToClipboardMethod, sub);
+  const shareImagePromise = promisifyMethod<Awaited<ReturnType<AituBridge['shareImage']>>>(shareImage, shareImageMethod, sub);
+  const shareFilePromise = promisifyMethod<BridgeMethodResult<'shareFile'>>(shareFile, shareFileMethod, sub);
+  const vibratePromise = promisifyMethod<BridgeMethodResult<'vibrate'>>(vibrate, vibrateMethod, sub);
+  const enableScreenCapturePromise = promisifyMethod<BridgeMethodResult<'enableScreenCapture'>>(
+    enableScreenCapture,
+    enableScreenCaptureMethod,
+    sub
+  );
+  const disableScreenCapturePromise = promisifyMethod<BridgeMethodResult<'disableScreenCapture'>>(
+    disableScreenCapture,
+    disableScreenCaptureMethod,
+    sub
+  );
+  const setHeaderMenuItemsPromise = promisifyMethod<BridgeMethodResult<'setHeaderMenuItems'>>(
+    setHeaderMenuItems,
+    setHeaderMenuItemsMethod,
+    sub
+  );
+  const setCustomBackArrowModePromise = promisifyMethod<BridgeMethodResult<'setCustomBackArrowMode'>>(
+    setCustomBackArrowMode,
+    setCustomBackArrowModeMethod,
+    sub
+  );
+  const getCustomBackArrowModePromise = promisifyMethod<BridgeMethodResult<'getCustomBackArrowMode'>>(
+    getCustomBackArrowMode,
+    getCustomBackArrowModeMethod,
+    sub
+  );
+  const setCustomBackArrowVisiblePromise = promisifyMethod<BridgeMethodResult<'setCustomBackArrowVisible'>>(
+    setCustomBackArrowVisible,
+    setCustomBackArrowVisibleMethod,
+    sub
+  );
+  const openPaymentPromise = promisifyMethod<BridgeMethodResult<'openPayment'>>(openPayment, openPaymentMethod, sub);
+  const checkBiometryPromise = promisifyMethod<BridgeMethodResult<'checkBiometry'>>(checkBiometry, checkBiometryMethod, sub);
+  const openExternalUrlPromise = promisifyMethod<BridgeMethodResult<'openExternalUrl'>>(openExternalUrl, openExternalUrlMethod, sub);
+  const enableSwipeBackPromise = promisifyMethod<BridgeMethodResult<'enableSwipeBack'>>(enableSwipeBack, enableSwipeBackMethod, sub);
+  const disableSwipeBackPromise = promisifyMethod<BridgeMethodResult<'disableSwipeBack'>>(disableSwipeBack, disableSwipeBackMethod, sub);
+  const setNavigationItemModePromise = promisifyMethod<BridgeMethodResult<'setNavigationItemMode'>>(
+    setNavigationItemMode,
+    setNavigationItemModeMethod,
+    sub
+  );
+  const getNavigationItemModePromise = promisifyMethod<BridgeMethodResult<'getNavigationItemMode'>>(
+    getNavigationItemMode,
+    getNavigationItemModeMethod,
+    sub
+  );
+  const getUserStepInfoPromise = promisifyMethod<BridgeMethodResult<'getUserStepInfo'>>(getUserStepInfo, getUserStepInfoMethod, sub);
+  const isESimSupported = createMethod('isESimSupported');
+  const activateESim = createMethod('activateESim', {
     transformToObject: ([activationCode]) => ({
       activationCode,
     }),
   });
-  const readNFCData = createMethod<never, string>('readNFCData');
+  const readNFCData = createMethod('readNFCData');
 
-  const readNFCPassport = createMethod<[passportNumber: string, dateOfBirth: string, expirationDate: string], PassportDataResponse>(
-    'readNFCPassport',
-    {
-      transformToObject: ([passportNumber, dateOfBirth, expirationDate]) => ({
-        passportNumber,
-        dateOfBirth,
-        expirationDate,
-      }),
-    }
-  );
+  const readNFCPassport = createMethod('readNFCPassport', {
+    transformToObject: ([passportNumber, dateOfBirth, expirationDate]) => ({
+      passportNumber,
+      dateOfBirth,
+      expirationDate,
+    }),
+  });
 
-  const subscribeUserStepInfo = createMethod<never, ResponseType>('subscribeUserStepInfo');
+  const subscribeUserStepInfo = createMethod('subscribeUserStepInfo');
 
-  const unsubscribeUserStepInfo = createMethod<never, ResponseType>('unsubscribeUserStepInfo');
+  const unsubscribeUserStepInfo = createMethod('unsubscribeUserStepInfo');
 
-  const openUserProfile = createMethod<never, ResponseType>('openUserProfile');
+  const openUserProfile = createMethod('openUserProfile');
 
   return {
     version: VERSION,

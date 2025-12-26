@@ -315,9 +315,7 @@ export interface UserStepInfoResponse {
 
 // @public
 export interface UserStepsPerDay {
-    // (undocumented)
     date: string;
-    // (undocumented)
     steps: number;
 }
 

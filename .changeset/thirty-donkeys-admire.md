@@ -2,4 +2,4 @@
 '@btsd/aitu-bridge': patch
 ---
 
-Exclude sourcemaps from package
+Excluded sourcemaps from the package

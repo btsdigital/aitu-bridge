@@ -1,0 +1,9 @@
+{
+  "mode": "pre",
+  "tag": "canary",
+  "initialVersions": {
+    "@btsd/aitu-bridge": "0.7.2-canary.3"
+  },
+  "changesets": [
+  ]
+}

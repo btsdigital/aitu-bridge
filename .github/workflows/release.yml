@@ -6,16 +6,6 @@ on:
       - master
 
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Choose version bump type'
-        required: true
-        default: 'patch'
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
 
 jobs:
   release:
@@ -36,35 +26,25 @@ jobs:
         run: npm ci
 
       - name: Configure Git
+        if: github.event_name == 'workflow_dispatch'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Bump canary version
-        if: github.event_name == 'push'
-        run: npm version prerelease --preid=canary -m "Release %s version"
-
-      - name: Bump stable version
+      - name: Bump version
         if: github.event_name == 'workflow_dispatch'
-        run: npm version ${{ github.event.inputs.version }} -m "Release %s version"
-
+        run: |
+          npx @changesets/cli version
+          VERSION=$(node -p "require('./package.json').version")
+          git add .
+          git commit -m "Release v${VERSION}"
       - name: Build & pack
         run: |
           npm run build
           npm pack
 
       - name: Publish package
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "Package version: $VERSION"
-
-          if [[ "$VERSION" == *"-canary."* ]]; then
-            echo "Publishing canary version"
-            npm publish --tag canary --access public
-          else
-            echo "Publishing latest version"
-            npm publish --access public
-          fi
+        if: github.event_name == 'workflow_dispatch'
+        run: npx @changesets/cli publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
 
@@ -75,6 +55,7 @@ jobs:
           path: btsd-aitu-bridge-*.tgz  
 
       - name: Push changes
+        if: github.event_name == 'workflow_dispatch'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: git push origin HEAD --follow-tags

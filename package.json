@@ -8,7 +8,8 @@
   "module": "dist/index.module.js",
   "unpkg": "dist/index.umd.js",
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.map"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -36,6 +37,7 @@
   "homepage": "https://github.com/btsdigital/aitu-bridge#readme",
   "devDependencies": {
     "@microsoft/api-extractor": "^7.55.2",
-    "microbundle": "^0.15.1"
+    "microbundle": "^0.15.1",
+    "typescript": "^5.8.2"
   }
 }

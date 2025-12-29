@@ -2,4 +2,4 @@
 '@btsd/aitu-bridge': major
 ---
 
-Changed the type for the sub method
+Changed the type of the sub method

@@ -2,4 +2,4 @@
 '@btsd/aitu-bridge': patch
 ---
 
-Enabled strict options in tsconfig
+Added TSDoc for public API methods

@@ -2,4 +2,4 @@
 '@btsd/aitu-bridge': patch
 ---
 
-Add tsdoc for UserStepsPerDay type
+Added TSDoc for UserStepsPerDay type

@@ -2,4 +2,4 @@
 '@btsd/aitu-bridge': patch
 ---
 
-Export AituEventHandler type for sub method
+Exported AituEventHandler type for sub method

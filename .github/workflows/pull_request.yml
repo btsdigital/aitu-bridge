@@ -30,6 +30,9 @@ jobs:
       - name: Test Public API
         run: npm run test-api:ci
 
+      - name: Unit tests
+        run: npm run coverage
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:

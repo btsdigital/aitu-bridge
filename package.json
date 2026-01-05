@@ -12,7 +12,8 @@
     "!dist/**/*.map"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest",
+    "coverage": "vitest run --coverage",
     "build": "microbundle --define VERSION=$(node -p \"require('./package.json').version\")",
     "test-api": "api-extractor run --local --verbose",
     "test-api:ci": "api-extractor run --verbose",
@@ -37,7 +38,10 @@
   "homepage": "https://github.com/btsdigital/aitu-bridge#readme",
   "devDependencies": {
     "@microsoft/api-extractor": "^7.55.2",
+    "@vitest/coverage-v8": "^4.0.16",
+    "jsdom": "^27.4.0",
     "microbundle": "^0.15.1",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "vitest": "^4.0.16"
   }
 }

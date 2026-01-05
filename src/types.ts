@@ -167,6 +167,8 @@ export type UnsafeIosBridge = {
  */
 export type AituEventHandler = (event: WindowEventMap['aituEvents']) => void;
 
+export type AituEvent = CustomEvent<{ reqId: string; data: unknown; status?: number; error: unknown }>;
+
 declare global {
   interface Window {
     onAituBridgeBackArrowClick?: BackArrowClickHandlerType;
@@ -180,7 +182,7 @@ declare global {
   }
 
   interface WindowEventMap {
-    aituEvents: CustomEvent<{ reqId: string; data: unknown; status: number | null; error: unknown }>;
+    aituEvents: AituEvent;
   }
 }
 

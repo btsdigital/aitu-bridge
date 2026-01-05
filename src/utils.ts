@@ -1,13 +1,6 @@
 import type { AituEventHandler } from "./types";
 
-function createCounter(prefix = 'm:') {
-    return {
-        current: 0,
-        next() {
-            return prefix + ++this.current;
-        },
-    };
-}
+import { createCounter } from './createCounter';
 
 function createRequestResolver(prefix: string) {
     type PromiseController = {

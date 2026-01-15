@@ -1,6 +1,7 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setupAndroidFixture } from '../fixtures/setupAndroidFixture';
 import { setupIosFixture } from '../fixtures/setupIosBridgeFixture';
+import { setupWebFixture } from '../fixtures/setupWebFixture';
 import type { AituBridge, PermissionDeniedError, AppUrlDoesntMatchError } from '../../src/types';
 
 /**
@@ -162,6 +163,70 @@ describe('iOS Bridge', () => {
       expect(iosBridge[methodName].postMessage).toHaveBeenNthCalledWith(4, { reqId: eventD.reqId });
       expect(iosBridge[methodName].postMessage).toHaveBeenNthCalledWith(5, { reqId: eventE.reqId });
       expect(iosBridge[methodName].postMessage).toHaveBeenCalledTimes(5);
+
+      await expect(resultA).resolves.toStrictEqual(eventA.data);
+      await expect(resultB).rejects.toStrictEqual(eventB.error);
+      await expect(resultC).rejects.toStrictEqual(eventC.error);
+      await expect(resultD).resolves.toStrictEqual(eventD.data);
+      await expect(resultE).resolves.toStrictEqual(eventE.data);
+    });
+  });
+});
+
+describe('Web Bridge', () => {
+  let cleanup: Awaited<ReturnType<typeof setupWebFixture>>['cleanup'];
+
+  let webBridge: Awaited<ReturnType<typeof setupWebFixture>>['stub'];
+
+  let aituBridge: AituBridge;
+
+  beforeAll(async () => {
+    const fixture = await setupWebFixture();
+
+    webBridge = fixture.stub;
+
+    cleanup = fixture.cleanup;
+  });
+
+  beforeEach(async () => {
+    aituBridge = await import('../../src/buildBridge').then((mod) => mod.buildBridge());
+
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.resetAllMocks();
+    vi.resetModules();
+    vi.useRealTimers();
+  });
+
+  afterAll(() => {
+    cleanup();
+  });
+
+  describe.for(simpleMethods)('%s method', (methodName) => {
+    it('should resolve and reject with correct data', async () => {
+      const [eventA, eventB, eventC, eventD, eventE] = getTestData(methodName);
+      webBridge.execute.mockResponseOnce(eventA, { delay: 250 });
+      webBridge.execute.mockResponseOnce(eventB, { delay: 50 });
+      webBridge.execute.mockResponseOnce(eventC, { delay: 500 });
+      webBridge.execute.mockResponseOnce(eventD, { delay: 420 });
+      webBridge.execute.mockResponseOnce(eventE, { delay: 123 });
+
+      const resultA = aituBridge[methodName]();
+      const resultB = aituBridge[methodName]();
+      const resultC = aituBridge[methodName]();
+      const resultD = aituBridge[methodName]();
+      const resultE = aituBridge[methodName]();
+
+      vi.advanceTimersByTime(500);
+
+      expect(webBridge.execute).toHaveBeenNthCalledWith(1, methodName, eventA.reqId);
+      expect(webBridge.execute).toHaveBeenNthCalledWith(2, methodName, eventB.reqId);
+      expect(webBridge.execute).toHaveBeenNthCalledWith(3, methodName, eventC.reqId);
+      expect(webBridge.execute).toHaveBeenNthCalledWith(4, methodName, eventD.reqId);
+      expect(webBridge.execute).toHaveBeenNthCalledWith(5, methodName, eventE.reqId);
+      expect(webBridge.execute).toHaveBeenCalledTimes(5);
 
       await expect(resultA).resolves.toStrictEqual(eventA.data);
       await expect(resultB).rejects.toStrictEqual(eventB.error);

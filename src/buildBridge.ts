@@ -1,6 +1,7 @@
 import { promisifyMethod, promisifyStorage, promisifyInvoke } from './utils';
 
-import WebBridge from './webBridge';
+import { type WebBridge, createWebBridge } from './webBridge';
+
 import type {
   AituEventHandler,
   RequestMethods,
@@ -65,7 +66,7 @@ export const buildBridge = (): AituBridge => {
 
   const android = typeof window !== 'undefined' && window.AndroidBridge;
   const ios = typeof window !== 'undefined' && window.webkit && window.webkit.messageHandlers;
-  const web = typeof window !== 'undefined' && window.top !== window && WebBridge;
+  const web = typeof window !== 'undefined' && window.top !== window && createWebBridge();
 
   const subs: AituEventHandler[] = [];
 
@@ -391,13 +392,12 @@ export const buildBridge = (): AituBridge => {
     name: Name,
     options?: {
       transformToObject?: (args: Parameters<AituBridge[Name]>) => IosParams<Name>;
-      isWebSupported?: boolean;
     }
   ) => {
     const method = (reqId: string, ...args: Parameters<AituBridge[Name]>): void => {
       const isAndroid = !!android && !!android[name];
       const isIos = !!ios && !!ios[name];
-      const isWeb = !!options?.isWebSupported && !!web;
+      const isWeb = !!web;
 
       if (isAndroid) {
         (android as UnsafeAndroidBridge)[name](reqId, ...args);

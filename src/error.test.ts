@@ -1,4 +1,4 @@
-import { classifyBridgeError, BridgeErrors } from '../src/error';
+import { classifyBridgeError, BridgeErrors } from './error';
 
 import { describe, it, expect } from 'vitest';
 

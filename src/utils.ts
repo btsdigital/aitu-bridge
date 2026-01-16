@@ -1,6 +1,6 @@
 import type { AituEventHandler } from "./types";
 
-import { createCounter } from './createCounter';
+import { createCounter } from './lib/createCounter';
 
 function createRequestResolver(prefix: string) {
     type PromiseController = {

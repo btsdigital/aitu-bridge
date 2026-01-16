@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createCounter } from '../src/createCounter';
+import { createCounter } from './createCounter';
 
 describe('createCounter', () => {
     it('should return an object with a next method', () => {

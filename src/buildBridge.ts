@@ -15,6 +15,7 @@ import type {
 } from './types';
 
 import { EInvokeRequest, NavigationItemMode } from './types';
+import { isBrowser } from './lib/isBrowser';
 
 declare const VERSION: string;
 
@@ -63,14 +64,14 @@ export const buildBridge = (): AituBridge => {
   const getUserStepInfoMethod = 'getUserStepInfo';
 
   const MAX_HEADER_MENU_ITEMS_COUNT = 3;
-
-  const android = typeof window !== 'undefined' && window.AndroidBridge;
-  const ios = typeof window !== 'undefined' && window.webkit && window.webkit.messageHandlers;
-  const web = typeof window !== 'undefined' && window.top !== window && createWebBridge();
+  const isBrowserEnv = isBrowser();
+  const android = isBrowserEnv && window.AndroidBridge;
+  const ios = isBrowserEnv && window.webkit && window.webkit.messageHandlers;
+  const web = isBrowserEnv && window.top !== window && createWebBridge();
 
   const subs: AituEventHandler[] = [];
 
-  if (typeof window !== 'undefined') {
+  if (isBrowserEnv) {
     window.addEventListener('aituEvents', (e) => {
       [...subs].map((fn) => fn.call(null, e));
     });

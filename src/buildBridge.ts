@@ -16,6 +16,7 @@ import type {
 
 import { EInvokeRequest, NavigationItemMode } from './types';
 import { isBrowser } from './lib/isBrowser';
+import { isIframe } from './lib/isIframe';
 
 declare const VERSION: string;
 
@@ -67,7 +68,7 @@ export const buildBridge = (): AituBridge => {
   const isBrowserEnv = isBrowser();
   const android = isBrowserEnv && window.AndroidBridge;
   const ios = isBrowserEnv && window.webkit && window.webkit.messageHandlers;
-  const web = isBrowserEnv && window.top !== window && createWebBridge();
+  const web = isBrowserEnv && isIframe() && createWebBridge();
 
   const subs: AituEventHandler[] = [];
 

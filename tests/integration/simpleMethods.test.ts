@@ -236,3 +236,20 @@ describe('Web Bridge', () => {
     });
   });
 });
+
+
+
+describe('Unsupported environment', () => {
+  it('should log unsupported environment message for simple methods', async () => {
+    const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const aituBridge = await import('../../src/buildBridge').then((mod) => mod.buildBridge());
+
+    for (const methodName of simpleMethods) {
+      aituBridge[methodName]();
+      expect(consoleLogSpy).toHaveBeenCalledWith(`--${methodName}-isUnknown`);
+    }
+
+    consoleLogSpy.mockRestore();
+  });
+});

@@ -395,18 +395,9 @@ export type SuccessResponse = 'success';
 
 /**
  * @public
- * Represents the status of a response.
- *
- * - `success` — The operation completed successfully.
- * - `failed` — The operation failed.
- */
-export type ResponseType = SuccessResponse | 'failed';
-
-/**
- * @public
  * Represents biometry check response.
  */
-export type BiometryResponse = ResponseType | 'unavailable' | 'cancelled';
+export type BiometryResponse = SuccessResponse | 'unavailable' | 'cancelled';
 
 /**
  * @public
@@ -438,8 +429,6 @@ export interface BridgeStorage {
   getItem: (keyName: string) => Promise<string | null>;
   clear: () => Promise<void>;
 }
-
-
 
 /**
  * @public
@@ -515,33 +504,33 @@ export interface AituBridge {
   getUserProfile: (userId: string) => Promise<GetUserProfileResponse>;
   /**
    * Opens the user's profile within the host application.
-   * @returns A promise that resolves with a {@link ResponseType} indicating the result of the operation.
+   * @returns A promise that resolves with a {@link SuccessResponse} indicating the result of the operation.
    */
-  openUserProfile: () => Promise<ResponseType>;
+  openUserProfile: () => Promise<SuccessResponse>;
 
   /**
    * Opens the system share dialog with a text payload.
    *
    * @param text - Text to share
-   * @returns A promise resolving to a {@link ResponseType} indicating the result of the sharing operation.
+   * @returns A promise resolving to a {@link SuccessResponse} indicating the result of the sharing operation.
    */
-  share: (text: string) => Promise<ResponseType>;
+  share: (text: string) => Promise<SuccessResponse>;
 
   /**
    * Sets the title displayed in the mini-app header.
    *
    * @param text - Header title
-   * @returns A promise resolving to a {@link ResponseType} indicating the result of the operation.
+   * @returns A promise resolving to a {@link SuccessResponse} indicating the result of the operation.
    */
-  setTitle: (text: string) => Promise<ResponseType>;
+  setTitle: (text: string) => Promise<SuccessResponse>;
 
   /**
    * Copies the specified text to the system clipboard.
    *
    * @param text - Text to copy
-   * @returns A promise resolving to a {@link ResponseType} indicating the result of the copy operation.
+   * @returns A promise resolving to a {@link SuccessResponse} indicating the result of the copy operation.
    */
-  copyToClipboard: (text: string) => Promise<ResponseType>;
+  copyToClipboard: (text: string) => Promise<SuccessResponse>;
 
   /**
    * Shares an image with an optional text description.
@@ -549,9 +538,9 @@ export interface AituBridge {
    * @deprecated Use {@link AituBridge.shareFile} instead.
    * @param text - Description text
    * @param image - Image data encoded in Base64
-   * @returns A promise resolving to a {@link ResponseType} indicating the result of the sharing operation.
+   * @returns A promise resolving to a {@link SuccessResponse} indicating the result of the sharing operation.
    */
-  shareImage: (text: string, image: string) => Promise<ResponseType>;
+  shareImage: (text: string, image: string) => Promise<SuccessResponse>;
 
   /**
    * Shares a file via the system sharing interface.
@@ -559,9 +548,9 @@ export interface AituBridge {
    * @param text - Description text
    * @param filename - Name of the file
    * @param base64Data - File data encoded in Base64
-   * @returns A promise resolving to a {@link ResponseType} indicating the result of the sharing operation.
+   * @returns A promise resolving to a {@link SuccessResponse} indicating the result of the sharing operation.
    */
-  shareFile: (text: string, filename: string, base64Data: string) => Promise<ResponseType>;
+  shareFile: (text: string, filename: string, base64Data: string) => Promise<SuccessResponse>;
 
   /**
    * Enables push notifications for the mini-app.
@@ -589,15 +578,15 @@ export interface AituBridge {
 
   /**
    * Opens the Aitu application settings screen.
-   * @returns A promise resolving to a ResponseType indicating the result of the operation.
+   * @returns A promise resolving to a SuccessResponse indicating the result of the operation.
    */
-  openSettings: () => Promise<ResponseType>;
+  openSettings: () => Promise<SuccessResponse>;
 
   /**
    * Closes the current mini-app.
-   * @returns A promise resolving to a ResponseType indicating the result of the operation.
+   * @returns A promise resolving to a SuccessResponse indicating the result of the operation.
    */
-  closeApplication: () => Promise<ResponseType>;
+  closeApplication: () => Promise<SuccessResponse>;
 
   /**
    * Registers a handler that is triggered when the device is shaken.
@@ -652,9 +641,9 @@ export interface AituBridge {
    * Sets custom menu items in the mini-app header.
    *
    * @param items - Header menu configuration
-   * @returns A promise resolving to a {@link ResponseType} indicating the result of the operation.
+   * @returns A promise resolving to a {@link SuccessResponse} indicating the result of the operation.
    */
-  setHeaderMenuItems: (items: Array<HeaderMenuItem>) => Promise<ResponseType>;
+  setHeaderMenuItems: (items: Array<HeaderMenuItem>) => Promise<SuccessResponse>;
 
   /**
    * Registers a click handler for header menu items.
@@ -666,9 +655,9 @@ export interface AituBridge {
    * Enables or disables custom back arrow handling.
    *
    * @param enabled - Whether custom handling is enabled
-   * @returns A promise resolving to a ResponseType indicating the result of the operation.
+   * @returns A promise resolving to a SuccessResponse indicating the result of the operation.
    */
-  setCustomBackArrowMode: (enabled: boolean) => Promise<ResponseType>;
+  setCustomBackArrowMode: (enabled: boolean) => Promise<SuccessResponse>;
 
   /**
    * Returns whether custom back arrow mode is enabled.
@@ -680,15 +669,15 @@ export interface AituBridge {
    * Controls the visibility of the custom back arrow.
    *
    * @param visible - Arrow visibility state
-   * @returns A promise resolving to a {@link ResponseType} indicating the result of the operation.
+   * @returns A promise resolving to a {@link SuccessResponse} indicating the result of the operation.
    */
-  setCustomBackArrowVisible: (visible: boolean) => Promise<ResponseType>;
+  setCustomBackArrowVisible: (visible: boolean) => Promise<SuccessResponse>;
   /**
    * Opens the payment interface for a specified transaction.
    * @param transactionId - Transaction identifier
-   * @returns A promise resolving to a {@link ResponseType} indicating the result of the payment operation.
+   * @returns A promise resolving to a {@link SuccessResponse} indicating the result of the payment operation.
    */
-  openPayment: (transactionId: string) => Promise<ResponseType>;
+  openPayment: (transactionId: string) => Promise<SuccessResponse>;
   /**
    * Sets a custom handler for back arrow click events.
    * @param handler - Back arrow click handler
@@ -704,21 +693,21 @@ export interface AituBridge {
    * Opens an external URL outside the mini-app context.
    *
    * @param url - External URL to open
-   * @returns A promise resolving to a {@link ResponseType} indicating the result of the operation.
+   * @returns A promise resolving to a {@link SuccessResponse} indicating the result of the operation.
    */
-  openExternalUrl: (url: string) => Promise<ResponseType>;
+  openExternalUrl: (url: string) => Promise<SuccessResponse>;
 
   /**
    * Enables swipe-back navigation gesture.
-   * @returns A promise resolving to a {@link ResponseType} when the gesture is enabled.
+   * @returns A promise resolving to a {@link SuccessResponse} when the gesture is enabled.
    */
-  enableSwipeBack: () => Promise<ResponseType>;
+  enableSwipeBack: () => Promise<SuccessResponse>;
 
   /**
    * Disables swipe-back navigation gesture.
-   * @returns A promise resolving to a {@link ResponseType} when the gesture is disabled.
+   * @returns A promise resolving to a {@link SuccessResponse} when the gesture is disabled.
    */
-  disableSwipeBack: () => Promise<ResponseType>;
+  disableSwipeBack: () => Promise<SuccessResponse>;
 
   /**
    * Sets the navigation item display mode.
@@ -742,17 +731,17 @@ export interface AituBridge {
 
   /**
    * Checks whether eSIM is supported on the device.
-   * @returns A promise resolving to a {@link ResponseType} indicating if eSIM is supported.
+   * @returns A promise resolving to a {@link SuccessResponse} indicating if eSIM is supported.
    */
-  isESimSupported: () => Promise<ResponseType>;
+  isESimSupported: () => Promise<SuccessResponse>;
 
   /**
    * Activates an eSIM using the provided activation code.
    *
    * @param activationCode - eSIM activation code
-   * @returns A promise resolving to a {@link ResponseType} indicating the result of the activation.
+   * @returns A promise resolving to a {@link SuccessResponse} indicating the result of the activation.
    */
-  activateESim: (activationCode: string) => Promise<ResponseType>;
+  activateESim: (activationCode: string) => Promise<SuccessResponse>;
 
   /**
    * Reads raw data from an NFC tag.
@@ -767,10 +756,10 @@ export interface AituBridge {
    * subscription request has been processed. To stop receiving updates, call
    * {@link AituBridge.unsubscribeUserStepInfo}.
    *
-   * @returns A promise that resolves with a `ResponseType` indicating
+   * @returns A promise that resolves with a `SuccessResponse` indicating
    *          whether the subscription was successfully created.
    */
-  subscribeUserStepInfo: () => Promise<ResponseType>;
+  subscribeUserStepInfo: () => Promise<SuccessResponse>;
   /**
    * Unsubscribes from user step updates from HealthKit/Google Fit.
    *
@@ -778,10 +767,10 @@ export interface AituBridge {
    * {@link AituBridge.subscribeUserStepInfo}. Once unsubscribed, no further step updates
    * will be delivered.
    *
-   * @returns A promise that resolves with a `ResponseType` indicating
+   * @returns A promise that resolves with a `SuccessResponse` indicating
    *          whether the unsubscription was successful.
    */
-  unsubscribeUserStepInfo: () => Promise<ResponseType>;
+  unsubscribeUserStepInfo: () => Promise<SuccessResponse>;
   /**
    * Reads data from the NFC chip of an ePassport using BAC (Basic Access Control).
    *

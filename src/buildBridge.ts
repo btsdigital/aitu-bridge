@@ -14,21 +14,13 @@ import type {
   HeaderMenuItem,
 } from './types';
 
-import { EInvokeRequest, NavigationItemMode } from './types';
+import { EInvokeRequest, NavigationItemMode, type PublicApiMethods, type BridgeMethodResult } from './types';
 import { isBrowser } from './lib/isBrowser';
 import { isIframe } from './lib/isIframe';
+import { createCounter } from './lib/createCounter';
+import { waitResponse } from './waitResponse';
 
 declare const VERSION: string;
-
-/**
- * @internal
- */
-type PublicApiMethods = Exclude<keyof Pick<AituBridge, RequestMethods>, 'storage'>;
-
-/**
- * @internal
- */
-type BridgeMethodResult<T extends PublicApiMethods> = Awaited<ReturnType<AituBridge[T]>>;
 
 export const buildBridge = (): AituBridge => {
   const invokeMethod = 'invoke';
@@ -37,8 +29,6 @@ export const buildBridge = (): AituBridge => {
   const getQrMethod = 'getQr';
   const getSMSCodeMethod = 'getSMSCode';
   const selectContactMethod = 'selectContact';
-  const openSettingsMethod = 'openSettings';
-  const closeApplicationMethod = 'closeApplication';
   const shareMethod = 'share';
   const setTitleMethod = 'setTitle';
   const copyToClipboardMethod = 'copyToClipboard';
@@ -58,8 +48,6 @@ export const buildBridge = (): AituBridge => {
   const setCustomBackArrowOnClickHandlerMethod = 'setCustomBackArrowOnClickHandler';
   const checkBiometryMethod = 'checkBiometry';
   const openExternalUrlMethod = 'openExternalUrl';
-  const enableSwipeBackMethod = 'enableSwipeBack';
-  const disableSwipeBackMethod = 'disableSwipeBack';
   const setNavigationItemModeMethod = 'setNavigationItemMode';
   const getNavigationItemModeMethod = 'getNavigationItemMode';
   const getUserStepInfoMethod = 'getUserStepInfo';
@@ -165,36 +153,6 @@ export const buildBridge = (): AituBridge => {
       web.execute(selectContactMethod, reqId);
     } else if (typeof window !== 'undefined') {
       console.log('--selectContact-isUnknown');
-    }
-  };
-
-  const openSettings = (reqId: string) => {
-    const isAndroid = android && android[openSettingsMethod];
-    const isIos = ios && ios[openSettingsMethod];
-
-    if (isAndroid) {
-      android[openSettingsMethod](reqId);
-    } else if (isIos) {
-      ios[openSettingsMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(openSettingsMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--openSettings-isUnknown');
-    }
-  };
-
-  const closeApplication = (reqId: string) => {
-    const isAndroid = android && android[closeApplicationMethod];
-    const isIos = ios && ios[closeApplicationMethod];
-
-    if (isAndroid) {
-      android[closeApplicationMethod](reqId);
-    } else if (isIos) {
-      ios[closeApplicationMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(closeApplicationMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--closeApplication-isUnknown');
     }
   };
 
@@ -396,7 +354,10 @@ export const buildBridge = (): AituBridge => {
       transformToObject?: (args: Parameters<AituBridge[Name]>) => IosParams<Name>;
     }
   ) => {
-    const method = (reqId: string, ...args: Parameters<AituBridge[Name]>): void => {
+    const counter = createCounter(name + ':');
+
+    return (...args: Parameters<AituBridge[Name]>): Promise<BridgeMethodResult<Name>> => {
+      const reqId = counter.next();
       const isAndroid = !!android && !!android[name];
       const isIos = !!ios && !!ios[name];
       const isWeb = !!web;
@@ -413,9 +374,9 @@ export const buildBridge = (): AituBridge => {
       } else if (typeof window !== 'undefined') {
         console.log(`--${name}-isUnknown`);
       }
-    };
 
-    return promisifyMethod<Awaited<ReturnType<AituBridge[Name]>>>(method, name, sub);
+      return waitResponse<Name>(reqId);
+    };
   };
 
   const setHeaderMenuItems = (reqId: string, items: Array<HeaderMenuItem>) => {
@@ -560,35 +521,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const enableSwipeBack = (reqId: string) => {
-    const isAndroid = android && android[enableSwipeBackMethod];
-    const isIos = ios && ios[enableSwipeBackMethod];
-
-    if (isAndroid) {
-      android[enableSwipeBackMethod](reqId);
-    } else if (isIos) {
-      ios[enableSwipeBackMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(enableSwipeBackMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--enableSwipeBack-isUnknown');
-    }
-  };
-
-  const disableSwipeBack = (reqId: string) => {
-    const isAndroid = android && android[disableSwipeBackMethod];
-    const isIos = ios && ios[disableSwipeBackMethod];
-
-    if (isAndroid) {
-      android[disableSwipeBackMethod](reqId);
-    } else if (isIos) {
-      ios[disableSwipeBackMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(disableSwipeBackMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--disableSwipeBack-isUnknown');
-    }
-  };
 
   const setNavigationItemMode = (reqId: string, mode: NavigationItemMode) => {
     const isAndroid = android && android[setNavigationItemModeMethod];
@@ -641,8 +573,6 @@ export const buildBridge = (): AituBridge => {
   const getQrPromise = promisifyMethod<BridgeMethodResult<'getQr'>>(getQr, getQrMethod, sub);
   const getSMSCodePromise = promisifyMethod<BridgeMethodResult<'getSMSCode'>>(getSMSCode, getSMSCodeMethod, sub);
   const selectContactPromise = promisifyMethod<BridgeMethodResult<'selectContact'>>(selectContact, selectContactMethod, sub);
-  const openSettingsPromise = promisifyMethod<BridgeMethodResult<'openSettings'>>(openSettings, openSettingsMethod, sub);
-  const closeApplicationPromise = promisifyMethod<BridgeMethodResult<'closeApplication'>>(closeApplication, closeApplicationMethod, sub);
   const sharePromise = promisifyMethod<BridgeMethodResult<'share'>>(share, shareMethod, sub);
   const setTitlePromise = promisifyMethod<BridgeMethodResult<'setTitle'>>(setTitle, setTitleMethod, sub);
   const copyToClipboardPromise = promisifyMethod<BridgeMethodResult<'copyToClipboard'>>(copyToClipboard, copyToClipboardMethod, sub);
@@ -682,8 +612,6 @@ export const buildBridge = (): AituBridge => {
   const openPaymentPromise = promisifyMethod<BridgeMethodResult<'openPayment'>>(openPayment, openPaymentMethod, sub);
   const checkBiometryPromise = promisifyMethod<BridgeMethodResult<'checkBiometry'>>(checkBiometry, checkBiometryMethod, sub);
   const openExternalUrlPromise = promisifyMethod<BridgeMethodResult<'openExternalUrl'>>(openExternalUrl, openExternalUrlMethod, sub);
-  const enableSwipeBackPromise = promisifyMethod<BridgeMethodResult<'enableSwipeBack'>>(enableSwipeBack, enableSwipeBackMethod, sub);
-  const disableSwipeBackPromise = promisifyMethod<BridgeMethodResult<'disableSwipeBack'>>(disableSwipeBack, disableSwipeBackMethod, sub);
   const setNavigationItemModePromise = promisifyMethod<BridgeMethodResult<'setNavigationItemMode'>>(
     setNavigationItemMode,
     setNavigationItemModeMethod,
@@ -717,6 +645,14 @@ export const buildBridge = (): AituBridge => {
 
   const openUserProfile = createMethod('openUserProfile');
 
+  const openSettings = createMethod('openSettings');
+
+  const closeApplication = createMethod('closeApplication');
+
+  const enableSwipeBack = createMethod('enableSwipeBack');
+
+  const disableSwipeBack = createMethod('disableSwipeBack');
+
   return {
     version: VERSION,
     copyToClipboard: copyToClipboardPromise,
@@ -735,8 +671,8 @@ export const buildBridge = (): AituBridge => {
     disableNotifications,
     enablePrivateMessaging: (appId: string) => invokePromise(EInvokeRequest.enablePrivateMessaging, { appId }),
     disablePrivateMessaging: (appId: string) => invokePromise(EInvokeRequest.disablePrivateMessaging, { appId }),
-    openSettings: openSettingsPromise,
-    closeApplication: closeApplicationPromise,
+    openSettings,
+    closeApplication,
     setTitle: setTitlePromise,
     share: sharePromise,
     shareImage: shareImagePromise,
@@ -758,8 +694,8 @@ export const buildBridge = (): AituBridge => {
     setCustomBackArrowOnClickHandler,
     checkBiometry: checkBiometryPromise,
     openExternalUrl: openExternalUrlPromise,
-    enableSwipeBack: enableSwipeBackPromise,
-    disableSwipeBack: disableSwipeBackPromise,
+    enableSwipeBack,
+    disableSwipeBack,
     setNavigationItemMode: setNavigationItemModePromise,
     getNavigationItemMode: getNavigationItemModePromise,
     getUserStepInfo: getUserStepInfoPromise,

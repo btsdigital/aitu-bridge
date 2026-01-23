@@ -1,6 +1,7 @@
 import { vi } from 'vitest';
 import { Constructable, Procedure } from '@vitest/spy';
 import { type AituEvent, type IosBridge, type RequestMethods } from '../../src/types';
+import { createEvent, dispatchEvent } from '../test-utils';
 
 export const createFnMock = <T extends Constructable | Procedure>() => {
   const fnMock = vi.fn<T>();
@@ -8,16 +9,12 @@ export const createFnMock = <T extends Constructable | Procedure>() => {
   return Object.assign(fnMock, {
     mockResponse: (response: AituEvent['detail'], options?: { delay: number }) => {
       fnMock.mockImplementation((() => {
-        setTimeout(() => {
-          window.dispatchEvent(new CustomEvent('aituEvents', { detail: response }));
-        }, options?.delay ?? 0);
+        dispatchEvent(createEvent(response), options?.delay ? { delayMs: options.delay } : undefined);
       }) as any);
     },
     mockResponseOnce: (response: AituEvent['detail'], options?: { delay: number }) => {
       fnMock.mockImplementationOnce((() => {
-        setTimeout(() => {
-          window.dispatchEvent(new CustomEvent('aituEvents', { detail: response }));
-        }, options?.delay ?? 0);
+        dispatchEvent(createEvent(response), options?.delay ? { delayMs: options.delay } : undefined);
       }) as any);
     },
   });

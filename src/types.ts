@@ -812,3 +812,13 @@ export interface AituBridge {
    */
   readNFCPassport: (passportNumber: string, dateOfBirth: string, expirationDate: string) => Promise<PassportDataResponse>;
 }
+
+/**
+ * @internal
+ */
+export type PublicApiMethods = Exclude<keyof Pick<AituBridge, RequestMethods>, 'storage'>;
+
+/**
+ * @internal
+ */
+export type BridgeMethodResult<T extends PublicApiMethods> = Awaited<ReturnType<AituBridge[T]>>;

@@ -434,9 +434,9 @@ export type BridgeInvoke<T extends EInvokeRequest, R> = (method: T, data?: {}) =
  * Interface for persistent key-value storage.
  */
 export interface BridgeStorage {
-  setItem: (keyName: string, keyValue: string) => Promise<void>;
-  getItem: (keyName: string) => Promise<string | null>;
-  clear: () => Promise<void>;
+  setItem: (keyName: string, keyValue: string) => Promise<SuccessResponse>;
+  getItem: (keyName: string) => Promise<string>;
+  clear: () => Promise<SuccessResponse>;
 }
 
 

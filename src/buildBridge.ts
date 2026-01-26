@@ -1,4 +1,4 @@
-import { promisifyMethod, promisifyStorage, promisifyInvoke } from './utils';
+import { promisifyMethod, promisifyInvoke } from './utils';
 
 import { type WebBridge, createWebBridge } from './webBridge';
 
@@ -12,6 +12,7 @@ import type {
   UnsafeIosBridge,
   AituBridge,
   HeaderMenuItem,
+  SuccessResponse,
 } from './types';
 
 import { EInvokeRequest, NavigationItemMode, type PublicApiMethods, type BridgeMethodResult } from './types';
@@ -24,7 +25,6 @@ declare const VERSION: string;
 
 export const buildBridge = (): AituBridge => {
   const invokeMethod = 'invoke';
-  const storageMethod = 'storage';
   const getGeoMethod = 'getGeo';
   const getQrMethod = 'getQr';
   const getSMSCodeMethod = 'getSMSCode';
@@ -81,19 +81,25 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const storage = (reqId: string, method: string, data = {}) => {
-    const isAndroid = android && android[storageMethod];
-    const isIos = ios && ios[storageMethod];
+  const createStorageMethod = () => {
+    const storageCounter = createCounter('storage:');
+    return <T extends 'clear' | 'getItem' | 'setItem', Result = T extends 'getItem' ? string : SuccessResponse>(method: T, data = {}) => {
+      const reqId = storageCounter.next();
+      const isAndroid = android && android['storage'];
+      const isIos = ios && ios['storage'];
 
-    if (isAndroid) {
-      android[storageMethod](reqId, method, JSON.stringify(data));
-    } else if (isIos) {
-      ios[storageMethod].postMessage({ reqId, method, data });
-    } else if (web) {
-      web.execute(storageMethod, reqId, method, data);
-    } else if (typeof window !== 'undefined') {
-      console.log('--storage-isUnknown');
-    }
+      if (isAndroid) {
+        android['storage'](reqId, method, JSON.stringify(data));
+      } else if (isIos) {
+        ios['storage'].postMessage({ reqId, method, data });
+      } else if (web) {
+        web.execute('storage', reqId, method, data);
+      } else if (typeof window !== 'undefined') {
+        console.log('--storage-isUnknown');
+      }
+
+      return waitResponse<Result>(reqId);
+    };
   };
 
   const getGeo = (reqId: string) => {
@@ -352,7 +358,7 @@ export const buildBridge = (): AituBridge => {
     name: Name,
     options?: {
       transformToObject?: (args: Parameters<AituBridge[Name]>) => IosParams<Name>;
-    }
+    },
   ) => {
     const counter = createCounter(name + ':');
 
@@ -375,7 +381,7 @@ export const buildBridge = (): AituBridge => {
         console.log(`--${name}-isUnknown`);
       }
 
-      return waitResponse<Name>(reqId);
+      return waitResponse<BridgeMethodResult<Name>>(reqId);
     };
   };
 
@@ -521,7 +527,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-
   const setNavigationItemMode = (reqId: string, mode: NavigationItemMode) => {
     const isAndroid = android && android[setNavigationItemModeMethod];
     const isIos = ios && ios[setNavigationItemModeMethod];
@@ -568,7 +573,6 @@ export const buildBridge = (): AituBridge => {
   };
 
   const invokePromise = promisifyInvoke(invoke, sub);
-  const storagePromise = promisifyStorage(storage, sub);
   const getGeoPromise = promisifyMethod<BridgeMethodResult<'getGeo'>>(getGeo, getGeoMethod, sub);
   const getQrPromise = promisifyMethod<BridgeMethodResult<'getQr'>>(getQr, getQrMethod, sub);
   const getSMSCodePromise = promisifyMethod<BridgeMethodResult<'getSMSCode'>>(getSMSCode, getSMSCodeMethod, sub);
@@ -582,32 +586,32 @@ export const buildBridge = (): AituBridge => {
   const enableScreenCapturePromise = promisifyMethod<BridgeMethodResult<'enableScreenCapture'>>(
     enableScreenCapture,
     enableScreenCaptureMethod,
-    sub
+    sub,
   );
   const disableScreenCapturePromise = promisifyMethod<BridgeMethodResult<'disableScreenCapture'>>(
     disableScreenCapture,
     disableScreenCaptureMethod,
-    sub
+    sub,
   );
   const setHeaderMenuItemsPromise = promisifyMethod<BridgeMethodResult<'setHeaderMenuItems'>>(
     setHeaderMenuItems,
     setHeaderMenuItemsMethod,
-    sub
+    sub,
   );
   const setCustomBackArrowModePromise = promisifyMethod<BridgeMethodResult<'setCustomBackArrowMode'>>(
     setCustomBackArrowMode,
     setCustomBackArrowModeMethod,
-    sub
+    sub,
   );
   const getCustomBackArrowModePromise = promisifyMethod<BridgeMethodResult<'getCustomBackArrowMode'>>(
     getCustomBackArrowMode,
     getCustomBackArrowModeMethod,
-    sub
+    sub,
   );
   const setCustomBackArrowVisiblePromise = promisifyMethod<BridgeMethodResult<'setCustomBackArrowVisible'>>(
     setCustomBackArrowVisible,
     setCustomBackArrowVisibleMethod,
-    sub
+    sub,
   );
   const openPaymentPromise = promisifyMethod<BridgeMethodResult<'openPayment'>>(openPayment, openPaymentMethod, sub);
   const checkBiometryPromise = promisifyMethod<BridgeMethodResult<'checkBiometry'>>(checkBiometry, checkBiometryMethod, sub);
@@ -615,12 +619,12 @@ export const buildBridge = (): AituBridge => {
   const setNavigationItemModePromise = promisifyMethod<BridgeMethodResult<'setNavigationItemMode'>>(
     setNavigationItemMode,
     setNavigationItemModeMethod,
-    sub
+    sub,
   );
   const getNavigationItemModePromise = promisifyMethod<BridgeMethodResult<'getNavigationItemMode'>>(
     getNavigationItemMode,
     getNavigationItemModeMethod,
-    sub
+    sub,
   );
   const getUserStepInfoPromise = promisifyMethod<BridgeMethodResult<'getUserStepInfo'>>(getUserStepInfo, getUserStepInfoMethod, sub);
   const isESimSupported = createMethod('isESimSupported');
@@ -653,11 +657,17 @@ export const buildBridge = (): AituBridge => {
 
   const disableSwipeBack = createMethod('disableSwipeBack');
 
+  const storage = createStorageMethod();
+
   return {
     version: VERSION,
     copyToClipboard: copyToClipboardPromise,
     invoke: invokePromise,
-    storage: storagePromise,
+    storage: {
+      getItem: (keyName: string) => storage('getItem', { keyName }),
+      setItem: (keyName: string, keyValue: string) => storage('setItem', { keyName, keyValue }),
+      clear: () => storage('clear'),
+    },
     getMe: () => invokePromise(EInvokeRequest.getMe),
     getPhone: () => invokePromise(EInvokeRequest.getPhone),
     getContacts: () => invokePromise(EInvokeRequest.getContacts),

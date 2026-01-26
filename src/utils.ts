@@ -50,33 +50,6 @@ function handleSubscribe(subscribe: (handler: AituEventHandler) => void, request
     })
 }
 
-export function promisifyStorage(storage: (reqId: string, method: string, props: Record<string, string>) => void, subscribe: (fn: AituEventHandler) => void) {
-    const requestResolver = createRequestResolver('storage:');
-
-    handleSubscribe(subscribe, requestResolver)
-
-    return {
-        setItem: (keyName: string, keyValue: string): Promise<void> => {
-            return new Promise((resolve, reject) => {
-                const reqId = requestResolver.add({ resolve, reject });
-                storage(reqId, 'setItem', { keyName, keyValue });
-            });
-        },
-        getItem: (keyName: string): Promise<string | null> => {
-            return new Promise((resolve, reject) => {
-                const reqId = requestResolver.add({ resolve, reject });
-                storage(reqId, 'getItem', { keyName });
-            });
-        },
-        clear: (): Promise<void> => {
-            return new Promise((resolve, reject) => {
-                const reqId = requestResolver.add({ resolve, reject });
-                storage(reqId, 'clear', {});
-            });
-        },
-    }
-}
-
 export function promisifyInvoke(invoke: (reqId: string, methodName: string, props: any) => void, subscribe: (fn: AituEventHandler) => void) {
     const requestResolver = createRequestResolver('invoke:');
 

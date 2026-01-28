@@ -13,7 +13,6 @@ export type {
   PermissionDeniedError,
   AppUrlDoesntMatchError,
   AituEventHandler,
-  EInvokeRequest,
   GetPhoneResponse,
   GetMeResponse,
   ResponseObject,
@@ -21,8 +20,6 @@ export type {
   GetContactsResponse,
   SelectContactResponse,
   GetUserProfileResponse,
-  HeaderMenuIcon,
-  NavigationItemMode,
   HeaderMenuItem,
   UserStepsPerDay,
   UserStepInfoResponse,
@@ -33,6 +30,9 @@ export type {
   BridgeStorage,
   AituBridge,
 } from './types';
+
+// Enums
+export { HeaderMenuIcon, NavigationItemMode, EInvokeRequest } from './types';
 
 import { buildBridge } from './buildBridge';
 /**

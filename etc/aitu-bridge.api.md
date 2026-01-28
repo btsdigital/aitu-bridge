@@ -6,18 +6,18 @@
 
 // @public
 export interface AituBridge {
-    activateESim: (activationCode: string) => Promise<ResponseType_2>;
+    activateESim: (activationCode: string) => Promise<SuccessResponse>;
     checkBiometry: () => Promise<BiometryResponse>;
-    closeApplication: () => Promise<ResponseType_2>;
-    copyToClipboard: (text: string) => Promise<ResponseType_2>;
+    closeApplication: () => Promise<SuccessResponse>;
+    copyToClipboard: (text: string) => Promise<SuccessResponse>;
     disableNotifications: () => Promise<{}>;
     disablePrivateMessaging: (appId: string) => Promise<string>;
     disableScreenCapture: () => Promise<{}>;
-    disableSwipeBack: () => Promise<ResponseType_2>;
+    disableSwipeBack: () => Promise<SuccessResponse>;
     enableNotifications: () => Promise<{}>;
     enablePrivateMessaging: (appId: string) => Promise<string>;
     enableScreenCapture: () => Promise<{}>;
-    enableSwipeBack: () => Promise<ResponseType_2>;
+    enableSwipeBack: () => Promise<SuccessResponse>;
     getContacts: () => Promise<GetContactsResponse>;
     getCustomBackArrowMode: () => Promise<boolean>;
     getGeo: () => Promise<GetGeoResponse>;
@@ -29,33 +29,33 @@ export interface AituBridge {
     getUserProfile: (userId: string) => Promise<GetUserProfileResponse>;
     getUserStepInfo: () => Promise<UserStepInfoResponse>;
     invoke: BridgeInvoke<EInvokeRequest, ResponseObject>;
-    isESimSupported: () => Promise<ResponseType_2>;
+    isESimSupported: () => Promise<SuccessResponse>;
     isSupported: () => boolean;
-    openExternalUrl: (url: string) => Promise<ResponseType_2>;
-    openPayment: (transactionId: string) => Promise<ResponseType_2>;
-    openSettings: () => Promise<ResponseType_2>;
-    openUserProfile: () => Promise<ResponseType_2>;
+    openExternalUrl: (url: string) => Promise<SuccessResponse>;
+    openPayment: (transactionId: string) => Promise<SuccessResponse>;
+    openSettings: () => Promise<SuccessResponse>;
+    openUserProfile: () => Promise<SuccessResponse>;
     readNFCData: () => Promise<string>;
     readNFCPassport: (passportNumber: string, dateOfBirth: string, expirationDate: string) => Promise<PassportDataResponse>;
     selectContact: () => Promise<SelectContactResponse>;
-    setCustomBackArrowMode: (enabled: boolean) => Promise<ResponseType_2>;
+    setCustomBackArrowMode: (enabled: boolean) => Promise<SuccessResponse>;
     setCustomBackArrowOnClickHandler: (handler: BackArrowClickHandlerType) => void;
-    setCustomBackArrowVisible: (visible: boolean) => Promise<ResponseType_2>;
+    setCustomBackArrowVisible: (visible: boolean) => Promise<SuccessResponse>;
     setHeaderMenuItemClickHandler: (handler: HeaderMenuItemClickHandlerType) => void;
-    setHeaderMenuItems: (items: Array<HeaderMenuItem>) => Promise<ResponseType_2>;
+    setHeaderMenuItems: (items: Array<HeaderMenuItem>) => Promise<SuccessResponse>;
     setNavigationItemMode: (mode: NavigationItemMode) => Promise<void>;
     setShakeHandler: (handler: (() => void) | null) => void;
     setTabActiveHandler: (handler: (tabname: string) => void) => void;
-    setTitle: (text: string) => Promise<ResponseType_2>;
-    share: (text: string) => Promise<ResponseType_2>;
-    shareFile: (text: string, filename: string, base64Data: string) => Promise<ResponseType_2>;
+    setTitle: (text: string) => Promise<SuccessResponse>;
+    share: (text: string) => Promise<SuccessResponse>;
+    shareFile: (text: string, filename: string, base64Data: string) => Promise<SuccessResponse>;
     // @deprecated
-    shareImage: (text: string, image: string) => Promise<ResponseType_2>;
+    shareImage: (text: string, image: string) => Promise<SuccessResponse>;
     storage: BridgeStorage;
     sub: (listener: AituEventHandler) => void;
-    subscribeUserStepInfo: () => Promise<ResponseType_2>;
+    subscribeUserStepInfo: () => Promise<SuccessResponse>;
     supports: (method: string) => boolean;
-    unsubscribeUserStepInfo: () => Promise<ResponseType_2>;
+    unsubscribeUserStepInfo: () => Promise<SuccessResponse>;
     version: string;
     vibrate: (pattern: number[]) => Promise<SuccessResponse>;
 }
@@ -75,7 +75,7 @@ export interface AppUrlDoesntMatchError {
 export type BackArrowClickHandlerType = () => Promise<void>;
 
 // @public
-export type BiometryResponse = ResponseType_2 | 'unavailable' | 'cancelled';
+export type BiometryResponse = SuccessResponse | 'unavailable' | 'cancelled';
 
 // @public
 const bridge: AituBridge;
@@ -289,10 +289,6 @@ export interface ResponseObject {
     // (undocumented)
     phone?: string;
 }
-
-// @public
-type ResponseType_2 = SuccessResponse | 'failed';
-export { ResponseType_2 as ResponseType }
 
 // @public
 export interface SelectContactResponse {

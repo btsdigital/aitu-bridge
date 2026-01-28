@@ -8,7 +8,15 @@ We welcome pull requests! Please ensure your contributions follow our guidelines
 
 We use [@microsoft/api-extractor](https://api-extractor.com/pages/overview/intro/) to validate the public API and detect breaking changes.
 
-If you need to modify the public API, regenerate the API documentation by running:
+If you need to modify the public API:
+
+1. **Build the library first**:
+
+```bash
+npm run build
+```
+
+2. **Regenerate the API Report File**:
 
 ```bash
 npm run test-api
@@ -27,10 +35,10 @@ This allows us to automatically manage package versions and generate changelogs.
 
 1. Create a new changeset:
 ```bash
-npx changeset
+npx @changesets/cli
 ```
 2.Select the affected packages and the type of change (major / minor / patch).
 3.Provide a short, clear description of the change.
 
 Detailed instructions are available in the official documentation:
-👉 https://github.com/changesets/changesets/blob/main/docs/intro-to-using-changesets.md
+https://github.com/changesets/changesets/blob/main/docs/intro-to-using-changesets.md

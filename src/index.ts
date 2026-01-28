@@ -27,7 +27,6 @@ export type {
   UserStepsPerDay,
   UserStepInfoResponse,
   SuccessResponse,
-  ResponseType,
   BiometryResponse,
   PassportDataResponse,
   BridgeInvoke,

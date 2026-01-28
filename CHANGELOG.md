@@ -1,5 +1,11 @@
 # @btsd/aitu-bridge
 
+## 0.8.0-canary.5
+
+### Patch Changes
+
+- 9bc2302: Fixed exports for enums
+
 ## 0.8.0-canary.4
 
 ### Minor Changes

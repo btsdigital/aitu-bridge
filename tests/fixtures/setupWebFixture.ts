@@ -1,43 +1,36 @@
-import { vi } from 'vitest';
-import { createFnMock, type BridgeFnMock } from './createFnMock';
-import { type WebBridge } from '../../src/webBridge';
-
-type WebBridgeStub = {
-  execute: BridgeFnMock<WebBridge['execute']>;
-  origin: string;
-};
+import { createFnMock } from './createFnMock';
 
 export const setupWebFixture = async () => {
-  const executeMock = createFnMock();
-
-  vi.doMock('../../src/webBridge', () => ({
-    createWebBridge: vi.fn(() => ({
-      origin: 'test.domain',
-      execute: executeMock,
-    })),
-  }));
-
-  const { createWebBridge } = await import('../../src/webBridge');
-
   const originalTop = window.top;
 
-  Object.defineProperty(window, 'top', {
-    value: {} as Window,
+  const originalSearch = window.location.search;
+
+  const windowStub = {
+    postMessage: createFnMock<typeof window.postMessage>(),
+  };
+
+  Object.defineProperty(window, 'location', {
+    value: { search: '?__aitu-domain=test.domain' },
     configurable: true,
   });
 
-  const webBridge = createWebBridge();
+  Object.defineProperty(window, 'top', {
+    value: windowStub,
+    configurable: true,
+  });
 
   return {
-    stub: webBridge as WebBridgeStub,
+    stub: windowStub,
     cleanup: () => {
-      vi.doUnmock('../../src/webBridge');
+      Object.defineProperty(window, 'location', {
+        value: { search: originalSearch },
+        configurable: true,
+      });
 
       Object.defineProperty(window, 'top', {
         value: originalTop,
         configurable: true,
       });
-
     },
   };
 };

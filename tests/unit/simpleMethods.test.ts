@@ -173,25 +173,41 @@ describe('Web Bridge', () => {
   describe.for(simpleMethods)('%s method', (methodName) => {
     it('should resolve and reject with correct data', async () => {
       const [eventA, eventB] = getTestData(methodName);
-      webBridge.execute.mockResponseOnce(eventA, { delay: 250 });
-      webBridge.execute.mockResponseOnce(eventB, { delay: 50 });
+      webBridge.postMessage.mockResponseOnce(eventA, { delay: 250 });
+      webBridge.postMessage.mockResponseOnce(eventB, { delay: 50 });
 
       const resultA = aituBridge[methodName]();
       const resultB = aituBridge[methodName]();
 
       vi.advanceTimersByTime(250);
 
-      expect(webBridge.execute).toHaveBeenNthCalledWith(1, methodName, eventA.reqId);
-      expect(webBridge.execute).toHaveBeenNthCalledWith(2, methodName, eventB.reqId);
-      expect(webBridge.execute).toHaveBeenCalledTimes(2);
+      expect(webBridge.postMessage).toHaveBeenNthCalledWith(
+        1,
+        {
+          reqId: `${methodName}:1`,
+          method: methodName,
+          source: 'aitu-bridge',
+          payload: [],
+        },
+        'test.domain',
+      );
+      expect(webBridge.postMessage).toHaveBeenNthCalledWith(
+        2,
+        {
+          reqId: `${methodName}:2`,
+          method: methodName,
+          source: 'aitu-bridge',
+          payload: [],
+        },
+        'test.domain',
+      );
+      expect(webBridge.postMessage).toHaveBeenCalledTimes(2);
 
       await expect(resultA).resolves.toStrictEqual(eventA.data);
       await expect(resultB).rejects.toStrictEqual(eventB.error);
     });
   });
 });
-
-
 
 describe('Unsupported environment', () => {
   it('should log unsupported environment message for simple methods', async () => {

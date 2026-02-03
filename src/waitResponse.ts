@@ -1,9 +1,7 @@
-import type { AituEvent, BridgeMethodResult, PublicApiMethods } from './types';
+import type { AituEvent } from './types';
 
-export const waitResponse = <T extends PublicApiMethods>(
-  reqId: string,
-): Promise<BridgeMethodResult<T>> => {
-  return new Promise<BridgeMethodResult<T>>((resolve, reject) => {
+export const waitResponse = <Result>(reqId: string): Promise<Result> => {
+  return new Promise<Result>((resolve, reject) => {
     const handler = (event: AituEvent) => {
       if (event.detail?.reqId !== reqId) {
         return;
@@ -11,10 +9,10 @@ export const waitResponse = <T extends PublicApiMethods>(
 
       const { data, error } = event.detail;
 
-      if (data) {
-        resolve(data as BridgeMethodResult<T>);
-      } else {
+      if (error) {
         reject(error);
+      } else {
+        resolve(data as Result);
       }
 
       window.removeEventListener('aituEvents', handler);

@@ -1,30 +1,30 @@
-import { promisifyMethod, promisifyStorage, promisifyInvoke } from './utils';
+import { promisifyMethod, promisifyInvoke } from './utils';
 
 import { type WebBridge, createWebBridge } from './webBridge';
 
 import type {
   AituEventHandler,
   RequestMethods,
-  IosParams,
   BackArrowClickHandlerType,
   HeaderMenuItemClickHandlerType,
-  UnsafeAndroidBridge,
-  UnsafeIosBridge,
   AituBridge,
   HeaderMenuItem,
+  BridgeMethodResult,
 } from './types';
 
-import { EInvokeRequest, NavigationItemMode, type PublicApiMethods, type BridgeMethodResult } from './types';
+import { EInvokeRequest, type NavigationItemMode } from './types';
 import { isBrowser } from './lib/isBrowser';
 import { isIframe } from './lib/isIframe';
-import { createCounter } from './lib/createCounter';
-import { waitResponse } from './waitResponse';
+import { createActionFactory } from './createActionFactory';
+import { androidHandlerFactory } from './handlers/android';
+import { iosHandlerFactory } from './handlers/ios';
+import { webHandlerFactory } from './handlers/web';
+import { nullHandler } from './handlers/null';
 
 declare const VERSION: string;
 
 export const buildBridge = (): AituBridge => {
   const invokeMethod = 'invoke';
-  const storageMethod = 'storage';
   const getGeoMethod = 'getGeo';
   const getQrMethod = 'getQr';
   const getSMSCodeMethod = 'getSMSCode';
@@ -58,6 +58,12 @@ export const buildBridge = (): AituBridge => {
   const ios = isBrowserEnv && window.webkit && window.webkit.messageHandlers;
   const web = isBrowserEnv && isIframe() && createWebBridge();
 
+  const handlerFactories = [androidHandlerFactory, iosHandlerFactory, webHandlerFactory];
+
+  const targetHandlerFactory = handlerFactories.find((adapter) => adapter.isSupported());
+
+  const handler = targetHandlerFactory?.makeActionHandler() ?? nullHandler;
+
   const subs: AituEventHandler[] = [];
 
   if (isBrowserEnv) {
@@ -78,21 +84,6 @@ export const buildBridge = (): AituBridge => {
       web.execute(invokeMethod, reqId, method, data);
     } else if (typeof window !== 'undefined') {
       console.log('--invoke-isUnknown');
-    }
-  };
-
-  const storage = (reqId: string, method: string, data = {}) => {
-    const isAndroid = android && android[storageMethod];
-    const isIos = ios && ios[storageMethod];
-
-    if (isAndroid) {
-      android[storageMethod](reqId, method, JSON.stringify(data));
-    } else if (isIos) {
-      ios[storageMethod].postMessage({ reqId, method, data });
-    } else if (web) {
-      web.execute(storageMethod, reqId, method, data);
-    } else if (typeof window !== 'undefined') {
-      console.log('--storage-isUnknown');
     }
   };
 
@@ -348,37 +339,6 @@ export const buildBridge = (): AituBridge => {
     subs.push(listener);
   };
 
-  const createMethod = <Name extends PublicApiMethods>(
-    name: Name,
-    options?: {
-      transformToObject?: (args: Parameters<AituBridge[Name]>) => IosParams<Name>;
-    }
-  ) => {
-    const counter = createCounter(name + ':');
-
-    return (...args: Parameters<AituBridge[Name]>): Promise<BridgeMethodResult<Name>> => {
-      const reqId = counter.next();
-      const isAndroid = !!android && !!android[name];
-      const isIos = !!ios && !!ios[name];
-      const isWeb = !!web;
-
-      if (isAndroid) {
-        (android as UnsafeAndroidBridge)[name](reqId, ...args);
-      } else if (isIos) {
-        (ios as UnsafeIosBridge)[name].postMessage({
-          reqId,
-          ...(options?.transformToObject?.(args) as any),
-        });
-      } else if (isWeb) {
-        web.execute(name, reqId, ...args);
-      } else if (typeof window !== 'undefined') {
-        console.log(`--${name}-isUnknown`);
-      }
-
-      return waitResponse<Name>(reqId);
-    };
-  };
-
   const setHeaderMenuItems = (reqId: string, items: Array<HeaderMenuItem>) => {
     if (items.length > MAX_HEADER_MENU_ITEMS_COUNT) {
       console.error('SetHeaderMenuItems: items count should not be more than ' + MAX_HEADER_MENU_ITEMS_COUNT);
@@ -521,7 +481,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-
   const setNavigationItemMode = (reqId: string, mode: NavigationItemMode) => {
     const isAndroid = android && android[setNavigationItemModeMethod];
     const isIos = ios && ios[setNavigationItemModeMethod];
@@ -568,7 +527,6 @@ export const buildBridge = (): AituBridge => {
   };
 
   const invokePromise = promisifyInvoke(invoke, sub);
-  const storagePromise = promisifyStorage(storage, sub);
   const getGeoPromise = promisifyMethod<BridgeMethodResult<'getGeo'>>(getGeo, getGeoMethod, sub);
   const getQrPromise = promisifyMethod<BridgeMethodResult<'getQr'>>(getQr, getQrMethod, sub);
   const getSMSCodePromise = promisifyMethod<BridgeMethodResult<'getSMSCode'>>(getSMSCode, getSMSCodeMethod, sub);
@@ -623,41 +581,42 @@ export const buildBridge = (): AituBridge => {
     sub
   );
   const getUserStepInfoPromise = promisifyMethod<BridgeMethodResult<'getUserStepInfo'>>(getUserStepInfo, getUserStepInfoMethod, sub);
-  const isESimSupported = createMethod('isESimSupported');
-  const activateESim = createMethod('activateESim', {
-    transformToObject: ([activationCode]) => ({
-      activationCode,
-    }),
-  });
-  const readNFCData = createMethod('readNFCData');
 
-  const readNFCPassport = createMethod('readNFCPassport', {
-    transformToObject: ([passportNumber, dateOfBirth, expirationDate]) => ({
-      passportNumber,
-      dateOfBirth,
-      expirationDate,
-    }),
-  });
+  const createAction = createActionFactory(handler);
 
-  const subscribeUserStepInfo = createMethod('subscribeUserStepInfo');
+  const isESimSupported = createAction('isESimSupported');
 
-  const unsubscribeUserStepInfo = createMethod('unsubscribeUserStepInfo');
+  const activateESim = createAction('activateESim');
 
-  const openUserProfile = createMethod('openUserProfile');
+  const readNFCData = createAction('readNFCData');
 
-  const openSettings = createMethod('openSettings');
+  const readNFCPassport = createAction('readNFCPassport');
 
-  const closeApplication = createMethod('closeApplication');
+  const subscribeUserStepInfo = createAction('subscribeUserStepInfo');
 
-  const enableSwipeBack = createMethod('enableSwipeBack');
+  const unsubscribeUserStepInfo = createAction('unsubscribeUserStepInfo');
 
-  const disableSwipeBack = createMethod('disableSwipeBack');
+  const openUserProfile = createAction('openUserProfile');
+
+  const openSettings = createAction('openSettings');
+
+  const closeApplication = createAction('closeApplication');
+
+  const enableSwipeBack = createAction('enableSwipeBack');
+
+  const disableSwipeBack = createAction('disableSwipeBack');
+
+  const storage = createAction('storage');
 
   return {
     version: VERSION,
     copyToClipboard: copyToClipboardPromise,
     invoke: invokePromise,
-    storage: storagePromise,
+    storage: {
+      getItem: (keyName: string) => storage('getItem', { keyName }),
+      setItem: (keyName: string, keyValue: string) => storage('setItem', { keyName, keyValue }),
+      clear: () => storage('clear', {}),
+    },
     getMe: () => invokePromise(EInvokeRequest.getMe),
     getPhone: () => invokePromise(EInvokeRequest.getPhone),
     getContacts: () => invokePromise(EInvokeRequest.getContacts),

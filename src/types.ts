@@ -811,3 +811,58 @@ export type PublicApiMethods = Exclude<keyof Pick<AituBridge, RequestMethods>, '
  * @internal
  */
 export type BridgeMethodResult<T extends PublicApiMethods> = Awaited<ReturnType<AituBridge[T]>>;
+
+export type Action<Type extends string = string, Payload extends unknown[] = unknown[], Result = unknown> = {
+  type: Type;
+  payload: Payload;
+} & { id: string; __result: Result };
+
+type SelectActionByType<T> = Extract<BridgeAction, { type: T }>;
+
+/**
+ * @internal
+ */
+export type ActionResult<T> = SelectActionByType<T>['__result'];
+
+/**
+ * @internal
+ */
+export type ActionPayload<T> = SelectActionByType<T>['payload'];
+
+/**
+ * @internal
+ */
+export type BridgeAction =
+  | Action<
+      'storage',
+      | [operation: 'getItem', data: { keyName: string }]
+      | [operation: 'setItem', data: { keyName: string; keyValue: string }]
+      | [operation: 'clear', data: Record<string, never>],
+      SuccessResponse | string
+    >
+  | Action<'activateESim', [activationCode: string], SuccessResponse>
+  | Action<'readNFCData', never, string>
+  | Action<'openUserProfile', never, SuccessResponse>
+  | Action<'openSettings', never, SuccessResponse>
+  | Action<'closeApplication', never, SuccessResponse>
+  | Action<'enableSwipeBack', never, SuccessResponse>
+  | Action<'disableSwipeBack', never, SuccessResponse>
+  | Action<'isESimSupported', never, SuccessResponse>
+  | Action<'subscribeUserStepInfo', never, SuccessResponse>
+  | Action<'unsubscribeUserStepInfo', never, SuccessResponse>
+  | Action<'readNFCPassport', [passportNumber: string, dateOfBirth: string, expirationDate: string], PassportDataResponse>;
+
+/**
+ * @internal
+ */
+export interface ActionHandler {
+  handleAction: <Result>(action: BridgeAction) => Promise<Result>;
+}
+
+/**
+ * @internal
+ */
+export interface ActionHandlerFactory {
+  isSupported: () => boolean;
+  makeActionHandler(): ActionHandler;
+}

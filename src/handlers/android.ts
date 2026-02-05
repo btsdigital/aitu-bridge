@@ -1,9 +1,10 @@
-import type { ActionHandlerFactory, UnsafeAndroidBridge } from '../types';
+import type { ActionResult, InvokableAction, ActionHandlerFactory, UnsafeAndroidBridge } from '../types';
 import { waitResponse } from '../waitResponse';
 
 import type { BridgeAction } from '../types';
 import { isBrowser } from '../lib/isBrowser';
 import { nullHandler } from './null';
+import { callbacksHandler, isHandlerMethods } from './callbacks';
 
 const makeArgs = (action: BridgeAction): unknown[] => {
   if (action.type === 'storage') {
@@ -18,16 +19,20 @@ const makeArgs = (action: BridgeAction): unknown[] => {
 export const androidHandlerFactory: ActionHandlerFactory = {
   isSupported: () => isBrowser() && !!window.AndroidBridge,
   makeActionHandler: () => ({
-    handleAction: <T>(action: BridgeAction) => {
-      const targetFn = (window?.AndroidBridge as UnsafeAndroidBridge)?.[action.type];
+    handleAction: (action) => {
+      const bridge = window?.AndroidBridge as UnsafeAndroidBridge;
 
-      if (targetFn) {
-        targetFn(action.id, ...makeArgs(action));
-
-        return waitResponse<T>(action.id);
+      if (!bridge[action.type]) {
+        return nullHandler.handleAction(action);
       }
 
-      return nullHandler.handleAction(action);
+      if (isHandlerMethods(action)) {
+        return callbacksHandler.handleAction(action);
+      }
+
+      bridge[action.type](action.id, ...makeArgs(action));
+
+      return waitResponse<ActionResult<InvokableAction>>(action.id);
     },
   }),
 };

@@ -2,15 +2,7 @@ import { promisifyMethod, promisifyInvoke } from './utils';
 
 import { type WebBridge, createWebBridge } from './webBridge';
 
-import type {
-  AituEventHandler,
-  RequestMethods,
-  BackArrowClickHandlerType,
-  HeaderMenuItemClickHandlerType,
-  AituBridge,
-  HeaderMenuItem,
-  BridgeMethodResult,
-} from './types';
+import type { AituEventHandler, RequestMethods, AituBridge, HeaderMenuItem, BridgeMethodResult } from './types';
 
 import { EInvokeRequest, type NavigationItemMode } from './types';
 import { isBrowser } from './lib/isBrowser';
@@ -34,18 +26,14 @@ export const buildBridge = (): AituBridge => {
   const copyToClipboardMethod = 'copyToClipboard';
   const shareImageMethod = 'shareImage';
   const shareFileMethod = 'shareFile';
-  const setShakeHandlerMethod = 'setShakeHandler';
   const vibrateMethod = 'vibrate';
   const enableScreenCaptureMethod = 'enableScreenCapture';
   const disableScreenCaptureMethod = 'disableScreenCapture';
-  const setTabActiveHandlerMethod = 'setTabActiveHandler';
   const setHeaderMenuItemsMethod = 'setHeaderMenuItems';
-  const setHeaderMenuItemClickHandlerMethod = 'setHeaderMenuItemClickHandler';
   const setCustomBackArrowModeMethod = 'setCustomBackArrowMode';
   const getCustomBackArrowModeMethod = 'getCustomBackArrowMode';
   const setCustomBackArrowVisibleMethod = 'setCustomBackArrowVisible';
   const openPaymentMethod = 'openPayment';
-  const setCustomBackArrowOnClickHandlerMethod = 'setCustomBackArrowOnClickHandler';
   const checkBiometryMethod = 'checkBiometry';
   const openExternalUrlMethod = 'openExternalUrl';
   const setNavigationItemModeMethod = 'setNavigationItemMode';
@@ -278,28 +266,6 @@ export const buildBridge = (): AituBridge => {
 
   const disableNotifications = () => invokePromise(EInvokeRequest.disableNotifications);
 
-  const setShakeHandler = (handler: (() => void) | null) => {
-    const isAndroid = android && android[setShakeHandlerMethod];
-    const isIos = ios && ios[setShakeHandlerMethod];
-
-    if (isAndroid || isIos || web) {
-      window.onAituBridgeShake = handler;
-    } else if (typeof window !== 'undefined') {
-      console.log('--setShakeHandler-isUnknown');
-    }
-  };
-
-  const setTabActiveHandler = (handler: (tabname: string) => void) => {
-    const isAndroid = android && android[setTabActiveHandlerMethod];
-    const isIos = ios && ios[setTabActiveHandlerMethod];
-
-    if (isAndroid || isIos || web) {
-      window.onAituBridgeTabActive = handler;
-    } else if (typeof window !== 'undefined') {
-      console.log('--setTabActiveHandler-isUnknown');
-    }
-  };
-
   const vibrate = (reqId: string, pattern: number[]) => {
     if (
       !Array.isArray(pattern) ||
@@ -361,17 +327,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const setHeaderMenuItemClickHandler = (handler: HeaderMenuItemClickHandlerType) => {
-    const isAndroid = android && android[setHeaderMenuItemClickHandlerMethod];
-    const isIos = ios && ios[setHeaderMenuItemClickHandlerMethod];
-
-    if (isAndroid || isIos || web) {
-      window.onAituBridgeHeaderMenuItemClick = handler;
-    } else if (typeof window !== 'undefined') {
-      console.log('--setHeaderMenuItemClickHandler-isUnknown');
-    }
-  };
-
   /**
    * @deprecated данный метод не рекомендуется использовать
    * вместо него используйте setNavigationItemMode
@@ -426,17 +381,6 @@ export const buildBridge = (): AituBridge => {
       web.execute(setCustomBackArrowVisibleMethod, reqId, visible);
     } else if (typeof window !== 'undefined') {
       console.log('--setCustomBackArrowVisible-isUnknown');
-    }
-  };
-
-  const setCustomBackArrowOnClickHandler = (handler: BackArrowClickHandlerType) => {
-    const isAndroid = android && android[setCustomBackArrowOnClickHandlerMethod];
-    const isIos = ios && ios[setCustomBackArrowOnClickHandlerMethod];
-
-    if (isAndroid || isIos || web) {
-      window.onAituBridgeBackArrowClick = handler;
-    } else if (typeof window !== 'undefined') {
-      console.log('--setCustomBackArrowOnClickHandler-isUnknown');
     }
   };
 
@@ -607,6 +551,14 @@ export const buildBridge = (): AituBridge => {
   const disableSwipeBack = createAction('disableSwipeBack');
 
   const storage = createAction('storage');
+
+  const setShakeHandler = createAction('setShakeHandler');
+
+  const setTabActiveHandler = createAction('setTabActiveHandler');
+
+  const setHeaderMenuItemClickHandler = createAction('setHeaderMenuItemClickHandler');
+
+  const setCustomBackArrowOnClickHandler = createAction('setCustomBackArrowOnClickHandler');
 
   return {
     version: VERSION,

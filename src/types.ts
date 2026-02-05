@@ -61,10 +61,10 @@ type IosBridgeShape<Methods extends string, T extends Record<Methods, Record<str
 };
 
 type HandlerMethodsMap = {
-  setShakeHandler: (handler: (() => void) | null) => void;
-  setTabActiveHandler: (handler: (tabname: string) => void) => void;
-  setCustomBackArrowOnClickHandler: (handler: BackArrowClickHandlerType) => void;
-  setHeaderMenuItemClickHandler: (handler: HeaderMenuItemClickHandlerType) => void;
+  setShakeHandler: AituBridge['setShakeHandler'];
+  setTabActiveHandler: AituBridge['setTabActiveHandler'];
+  setCustomBackArrowOnClickHandler: AituBridge['setCustomBackArrowOnClickHandler'];
+  setHeaderMenuItemClickHandler: AituBridge['setHeaderMenuItemClickHandler'];
 };
 
 export type AndroidBridge = AndroidBridgeShape<
@@ -817,6 +817,12 @@ export type Action<Type extends string = string, Payload extends unknown[] = unk
   payload: Payload;
 } & { id: string; __result: Result };
 
+export type AsyncAction<Type extends string = string, Payload extends unknown[] = unknown[], Result = unknown> = Action<
+  Type,
+  Payload,
+  Promise<Result>
+>;
+
 type SelectActionByType<T> = Extract<BridgeAction, { type: T }>;
 
 /**
@@ -829,40 +835,48 @@ export type ActionResult<T> = SelectActionByType<T>['__result'];
  */
 export type ActionPayload<T> = SelectActionByType<T>['payload'];
 
-/**
- * @internal
- */
-export type BridgeAction =
-  | Action<
+export type SetHandlerAction =
+  | Action<'setHeaderMenuItemClickHandler', Parameters<AituBridge['setHeaderMenuItemClickHandler']>, void>
+  | Action<'setCustomBackArrowOnClickHandler', Parameters<AituBridge['setCustomBackArrowOnClickHandler']>, void>
+  | Action<'setTabActiveHandler', Parameters<AituBridge['setTabActiveHandler']>, void>
+  | Action<'setShakeHandler', Parameters<AituBridge['setShakeHandler']>, void>;
+
+export type InvokableAction =
+  | AsyncAction<
       'storage',
       | [operation: 'getItem', data: { keyName: string }]
       | [operation: 'setItem', data: { keyName: string; keyValue: string }]
       | [operation: 'clear', data: Record<string, never>],
       SuccessResponse | string
     >
-  | Action<'activateESim', [activationCode: string], SuccessResponse>
-  | Action<'readNFCData', never, string>
-  | Action<'openUserProfile', never, SuccessResponse>
-  | Action<'openSettings', never, SuccessResponse>
-  | Action<'closeApplication', never, SuccessResponse>
-  | Action<'enableSwipeBack', never, SuccessResponse>
-  | Action<'disableSwipeBack', never, SuccessResponse>
-  | Action<'isESimSupported', never, SuccessResponse>
-  | Action<'subscribeUserStepInfo', never, SuccessResponse>
-  | Action<'unsubscribeUserStepInfo', never, SuccessResponse>
-  | Action<'readNFCPassport', [passportNumber: string, dateOfBirth: string, expirationDate: string], PassportDataResponse>;
+  | AsyncAction<'activateESim', [activationCode: string], SuccessResponse>
+  | AsyncAction<'readNFCData', never, string>
+  | AsyncAction<'openUserProfile', never, SuccessResponse>
+  | AsyncAction<'openSettings', never, SuccessResponse>
+  | AsyncAction<'closeApplication', never, SuccessResponse>
+  | AsyncAction<'enableSwipeBack', never, SuccessResponse>
+  | AsyncAction<'disableSwipeBack', never, SuccessResponse>
+  | AsyncAction<'isESimSupported', never, SuccessResponse>
+  | AsyncAction<'subscribeUserStepInfo', never, SuccessResponse>
+  | AsyncAction<'unsubscribeUserStepInfo', never, SuccessResponse>
+  | AsyncAction<'readNFCPassport', [passportNumber: string, dateOfBirth: string, expirationDate: string], PassportDataResponse>;
 
 /**
  * @internal
  */
-export interface ActionHandler {
-  handleAction: <Result>(action: BridgeAction) => Promise<Result>;
-}
+export type BridgeAction = InvokableAction | SetHandlerAction;
+
+/**
+ * @internal
+ */
+export type ActionHandler<T extends BridgeAction = BridgeAction> = {
+  handleAction: (action: T) => T['__result'];
+};
 
 /**
  * @internal
  */
 export interface ActionHandlerFactory {
   isSupported: () => boolean;
-  makeActionHandler(): ActionHandler;
+  makeActionHandler(): ActionHandler<BridgeAction>;
 }

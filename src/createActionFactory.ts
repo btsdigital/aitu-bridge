@@ -6,10 +6,10 @@ export const createActionFactory =
   <Type extends BridgeAction['type']>(type: Type) => {
     const counter = createCounter(type + ':');
 
-    return <T = ActionResult<Type>>(...payload: ActionPayload<Type>): Promise<T> =>
-      handler.handleAction<T>({
+    return <T = ActionResult<Type>>(...payload: ActionPayload<Type>): T =>
+      handler.handleAction({
         id: counter.next(),
         type,
         payload,
-      } as BridgeAction);
+      } as BridgeAction) as T;
   };

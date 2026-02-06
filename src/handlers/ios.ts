@@ -1,9 +1,10 @@
-import type { ActionHandlerFactory, UnsafeIosBridge } from '../types';
+import type { ActionResult, InvokableAction, ActionHandlerFactory, UnsafeIosBridge } from '../types';
 import { waitResponse } from '../waitResponse';
 
 import type { BridgeAction } from '../types';
 import { isBrowser } from '../lib/isBrowser';
 import { nullHandler } from './null';
+import { isHandlerMethods, callbacksHandler } from './callbacks';
 
 const makeArgs = (action: BridgeAction): { [key: string]: unknown } => {
   if (action.type === 'storage') {
@@ -39,19 +40,23 @@ const makeArgs = (action: BridgeAction): { [key: string]: unknown } => {
 export const iosHandlerFactory: ActionHandlerFactory = {
   isSupported: () => isBrowser() && !!window.webkit && !!window.webkit.messageHandlers,
   makeActionHandler: () => ({
-    handleAction: <T>(action: BridgeAction) => {
-      const targetFn = (window?.webkit?.messageHandlers as UnsafeIosBridge)?.[action.type]?.postMessage;
+    handleAction: (action) => {
+      const bridge = window?.webkit?.messageHandlers as UnsafeIosBridge;
 
-      if (targetFn) {
-        targetFn({
-          reqId: action.id,
-          ...makeArgs(action),
-        });
-
-        return waitResponse<T>(action.id);
+      if (!bridge[action.type]) {
+        return nullHandler.handleAction(action);
       }
 
-      return nullHandler.handleAction(action);
+      if (isHandlerMethods(action)) {
+        return callbacksHandler.handleAction(action);
+      }
+
+      bridge[action.type].postMessage({
+        reqId: action.id,
+        ...makeArgs(action),
+      });
+
+      return waitResponse<ActionResult<InvokableAction>>(action.id);
     },
   }),
 };

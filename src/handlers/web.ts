@@ -1,7 +1,8 @@
 import { isBrowser } from '../lib/isBrowser';
 import { isIframe } from '../lib/isIframe';
-import type { ActionHandlerFactory, BridgeAction } from '../types';
+import type { ActionResult, InvokableAction, ActionHandlerFactory } from '../types';
 import { waitResponse } from '../waitResponse';
+import { callbacksHandler, isHandlerMethods } from './callbacks';
 import { nullHandler } from './null';
 
 export const webHandlerFactory: ActionHandlerFactory = {
@@ -24,7 +25,11 @@ export const webHandlerFactory: ActionHandlerFactory = {
     }
 
     return {
-      handleAction: <T>(action: BridgeAction) => {
+      handleAction: (action) => {
+        if (isHandlerMethods(action)) {
+          return callbacksHandler.handleAction(action);
+        }
+
         window?.top?.postMessage(
           {
             source: 'aitu-bridge',
@@ -34,7 +39,7 @@ export const webHandlerFactory: ActionHandlerFactory = {
           },
           aituOrigin,
         );
-        return waitResponse<T>(action.id);
+        return waitResponse<ActionResult<InvokableAction>>(action.id);
       },
     };
   },

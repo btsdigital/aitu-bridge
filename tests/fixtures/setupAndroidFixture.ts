@@ -1,8 +1,10 @@
-import { type AndroidBridge, RequestMethods } from '../../src/types';
+import type { AndroidBridge, RequestMethods, HandlerMethodsMap } from '../../src/types';
 import { createFnMock, BridgeFnMock } from './createFnMock';
 
 type AndroidBridgeStub = {
   [P in RequestMethods]: BridgeFnMock<AndroidBridge[P]>;
+} & {
+  [P in keyof HandlerMethodsMap]: BridgeFnMock<HandlerMethodsMap[P]>;
 };
 
 export const setupAndroidFixture = () => {
@@ -41,6 +43,10 @@ export const setupAndroidFixture = () => {
     subscribeUserStepInfo: createFnMock<AndroidBridge['subscribeUserStepInfo']>(),
     unsubscribeUserStepInfo: createFnMock<AndroidBridge['unsubscribeUserStepInfo']>(),
     openUserProfile: createFnMock<AndroidBridge['openUserProfile']>(),
+    setShakeHandler: createFnMock<AndroidBridge['setShakeHandler']>(),
+    setTabActiveHandler: createFnMock<AndroidBridge['setTabActiveHandler']>(),
+    setCustomBackArrowOnClickHandler: createFnMock<AndroidBridge['setCustomBackArrowOnClickHandler']>(),
+    setHeaderMenuItemClickHandler: createFnMock<AndroidBridge['setHeaderMenuItemClickHandler']>(),
   };
 
   if (!window.AndroidBridge) {

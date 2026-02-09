@@ -7,10 +7,10 @@ import { nullHandler } from './null';
 import { callbacksHandler, isHandlerMethods } from './callbacks';
 
 const makeArgs = (action: BridgeAction): unknown[] => {
-  if (action.type === 'storage') {
-    const [storageMethod, data] = action.payload;
+  if (action.type === 'storage' || action.type === 'invoke') {
+    const [method, data = {}] = action.payload;
 
-    return [storageMethod, JSON.stringify(data)];
+    return [method, JSON.stringify(data)];
   }
 
   return Array.isArray(action.payload) ? action.payload : [];

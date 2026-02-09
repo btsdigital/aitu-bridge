@@ -1,8 +1,8 @@
-import { promisifyMethod, promisifyInvoke } from './utils';
+import { promisifyMethod } from './utils';
 
 import { type WebBridge, createWebBridge } from './webBridge';
 
-import type { AituEventHandler, RequestMethods, AituBridge, HeaderMenuItem, BridgeMethodResult } from './types';
+import type { AituEventHandler, RequestMethods, AituBridge, HeaderMenuItem, BridgeMethodResult, BridgeInvoke, ResponseObject } from './types';
 
 import { EInvokeRequest } from './types';
 import { isBrowser } from './lib/isBrowser';
@@ -16,7 +16,6 @@ import { nullHandler } from './handlers/null';
 declare const VERSION: string;
 
 export const buildBridge = (): AituBridge => {
-  const invokeMethod = 'invoke';
   const getGeoMethod = 'getGeo';
   const getQrMethod = 'getQr';
   const getSMSCodeMethod = 'getSMSCode';
@@ -49,21 +48,6 @@ export const buildBridge = (): AituBridge => {
       [...subs].map((fn) => fn.call(null, e));
     });
   }
-
-  const invoke = (reqId: string, method: string, data = {}) => {
-    const isAndroid = android && android[invokeMethod];
-    const isIos = ios && ios[invokeMethod];
-
-    if (isAndroid) {
-      android[invokeMethod](reqId, method, JSON.stringify(data));
-    } else if (isIos) {
-      ios[invokeMethod].postMessage({ reqId, method, data });
-    } else if (web) {
-      web.execute(invokeMethod, reqId, method, data);
-    } else if (typeof window !== 'undefined') {
-      console.log('--invoke-isUnknown');
-    }
-  };
 
   const getGeo = (reqId: string) => {
     const isAndroid = android && android[getGeoMethod];
@@ -155,9 +139,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const enableNotifications = () => invokePromise(EInvokeRequest.enableNotifications);
-
-  const disableNotifications = () => invokePromise(EInvokeRequest.disableNotifications);
 
   const vibrate = (reqId: string, pattern: number[]) => {
     if (
@@ -276,7 +257,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const invokePromise = promisifyInvoke(invoke, sub);
   const getGeoPromise = promisifyMethod<BridgeMethodResult<'getGeo'>>(getGeo, getGeoMethod, sub);
   const getQrPromise = promisifyMethod<BridgeMethodResult<'getQr'>>(getQr, getQrMethod, sub);
   const getSMSCodePromise = promisifyMethod<BridgeMethodResult<'getSMSCode'>>(getSMSCode, getSMSCodeMethod, sub);
@@ -332,6 +312,10 @@ export const buildBridge = (): AituBridge => {
   const enableScreenCapture = createAction('enableScreenCapture');
 
   const disableScreenCapture = createAction('disableScreenCapture');
+  
+  const invoke = createAction('invoke', {
+    generateId: ({ counter, payload: [method] }) => `${method}:${counter.next()}`,
+  });
 
   const setCustomBackArrowMode = createAction('setCustomBackArrowMode');
 
@@ -359,25 +343,25 @@ export const buildBridge = (): AituBridge => {
   return {
     version: VERSION,
     copyToClipboard: copyToClipboardPromise,
-    invoke: invokePromise,
+    invoke: invoke as BridgeInvoke<EInvokeRequest, ResponseObject>,
     storage: {
       getItem: (keyName: string) => storage('getItem', { keyName }),
-      setItem: (keyName: string, keyValue: string) => storage('setItem', { keyName, keyValue }),
-      clear: () => storage('clear', {}),
+      setItem: (keyName: string, keyValue: string) => storage('setItem', { keyName, keyValue }) as any,
+      clear: () => storage('clear') as any,
     },
-    getMe: () => invokePromise(EInvokeRequest.getMe),
-    getPhone: () => invokePromise(EInvokeRequest.getPhone),
-    getContacts: () => invokePromise(EInvokeRequest.getContacts),
+    getMe: () => invoke(EInvokeRequest.getMe),
+    getPhone: () => invoke(EInvokeRequest.getPhone),
+    getContacts: () => invoke(EInvokeRequest.getContacts),
     getGeo: getGeoPromise,
     getQr: getQrPromise,
     getSMSCode: getSMSCodePromise,
-    getUserProfile: (id: string) => invokePromise(EInvokeRequest.getUserProfile, { id }),
+    getUserProfile: (id: string) => invoke(EInvokeRequest.getUserProfile, { id }),
     openUserProfile,
     selectContact: selectContactPromise,
-    enableNotifications,
-    disableNotifications,
-    enablePrivateMessaging: (appId: string) => invokePromise(EInvokeRequest.enablePrivateMessaging, { appId }),
-    disablePrivateMessaging: (appId: string) => invokePromise(EInvokeRequest.disablePrivateMessaging, { appId }),
+    enableNotifications: () => invoke(EInvokeRequest.enableNotifications),
+    disableNotifications: () => invoke(EInvokeRequest.disableNotifications),
+    enablePrivateMessaging: (appId: string) => invoke(EInvokeRequest.enablePrivateMessaging, { appId }) as any,
+    disablePrivateMessaging: (appId: string) => invoke(EInvokeRequest.disablePrivateMessaging, { appId }) as any,
     openSettings,
     closeApplication,
     setTitle: setTitlePromise,
@@ -403,7 +387,7 @@ export const buildBridge = (): AituBridge => {
     openExternalUrl: openExternalUrlPromise,
     enableSwipeBack,
     disableSwipeBack,
-    setNavigationItemMode,
+    setNavigationItemMode: setNavigationItemMode as AituBridge['setNavigationItemMode'],
     getNavigationItemMode,
     getUserStepInfo: getUserStepInfoPromise,
     isESimSupported,

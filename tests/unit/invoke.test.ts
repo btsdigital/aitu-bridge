@@ -5,7 +5,7 @@ import { setupWebFixture } from '../fixtures/setupWebFixture';
 import {
   EInvokeRequest,
   type AituBridge,
-  type EmptyObject,
+  type EmptyResponse,
   type GetContactsResponse,
   type GetMeResponse,
   type GetPhoneResponse,
@@ -59,25 +59,25 @@ const getUserProfileEvent = {
 
 const enablePrivateMessagingEvent = {
   reqId: `${EInvokeRequest.enablePrivateMessaging}:invoke:1`,
-  data: {} satisfies EmptyObject,
+  data: {} satisfies EmptyResponse,
   error: null,
 } as const;
 
 const disablePrivateMessagingEvent = {
   reqId: `${EInvokeRequest.disablePrivateMessaging}:invoke:1`,
-  data: {} satisfies EmptyObject,
+  data: {} satisfies EmptyResponse,
   error: null,
 } as const;
 
 const enableNotificationsEvent = {
   reqId: `${EInvokeRequest.enableNotifications}:invoke:1`,
-  data: {} satisfies EmptyObject,
+  data: {} satisfies EmptyResponse,
   error: null,
 } as const;
 
 const disableNotificationsEvent = {
   reqId: `${EInvokeRequest.disableNotifications}:invoke:1`,
-  data: {} satisfies EmptyObject,
+  data: {} satisfies EmptyResponse,
   error: null,
 } as const;
 

@@ -7,8 +7,8 @@ import { nullHandler } from './null';
 import { isHandlerMethods, callbacksHandler } from './callbacks';
 
 const makeArgs = (action: BridgeAction): { [key: string]: unknown } => {
-  if (action.type === 'storage') {
-    const [method, data] = action.payload;
+  if (action.type === 'storage' || action.type === 'invoke') {
+    const [method, data = {}] = action.payload;
 
     return {
       method,

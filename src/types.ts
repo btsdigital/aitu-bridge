@@ -859,7 +859,9 @@ export type InvokableAction =
   | AsyncAction<'isESimSupported', never, SuccessResponse>
   | AsyncAction<'subscribeUserStepInfo', never, SuccessResponse>
   | AsyncAction<'unsubscribeUserStepInfo', never, SuccessResponse>
-  | AsyncAction<'readNFCPassport', [passportNumber: string, dateOfBirth: string, expirationDate: string], PassportDataResponse>;
+  | AsyncAction<'readNFCPassport', [passportNumber: string, dateOfBirth: string, expirationDate: string], PassportDataResponse>
+  | AsyncAction<'enableScreenCapture', never, Record<string, never>>
+  | AsyncAction<'disableScreenCapture', never, Record<string, never>>;
 
 /**
  * @internal

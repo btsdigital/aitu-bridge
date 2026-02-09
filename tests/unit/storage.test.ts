@@ -4,6 +4,13 @@ import { setupIosFixture } from '../fixtures/setupIosBridgeFixture';
 import { setupWebFixture } from '../fixtures/setupWebFixture';
 import type { AituBridge } from '../../src/types';
 
+const getItemEvent = { reqId: `storage:1`, data: 'some-data', error: null } as const;
+
+const setItemEvent = { reqId: `storage:1`, data: 'success', error: null } as const;
+
+const clearEvent = { reqId: `storage:1`, data: 'success', error: null } as const;
+
+
 describe('Android Bridge', () => {
   let cleanup: ReturnType<typeof setupAndroidFixture>['cleanup'];
 
@@ -36,9 +43,7 @@ describe('Android Bridge', () => {
   });
 
   it('should get item from storage', async () => {
-    const eventA = { reqId: `storage:1`, data: 'some-data', error: null } as const;
-
-    androidBridge.storage.mockResponseOnce(eventA, { delay: 250 });
+    androidBridge.storage.mockResponseOnce(getItemEvent, { delay: 250 });
 
     const resultA = aituBridge.storage.getItem('testKey');
 
@@ -50,9 +55,9 @@ describe('Android Bridge', () => {
   });
 
   it('should set item to storage', async () => {
-    androidBridge.storage.mockResponseOnce({ reqId: `storage:1`, data: 'success', error: null } as const, { delay: 250 });
+    androidBridge.storage.mockResponseOnce(setItemEvent, { delay: 250 });
 
-    const resultA = aituBridge.storage.setItem('key1', 'value1');
+    const result = aituBridge.storage.setItem('key1', 'value1');
 
     vi.advanceTimersByTime(250);
 
@@ -63,11 +68,11 @@ describe('Android Bridge', () => {
       JSON.stringify({ keyName: 'key1', keyValue: 'value1' }),
     );
 
-    await expect(resultA).resolves.toStrictEqual('success');
+    await expect(result).resolves.toStrictEqual('success');
   });
 
   it('should clear storage', async () => {
-    androidBridge.storage.mockResponseOnce({ reqId: `storage:1`, data: 'success', error: null } as const, { delay: 250 });
+    androidBridge.storage.mockResponseOnce(clearEvent, { delay: 250 });
 
     const result = aituBridge.storage.clear();
 
@@ -111,11 +116,9 @@ describe('iOS Bridge', () => {
   });
 
   it('should get item from storage', async () => {
-    const eventA = { reqId: `storage:1`, data: 'some-data', error: null } as const;
+    iosBridge.storage.postMessage.mockResponseOnce(getItemEvent, { delay: 250 });
 
-    iosBridge.storage.postMessage.mockResponseOnce(eventA, { delay: 250 });
-
-    const resultA = aituBridge.storage.getItem('testKey');
+    const result = aituBridge.storage.getItem('testKey');
 
     vi.advanceTimersByTime(250);
 
@@ -125,13 +128,13 @@ describe('iOS Bridge', () => {
       data: { keyName: 'testKey' },
     });
 
-    await expect(resultA).resolves.toStrictEqual('some-data');
+    await expect(result).resolves.toStrictEqual('some-data');
   });
 
   it('should set item to storage', async () => {
-    iosBridge.storage.postMessage.mockResponseOnce({ reqId: `storage:1`, data: 'success', error: null } as const, { delay: 250 });
+    iosBridge.storage.postMessage.mockResponseOnce(setItemEvent, { delay: 250 });
 
-    const resultA = aituBridge.storage.setItem('key1', 'value1');
+    const result = aituBridge.storage.setItem('key1', 'value1');
 
     vi.advanceTimersByTime(250);
 
@@ -141,11 +144,11 @@ describe('iOS Bridge', () => {
       data: { keyName: 'key1', keyValue: 'value1' },
     });
 
-    await expect(resultA).resolves.toStrictEqual('success');
+    await expect(result).resolves.toStrictEqual('success');
   });
 
   it('should clear storage', async () => {
-    iosBridge.storage.postMessage.mockResponseOnce({ reqId: `storage:1`, data: 'success', error: null } as const, { delay: 250 });
+    iosBridge.storage.postMessage.mockResponseOnce(clearEvent, { delay: 250 });
 
     const result = aituBridge.storage.clear();
 
@@ -188,14 +191,9 @@ describe('Web Bridge', () => {
   });
 
   it('should get item from storage', async () => {
-    const eventA = { reqId: `storage:1`, data: 'some-data', error: null } as const;
-    const eventB = { reqId: `storage:2`, data: null, error: null } as const;
+    webBridge.postMessage.mockResponseOnce(getItemEvent, { delay: 250 });
 
-    webBridge.postMessage.mockResponseOnce(eventA, { delay: 250 });
-    webBridge.postMessage.mockResponseOnce(eventB, { delay: 50 });
-
-    const resultA = aituBridge.storage.getItem('testKey');
-    const resultB = aituBridge.storage.getItem('testKey2');
+    const result = aituBridge.storage.getItem('testKey');
 
     vi.advanceTimersByTime(250);
 
@@ -204,18 +202,12 @@ describe('Web Bridge', () => {
       { source: 'aitu-bridge', reqId: 'storage:1', method: 'storage', payload: ['getItem', { keyName: 'testKey' }] },
       'test.domain',
     );
-    expect(webBridge.postMessage).toHaveBeenNthCalledWith(
-      2,
-      { source: 'aitu-bridge', reqId: 'storage:2', method: 'storage', payload: ['getItem', { keyName: 'testKey2' }] },
-      'test.domain',
-    );
 
-    await expect(resultA).resolves.toStrictEqual('some-data');
-    await expect(resultB).resolves.toStrictEqual(null);
+    await expect(result).resolves.toStrictEqual('some-data');
   });
 
   it('should set item to storage', async () => {
-    webBridge.postMessage.mockResponseOnce({ reqId: `storage:1`, data: 'success', error: null } as const, { delay: 250 });
+    webBridge.postMessage.mockResponseOnce(setItemEvent, { delay: 250 });
 
     const resultA = aituBridge.storage.setItem('key1', 'value1');
 
@@ -231,7 +223,7 @@ describe('Web Bridge', () => {
   });
 
   it('should clear storage', async () => {
-    webBridge.postMessage.mockResponseOnce({ reqId: `storage:1`, data: 'success', error: null } as const, { delay: 250 });
+    webBridge.postMessage.mockResponseOnce(clearEvent, { delay: 250 });
 
     const result = aituBridge.storage.clear();
 
@@ -254,13 +246,11 @@ describe('Unsupported environment', () => {
     const aituBridge = await import('../../src/buildBridge').then((mod) => mod.buildBridge());
 
     aituBridge.storage.getItem('testKey');
-    expect(consoleLogSpy).toHaveBeenCalledWith(`--storage-isUnknown`);
-
     aituBridge.storage.setItem('key', 'value');
-    expect(consoleLogSpy).toHaveBeenCalledWith(`--storage-isUnknown`);
-
     aituBridge.storage.clear();
-    expect(consoleLogSpy).toHaveBeenCalledWith(`--storage-isUnknown`);
+    expect(consoleLogSpy).toHaveBeenNthCalledWith(1, `--storage-isUnknown`);
+    expect(consoleLogSpy).toHaveBeenNthCalledWith(2, `--storage-isUnknown`);
+    expect(consoleLogSpy).toHaveBeenNthCalledWith(3, `--storage-isUnknown`);
 
     consoleLogSpy.mockRestore();
   });

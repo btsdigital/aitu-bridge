@@ -27,8 +27,6 @@ export const buildBridge = (): AituBridge => {
   const shareImageMethod = 'shareImage';
   const shareFileMethod = 'shareFile';
   const vibrateMethod = 'vibrate';
-  const enableScreenCaptureMethod = 'enableScreenCapture';
-  const disableScreenCaptureMethod = 'disableScreenCapture';
   const setHeaderMenuItemsMethod = 'setHeaderMenuItems';
   const setCustomBackArrowModeMethod = 'setCustomBackArrowMode';
   const getCustomBackArrowModeMethod = 'getCustomBackArrowMode';
@@ -177,36 +175,6 @@ export const buildBridge = (): AituBridge => {
       web.execute(copyToClipboardMethod, reqId, text);
     } else if (typeof window !== 'undefined') {
       console.log('--copyToClipboard-isUnknown');
-    }
-  };
-
-  const enableScreenCapture = (reqId: string) => {
-    const isAndroid = android && android[enableScreenCaptureMethod];
-    const isIos = ios && ios[enableScreenCaptureMethod];
-
-    if (isAndroid) {
-      android[enableScreenCaptureMethod](reqId);
-    } else if (isIos) {
-      ios[enableScreenCaptureMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(enableScreenCaptureMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--enableScreenCapture-isUnknown');
-    }
-  };
-
-  const disableScreenCapture = (reqId: string) => {
-    const isAndroid = android && android[disableScreenCaptureMethod];
-    const isIos = ios && ios[disableScreenCaptureMethod];
-
-    if (isAndroid) {
-      android[disableScreenCaptureMethod](reqId);
-    } else if (isIos) {
-      ios[disableScreenCaptureMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(disableScreenCaptureMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--disableScreenCapture-isUnknown');
     }
   };
 
@@ -481,16 +449,7 @@ export const buildBridge = (): AituBridge => {
   const shareImagePromise = promisifyMethod<Awaited<ReturnType<AituBridge['shareImage']>>>(shareImage, shareImageMethod, sub);
   const shareFilePromise = promisifyMethod<BridgeMethodResult<'shareFile'>>(shareFile, shareFileMethod, sub);
   const vibratePromise = promisifyMethod<BridgeMethodResult<'vibrate'>>(vibrate, vibrateMethod, sub);
-  const enableScreenCapturePromise = promisifyMethod<BridgeMethodResult<'enableScreenCapture'>>(
-    enableScreenCapture,
-    enableScreenCaptureMethod,
-    sub
-  );
-  const disableScreenCapturePromise = promisifyMethod<BridgeMethodResult<'disableScreenCapture'>>(
-    disableScreenCapture,
-    disableScreenCaptureMethod,
-    sub
-  );
+
   const setHeaderMenuItemsPromise = promisifyMethod<BridgeMethodResult<'setHeaderMenuItems'>>(
     setHeaderMenuItems,
     setHeaderMenuItemsMethod,
@@ -560,6 +519,10 @@ export const buildBridge = (): AituBridge => {
 
   const setCustomBackArrowOnClickHandler = createAction('setCustomBackArrowOnClickHandler');
 
+  const enableScreenCapture = createAction('enableScreenCapture');
+
+  const disableScreenCapture = createAction('disableScreenCapture');
+
   return {
     version: VERSION,
     copyToClipboard: copyToClipboardPromise,
@@ -594,8 +557,8 @@ export const buildBridge = (): AituBridge => {
     isSupported,
     supports,
     sub,
-    enableScreenCapture: enableScreenCapturePromise,
-    disableScreenCapture: disableScreenCapturePromise,
+    enableScreenCapture,
+    disableScreenCapture,
     setHeaderMenuItems: setHeaderMenuItemsPromise,
     setHeaderMenuItemClickHandler,
     setCustomBackArrowMode: setCustomBackArrowModePromise,

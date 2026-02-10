@@ -19,6 +19,7 @@ export interface AituBridge {
     enableScreenCapture: () => Promise<{}>;
     enableSwipeBack: () => Promise<SuccessResponse>;
     getContacts: () => Promise<GetContactsResponse>;
+    // @deprecated
     getCustomBackArrowMode: () => Promise<boolean>;
     getGeo: () => Promise<GetGeoResponse>;
     getMe: () => Promise<GetMeResponse>;
@@ -38,8 +39,10 @@ export interface AituBridge {
     readNFCData: () => Promise<string>;
     readNFCPassport: (passportNumber: string, dateOfBirth: string, expirationDate: string) => Promise<PassportDataResponse>;
     selectContact: () => Promise<SelectContactResponse>;
+    // @deprecated
     setCustomBackArrowMode: (enabled: boolean) => Promise<SuccessResponse>;
     setCustomBackArrowOnClickHandler: (handler: BackArrowClickHandlerType) => void;
+    // @deprecated
     setCustomBackArrowVisible: (visible: boolean) => Promise<SuccessResponse>;
     setHeaderMenuItemClickHandler: (handler: HeaderMenuItemClickHandlerType) => void;
     setHeaderMenuItems: (items: Array<HeaderMenuItem>) => Promise<SuccessResponse>;

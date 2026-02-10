@@ -653,7 +653,8 @@ export interface AituBridge {
 
   /**
    * Enables or disables custom back arrow handling.
-   *
+   * 
+   * @deprecated Use {@link AituBridge.setNavigationItemMode} instead.
    * @param enabled - Whether custom handling is enabled
    * @returns A promise resolving to a SuccessResponse indicating the result of the operation.
    */
@@ -661,13 +662,16 @@ export interface AituBridge {
 
   /**
    * Returns whether custom back arrow mode is enabled.
+   * 
+   * @deprecated Use {@link AituBridge.getNavigationItemMode} instead.
    * @returns A promise resolving to a boolean indicating the current mode.
    */
   getCustomBackArrowMode: () => Promise<boolean>;
 
   /**
    * Controls the visibility of the custom back arrow.
-   *
+   * 
+   * @deprecated Use {@link AituBridge.setNavigationItemMode} instead.
    * @param visible - Arrow visibility state
    * @returns A promise resolving to a {@link SuccessResponse} indicating the result of the operation.
    */
@@ -861,7 +865,10 @@ export type InvokableAction =
   | AsyncAction<'unsubscribeUserStepInfo', never, SuccessResponse>
   | AsyncAction<'readNFCPassport', [passportNumber: string, dateOfBirth: string, expirationDate: string], PassportDataResponse>
   | AsyncAction<'enableScreenCapture', never, Record<string, never>>
-  | AsyncAction<'disableScreenCapture', never, Record<string, never>>;
+  | AsyncAction<'disableScreenCapture', never, Record<string, never>>
+  | AsyncAction<'getCustomBackArrowMode', never, boolean>
+  | AsyncAction<'setCustomBackArrowMode', [enabled: boolean], SuccessResponse>
+  | AsyncAction<'setCustomBackArrowVisible', [visible: boolean], SuccessResponse>;
 
 /**
  * @internal

@@ -34,6 +34,18 @@ const makeArgs = (action: BridgeAction): { [key: string]: unknown } => {
     };
   }
 
+  if (action.type === 'setCustomBackArrowMode') {
+    const [enabled] = action.payload;
+
+    return { enabled };
+  }
+
+  if (action.type === 'setCustomBackArrowVisible') {
+    const [visible] = action.payload;
+
+    return { visible };
+  }
+
   return {};
 };
 

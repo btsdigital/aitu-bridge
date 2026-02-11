@@ -868,7 +868,9 @@ export type InvokableAction =
   | AsyncAction<'disableScreenCapture', never, Record<string, never>>
   | AsyncAction<'getCustomBackArrowMode', never, boolean>
   | AsyncAction<'setCustomBackArrowMode', [enabled: boolean], SuccessResponse>
-  | AsyncAction<'setCustomBackArrowVisible', [visible: boolean], SuccessResponse>;
+  | AsyncAction<'setCustomBackArrowVisible', [visible: boolean], SuccessResponse>
+  | AsyncAction<'getNavigationItemMode', never, NavigationItemMode>
+  | AsyncAction<'setNavigationItemMode', [mode: NavigationItemMode], SuccessResponse>;
 
 /**
  * @internal

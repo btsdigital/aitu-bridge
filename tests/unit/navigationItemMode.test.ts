@@ -51,12 +51,9 @@ describe('Android Bridge', () => {
 
     vi.advanceTimersByTime(250);
 
-    expect(androidBridge.setNavigationItemMode).toHaveBeenCalledWith(
-      'setNavigationItemMode:1',
-      NavigationItemMode.SystemBackArrow,
-    );
+    expect(androidBridge.setNavigationItemMode).toHaveBeenCalledWith('setNavigationItemMode:1', NavigationItemMode.SystemBackArrow);
 
-    await expect(result).resolves.toBeUndefined();
+    await expect(result).resolves.toStrictEqual('success');
   });
 
   it('should get navigation item mode', async () => {
@@ -70,7 +67,6 @@ describe('Android Bridge', () => {
 
     await expect(result).resolves.toStrictEqual(NavigationItemMode.SystemBackArrow);
   });
-
 });
 
 describe('iOS Bridge', () => {
@@ -116,7 +112,7 @@ describe('iOS Bridge', () => {
       mode: NavigationItemMode.SystemBackArrow,
     });
 
-    await expect(result).resolves.toBeUndefined();
+    await expect(result).resolves.toStrictEqual('success');
   });
 
   it('should post getNavigationItemMode message', async () => {
@@ -130,7 +126,6 @@ describe('iOS Bridge', () => {
 
     await expect(result).resolves.toStrictEqual(NavigationItemMode.SystemBackArrow);
   });
-
 });
 
 describe('Web Bridge', () => {
@@ -182,7 +177,7 @@ describe('Web Bridge', () => {
       'test.domain',
     );
 
-    await expect(result).resolves.toBeUndefined();
+    await expect(result).resolves.toStrictEqual('success');
   });
 
   it('should post getNavigationItemMode message', async () => {

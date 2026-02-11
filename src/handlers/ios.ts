@@ -46,6 +46,12 @@ const makeArgs = (action: BridgeAction): { [key: string]: unknown } => {
     return { visible };
   }
 
+  if (action.type === 'setNavigationItemMode') {
+    const [mode] = action.payload;
+
+    return { mode };
+  }
+
   return {};
 };
 

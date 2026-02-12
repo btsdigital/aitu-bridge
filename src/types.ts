@@ -870,7 +870,9 @@ export type InvokableAction =
   | AsyncAction<'setCustomBackArrowMode', [enabled: boolean], SuccessResponse>
   | AsyncAction<'setCustomBackArrowVisible', [visible: boolean], SuccessResponse>
   | AsyncAction<'getNavigationItemMode', never, NavigationItemMode>
-  | AsyncAction<'setNavigationItemMode', [mode: NavigationItemMode], SuccessResponse>;
+  | AsyncAction<'setNavigationItemMode', [mode: NavigationItemMode], SuccessResponse>
+  | AsyncAction<'share', [text: string], SuccessResponse>
+  | AsyncAction<'shareFile', [text: string, filename: string, base64Data: string], SuccessResponse>;
 
 /**
  * @internal

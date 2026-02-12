@@ -52,6 +52,22 @@ const makeArgs = (action: BridgeAction): { [key: string]: unknown } => {
     return { mode };
   }
 
+  if (action.type === 'share') {
+    const [text] = action.payload;
+
+    return { text };
+  }
+
+  if (action.type === 'shareFile') {
+    const [text, filename, base64Data] = action.payload;
+
+    return {
+      text,
+      filename,
+      base64Data,
+    };
+  }
+
   return {};
 };
 

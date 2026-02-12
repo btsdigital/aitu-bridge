@@ -21,11 +21,8 @@ export const buildBridge = (): AituBridge => {
   const getQrMethod = 'getQr';
   const getSMSCodeMethod = 'getSMSCode';
   const selectContactMethod = 'selectContact';
-  const shareMethod = 'share';
   const setTitleMethod = 'setTitle';
   const copyToClipboardMethod = 'copyToClipboard';
-  const shareImageMethod = 'shareImage';
-  const shareFileMethod = 'shareFile';
   const vibrateMethod = 'vibrate';
   const setHeaderMenuItemsMethod = 'setHeaderMenuItems';
   const openPaymentMethod = 'openPayment';
@@ -128,21 +125,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const share = (reqId: string, text: string) => {
-    const isAndroid = android && android[shareMethod];
-    const isIos = ios && ios[shareMethod];
-
-    if (isAndroid) {
-      android[shareMethod](reqId, text);
-    } else if (isIos) {
-      ios[shareMethod].postMessage({ reqId, text });
-    } else if (web) {
-      web.execute(shareMethod, reqId, text);
-    } else if (typeof window !== 'undefined') {
-      console.log('--share-isUnknown');
-    }
-  };
-
   const setTitle = (reqId: string, text: string) => {
     const isAndroid = android && android[setTitleMethod];
     const isIos = ios && ios[setTitleMethod];
@@ -170,58 +152,6 @@ export const buildBridge = (): AituBridge => {
       web.execute(copyToClipboardMethod, reqId, text);
     } else if (typeof window !== 'undefined') {
       console.log('--copyToClipboard-isUnknown');
-    }
-  };
-
-  const shareImage = (reqId: string, text: string, image: string) => {
-    // !!!======================!!!
-    // !!!===== Deprecated =====!!!
-    // !!!======================!!!
-
-    // const isAndroid = android && android[shareImageMethod];
-    // const isIos = ios && ios[shareImageMethod];
-
-    // if (isAndroid) {
-    //   android[shareImageMethod](reqId, text, image);
-    // } else if (isIos) {
-    //   ios[shareImageMethod].postMessage({ reqId, text, image });
-    // } else if (typeof window !== 'undefined') {
-    //   console.log('--shareImage-isWeb');
-    // }
-
-    // new one - fallback to shareFile
-    const isAndroid = android && android[shareFileMethod];
-    const isIos = ios && ios[shareFileMethod];
-
-    // get extension from base64 mime type and merge with name
-    const ext = image.split(';')?.[0]?.split('/')[1] ?? '';
-    const filename = 'image.' + ext;
-    // remove mime type
-    const base64Data = image.substr(image.indexOf(',') + 1);
-
-    if (isAndroid) {
-      android[shareFileMethod](reqId, text, filename, base64Data);
-    } else if (isIos) {
-      ios[shareFileMethod].postMessage({ reqId, text, filename, base64Data });
-    } else if (web) {
-      web.execute(shareFileMethod, reqId, { text, filename, base64Data });
-    } else if (typeof window !== 'undefined') {
-      console.log('--shareFile-isUnknown');
-    }
-  };
-
-  const shareFile = (reqId: string, text: string, filename: string, base64Data: string) => {
-    const isAndroid = android && android[shareFileMethod];
-    const isIos = ios && ios[shareFileMethod];
-
-    if (isAndroid) {
-      android[shareFileMethod](reqId, text, filename, base64Data);
-    } else if (isIos) {
-      ios[shareFileMethod].postMessage({ reqId, text, filename, base64Data });
-    } else if (web) {
-      web.execute(shareFileMethod, reqId, text, filename, base64Data);
-    } else if (typeof window !== 'undefined') {
-      console.log('--shareFile-isUnknown');
     }
   };
 
@@ -351,11 +281,8 @@ export const buildBridge = (): AituBridge => {
   const getQrPromise = promisifyMethod<BridgeMethodResult<'getQr'>>(getQr, getQrMethod, sub);
   const getSMSCodePromise = promisifyMethod<BridgeMethodResult<'getSMSCode'>>(getSMSCode, getSMSCodeMethod, sub);
   const selectContactPromise = promisifyMethod<BridgeMethodResult<'selectContact'>>(selectContact, selectContactMethod, sub);
-  const sharePromise = promisifyMethod<BridgeMethodResult<'share'>>(share, shareMethod, sub);
   const setTitlePromise = promisifyMethod<BridgeMethodResult<'setTitle'>>(setTitle, setTitleMethod, sub);
   const copyToClipboardPromise = promisifyMethod<BridgeMethodResult<'copyToClipboard'>>(copyToClipboard, copyToClipboardMethod, sub);
-  const shareImagePromise = promisifyMethod<Awaited<ReturnType<AituBridge['shareImage']>>>(shareImage, shareImageMethod, sub);
-  const shareFilePromise = promisifyMethod<BridgeMethodResult<'shareFile'>>(shareFile, shareFileMethod, sub);
   const vibratePromise = promisifyMethod<BridgeMethodResult<'vibrate'>>(vibrate, vibrateMethod, sub);
 
   const setHeaderMenuItemsPromise = promisifyMethod<BridgeMethodResult<'setHeaderMenuItems'>>(
@@ -415,6 +342,19 @@ export const buildBridge = (): AituBridge => {
   const getNavigationItemMode = createAction('getNavigationItemMode');
 
   const setNavigationItemMode = createAction('setNavigationItemMode');
+  
+  const share = createAction('share');
+
+  const shareFile = createAction('shareFile');
+
+  const shareImage = (text: string, dataUrl: string) => {
+    const ext = dataUrl.split(';')?.[0]?.split('/')[1] ?? '';
+    const filename = 'image.' + ext;
+    // remove mime type
+    const base64Data = dataUrl.substr(dataUrl.indexOf(',') + 1);
+
+    return shareFile(text, filename, base64Data);
+  };
 
   return {
     version: VERSION,
@@ -441,9 +381,9 @@ export const buildBridge = (): AituBridge => {
     openSettings,
     closeApplication,
     setTitle: setTitlePromise,
-    share: sharePromise,
-    shareImage: shareImagePromise,
-    shareFile: shareFilePromise,
+    share,
+    shareImage,
+    shareFile,
     setShakeHandler,
     setTabActiveHandler,
     vibrate: vibratePromise,

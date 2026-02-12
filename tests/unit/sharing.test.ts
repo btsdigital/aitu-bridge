@@ -6,11 +6,10 @@ import type { AituBridge } from '../../src/types';
 
 const shareFileEvent = { reqId: `shareFile:1`, data: 'success', error: null } as const;
 
-const shareImageEvent = { reqId: `shareImage:1`, data: 'success', error: null } as const;
-
 const shareEvent = { reqId: `share:1`, data: 'success', error: null } as const;
 
-const pngBase64Data = 'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAVUlEQVR4AWSOCQ4AIQjEqP//8y7FICYaOVJGxvXliYjM75WvTE4tAVQ1AcVLIOiAEclKAAPTSH5iwV4luYfd+0lnxx9mm4OysOkX9gZsYVncoIVdfwAAAP//SBT8gAAAAAZJREFUAwD9+jf3yeOUmQAAAABJRU5ErkJggg==';
+const pngBase64Data =
+  'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAVUlEQVR4AWSOCQ4AIQjEqP//8y7FICYaOVJGxvXliYjM75WvTE4tAVQ1AcVLIOiAEclKAAPTSH5iwV4luYfd+0lnxx9mm4OysOkX9gZsYVncoIVdfwAAAP//SBT8gAAAAAZJREFUAwD9+jf3yeOUmQAAAABJRU5ErkJggg==';
 
 describe('Android Bridge', () => {
   let cleanup: ReturnType<typeof setupAndroidFixture>['cleanup'];
@@ -69,17 +68,17 @@ describe('Android Bridge', () => {
     await expect(result).resolves.toStrictEqual(shareFileEvent.data);
   });
 
-  it('should shareImage', async () => {
+  it('should share image', async () => {
     const payload = ['some text', `data:image/png;base64,${pngBase64Data}`] as const;
-    androidBridge.shareFile.mockResponseOnce(shareImageEvent, { delay: 250 });
+    androidBridge.shareFile.mockResponseOnce(shareFileEvent, { delay: 250 });
 
     const result = aituBridge.shareImage(...payload);
 
     vi.advanceTimersByTime(250);
 
-    expect(androidBridge.shareFile).toHaveBeenCalledWith('shareImage:1', payload[0], 'image.png', pngBase64Data);
+    expect(androidBridge.shareFile).toHaveBeenCalledWith('shareFile:1', payload[0], 'image.png', pngBase64Data);
 
-    await expect(result).resolves.toStrictEqual(shareImageEvent.data);
+    await expect(result).resolves.toStrictEqual(shareFileEvent.data);
   });
 });
 
@@ -148,22 +147,22 @@ describe('iOS Bridge', () => {
     await expect(result).resolves.toStrictEqual(shareFileEvent.data);
   });
 
-  it('should shareImage', async () => {
+  it('should share image', async () => {
     const payload = ['some text', `data:image/png;base64,${pngBase64Data}`] as const;
-    iosBridge.shareFile.postMessage.mockResponseOnce(shareImageEvent, { delay: 250 });
+    iosBridge.shareFile.postMessage.mockResponseOnce(shareFileEvent, { delay: 250 });
 
     const result = aituBridge.shareImage(...payload);
 
     vi.advanceTimersByTime(250);
 
     expect(iosBridge.shareFile.postMessage).toHaveBeenCalledWith({
-      reqId: 'shareImage:1',
+      reqId: 'shareFile:1',
       text: payload[0],
       filename: 'image.png',
       base64Data: pngBase64Data,
     });
 
-    await expect(result).resolves.toStrictEqual(shareImageEvent.data);
+    await expect(result).resolves.toStrictEqual(shareFileEvent.data);
   });
 });
 
@@ -233,7 +232,7 @@ describe('Web Bridge', () => {
   it('should shareImage', async () => {
     const payload = ['some text', `data:image/png;base64,${pngBase64Data}`] as const;
 
-    webBridge.postMessage.mockResponseOnce(shareImageEvent, { delay: 250 });
+    webBridge.postMessage.mockResponseOnce(shareFileEvent, { delay: 250 });
 
     const result = aituBridge.shareImage(...payload);
 
@@ -242,20 +241,14 @@ describe('Web Bridge', () => {
     expect(webBridge.postMessage).toHaveBeenCalledWith(
       {
         source: 'aitu-bridge',
-        reqId: 'shareImage:1',
+        reqId: 'shareFile:1',
         method: 'shareFile',
-        payload: [
-          {
-            text: 'some text',
-            filename: 'image.png',
-            base64Data: pngBase64Data,
-          },
-        ],
+        payload: ['some text', 'image.png', pngBase64Data],
       },
       'test.domain',
     );
 
-    await expect(result).resolves.toStrictEqual(shareImageEvent.data);
+    await expect(result).resolves.toStrictEqual(shareFileEvent.data);
   });
 });
 

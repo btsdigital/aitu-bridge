@@ -4,7 +4,7 @@ import { type WebBridge, createWebBridge } from './webBridge';
 
 import type { AituEventHandler, RequestMethods, AituBridge, HeaderMenuItem, BridgeMethodResult } from './types';
 
-import { EInvokeRequest, type NavigationItemMode } from './types';
+import { EInvokeRequest } from './types';
 import { isBrowser } from './lib/isBrowser';
 import { isIframe } from './lib/isIframe';
 import { createActionFactory } from './createActionFactory';
@@ -28,14 +28,9 @@ export const buildBridge = (): AituBridge => {
   const shareFileMethod = 'shareFile';
   const vibrateMethod = 'vibrate';
   const setHeaderMenuItemsMethod = 'setHeaderMenuItems';
-  const setCustomBackArrowModeMethod = 'setCustomBackArrowMode';
-  const getCustomBackArrowModeMethod = 'getCustomBackArrowMode';
-  const setCustomBackArrowVisibleMethod = 'setCustomBackArrowVisible';
   const openPaymentMethod = 'openPayment';
   const checkBiometryMethod = 'checkBiometry';
   const openExternalUrlMethod = 'openExternalUrl';
-  const setNavigationItemModeMethod = 'setNavigationItemMode';
-  const getNavigationItemModeMethod = 'getNavigationItemMode';
   const getUserStepInfoMethod = 'getUserStepInfo';
 
   const MAX_HEADER_MENU_ITEMS_COUNT = 3;
@@ -295,63 +290,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  /**
-   * @deprecated данный метод не рекомендуется использовать
-   * вместо него используйте setNavigationItemMode
-   */
-  const setCustomBackArrowMode = (reqId: string, enabled: boolean) => {
-    const isAndroid = android && android[setCustomBackArrowModeMethod];
-    const isIos = ios && ios[setCustomBackArrowModeMethod];
-
-    if (isAndroid) {
-      android[setCustomBackArrowModeMethod](reqId, enabled);
-    } else if (isIos) {
-      ios[setCustomBackArrowModeMethod].postMessage({ reqId, enabled });
-    } else if (web) {
-      web.execute(setCustomBackArrowModeMethod, reqId, enabled);
-    } else if (typeof window !== 'undefined') {
-      console.log('--setCustomBackArrowMode-isUnknown');
-    }
-  };
-
-  /**
-   * @deprecated данный метод не рекомендуется использовать
-   * вместо него используйте getNavigationItemMode
-   */
-  const getCustomBackArrowMode = (reqId: string) => {
-    const isAndroid = android && android[getCustomBackArrowModeMethod];
-    const isIos = ios && ios[getCustomBackArrowModeMethod];
-
-    if (isAndroid) {
-      android[getCustomBackArrowModeMethod](reqId);
-    } else if (isIos) {
-      ios[getCustomBackArrowModeMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(getCustomBackArrowModeMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--getCustomBackArrowMode-isUnknown');
-    }
-  };
-
-  /**
-   * @deprecated данный метод не рекомендуется использовать
-   * вместо него используйте setNavigationItemMode
-   */
-  const setCustomBackArrowVisible = (reqId: string, visible: boolean) => {
-    const isAndroid = android && android[setCustomBackArrowVisibleMethod];
-    const isIos = ios && ios[setCustomBackArrowVisibleMethod];
-
-    if (isAndroid) {
-      android[setCustomBackArrowVisibleMethod](reqId, visible);
-    } else if (isIos) {
-      ios[setCustomBackArrowVisibleMethod].postMessage({ reqId, visible });
-    } else if (web) {
-      web.execute(setCustomBackArrowVisibleMethod, reqId, visible);
-    } else if (typeof window !== 'undefined') {
-      console.log('--setCustomBackArrowVisible-isUnknown');
-    }
-  };
-
   const openPayment = (reqId: string, transactionId: string) => {
     const isAndroid = android && android[openPaymentMethod];
     const isIos = ios && ios[openPaymentMethod];
@@ -393,36 +331,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const setNavigationItemMode = (reqId: string, mode: NavigationItemMode) => {
-    const isAndroid = android && android[setNavigationItemModeMethod];
-    const isIos = ios && ios[setNavigationItemModeMethod];
-
-    if (isAndroid) {
-      android[setNavigationItemModeMethod](reqId, mode);
-    } else if (isIos) {
-      ios[setNavigationItemModeMethod].postMessage({ reqId, mode });
-    } else if (web) {
-      web.execute(setNavigationItemModeMethod, reqId, mode);
-    } else if (typeof window !== 'undefined') {
-      console.log('--setNavigationItemMode-isUnknown');
-    }
-  };
-
-  const getNavigationItemMode = (reqId: string) => {
-    const isAndroid = android && android[getNavigationItemModeMethod];
-    const isIos = ios && ios[getNavigationItemModeMethod];
-
-    if (isAndroid) {
-      android[getNavigationItemModeMethod](reqId);
-    } else if (isIos) {
-      ios[getNavigationItemModeMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(getNavigationItemModeMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--getNavigationItemMode-isUnknown');
-    }
-  };
-
   const getUserStepInfo = (reqId: string) => {
     const isAndroid = android && android[getUserStepInfoMethod];
     const isIos = ios && ios[getUserStepInfoMethod];
@@ -455,34 +363,9 @@ export const buildBridge = (): AituBridge => {
     setHeaderMenuItemsMethod,
     sub
   );
-  const setCustomBackArrowModePromise = promisifyMethod<BridgeMethodResult<'setCustomBackArrowMode'>>(
-    setCustomBackArrowMode,
-    setCustomBackArrowModeMethod,
-    sub
-  );
-  const getCustomBackArrowModePromise = promisifyMethod<BridgeMethodResult<'getCustomBackArrowMode'>>(
-    getCustomBackArrowMode,
-    getCustomBackArrowModeMethod,
-    sub
-  );
-  const setCustomBackArrowVisiblePromise = promisifyMethod<BridgeMethodResult<'setCustomBackArrowVisible'>>(
-    setCustomBackArrowVisible,
-    setCustomBackArrowVisibleMethod,
-    sub
-  );
   const openPaymentPromise = promisifyMethod<BridgeMethodResult<'openPayment'>>(openPayment, openPaymentMethod, sub);
   const checkBiometryPromise = promisifyMethod<BridgeMethodResult<'checkBiometry'>>(checkBiometry, checkBiometryMethod, sub);
   const openExternalUrlPromise = promisifyMethod<BridgeMethodResult<'openExternalUrl'>>(openExternalUrl, openExternalUrlMethod, sub);
-  const setNavigationItemModePromise = promisifyMethod<BridgeMethodResult<'setNavigationItemMode'>>(
-    setNavigationItemMode,
-    setNavigationItemModeMethod,
-    sub
-  );
-  const getNavigationItemModePromise = promisifyMethod<BridgeMethodResult<'getNavigationItemMode'>>(
-    getNavigationItemMode,
-    getNavigationItemModeMethod,
-    sub
-  );
   const getUserStepInfoPromise = promisifyMethod<BridgeMethodResult<'getUserStepInfo'>>(getUserStepInfo, getUserStepInfoMethod, sub);
 
   const createAction = createActionFactory(handler);
@@ -523,6 +406,16 @@ export const buildBridge = (): AituBridge => {
 
   const disableScreenCapture = createAction('disableScreenCapture');
 
+  const setCustomBackArrowMode = createAction('setCustomBackArrowMode');
+
+  const getCustomBackArrowMode = createAction('getCustomBackArrowMode');
+
+  const setCustomBackArrowVisible = createAction('setCustomBackArrowVisible');
+
+  const getNavigationItemMode = createAction('getNavigationItemMode');
+
+  const setNavigationItemMode = createAction('setNavigationItemMode');
+
   return {
     version: VERSION,
     copyToClipboard: copyToClipboardPromise,
@@ -561,17 +454,17 @@ export const buildBridge = (): AituBridge => {
     disableScreenCapture,
     setHeaderMenuItems: setHeaderMenuItemsPromise,
     setHeaderMenuItemClickHandler,
-    setCustomBackArrowMode: setCustomBackArrowModePromise,
-    getCustomBackArrowMode: getCustomBackArrowModePromise,
-    setCustomBackArrowVisible: setCustomBackArrowVisiblePromise,
+    setCustomBackArrowMode,
+    getCustomBackArrowMode,
+    setCustomBackArrowVisible,
     openPayment: openPaymentPromise,
     setCustomBackArrowOnClickHandler,
     checkBiometry: checkBiometryPromise,
     openExternalUrl: openExternalUrlPromise,
     enableSwipeBack,
     disableSwipeBack,
-    setNavigationItemMode: setNavigationItemModePromise,
-    getNavigationItemMode: getNavigationItemModePromise,
+    setNavigationItemMode,
+    getNavigationItemMode,
     getUserStepInfo: getUserStepInfoPromise,
     isESimSupported,
     activateESim,

@@ -76,6 +76,14 @@ const makeArgs = (action: BridgeAction): { [key: string]: unknown } => {
     };
   }
 
+  if (action.type === 'openPayment') {
+    const [transactionId] = action.payload;
+
+    return {
+      transactionId,
+    };
+  }
+
   return {};
 };
 

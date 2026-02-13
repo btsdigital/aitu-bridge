@@ -892,7 +892,8 @@ export type InvokableAction =
   | AsyncAction<'selectContact', never, SelectContactResponse>
   | AsyncAction<'setTitle', [title: string], SuccessResponse>
   | AsyncAction<'copyToClipboard', [text: string], SuccessResponse>
-  | AsyncAction<'checkBiometry', never, BiometryResponse>;
+  | AsyncAction<'checkBiometry', never, BiometryResponse>
+  | AsyncAction<'getUserStepInfo', never, UserStepInfoResponse>;
 
 /**
  * @internal

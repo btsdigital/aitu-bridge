@@ -115,7 +115,7 @@ describe('Web Bridge', () => {
 
     await expect(result).toBeInstanceOf(Promise);
 
-    expect(consoleLogSpy).toHaveBeenCalledWith(`--getUserStepInfo-isWeb`);
+    expect(consoleLogSpy).toHaveBeenCalledWith(`--getUserStepInfo-isUnknown`);
 
     consoleLogSpy.mockRestore();
     fixture.cleanup();

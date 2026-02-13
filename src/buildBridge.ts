@@ -45,22 +45,6 @@ export const buildBridge = (): AituBridge => {
   }
 
 
-  const copyToClipboard = (reqId: string, text: string) => {
-    const isAndroid = android && android[copyToClipboardMethod];
-    const isIos = ios && ios[copyToClipboardMethod];
-
-    if (isAndroid) {
-      android[copyToClipboardMethod](reqId, text);
-    } else if (isIos) {
-      ios[copyToClipboardMethod].postMessage({ reqId, text });
-    } else if (web) {
-      web.execute(copyToClipboardMethod, reqId, text);
-    } else if (typeof window !== 'undefined') {
-      console.log('--copyToClipboard-isUnknown');
-    }
-  };
-
-
   const vibrate = (reqId: string, pattern: number[]) => {
     if (
       !Array.isArray(pattern) ||
@@ -178,7 +162,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const copyToClipboardPromise = promisifyMethod<BridgeMethodResult<'copyToClipboard'>>(copyToClipboard, copyToClipboardMethod, sub);
   const vibratePromise = promisifyMethod<BridgeMethodResult<'vibrate'>>(vibrate, vibrateMethod, sub);
 
   const setHeaderMenuItemsPromise = promisifyMethod<BridgeMethodResult<'setHeaderMenuItems'>>(
@@ -266,9 +249,11 @@ export const buildBridge = (): AituBridge => {
 
   const setTitle = createAction('setTitle');
 
+  const copyToClipboard = createAction('copyToClipboard');
+
   return {
     version: VERSION,
-    copyToClipboard: copyToClipboardPromise,
+    copyToClipboard,
     invoke: invoke as BridgeInvoke<EInvokeRequest, ResponseObject>,
     storage: {
       getItem: (keyName: string) => storage('getItem', { keyName }),

@@ -39,6 +39,10 @@ export const webHandlerFactory: ActionHandlerFactory = {
           return callbacksHandler.handleAction(action);
         }
 
+        if(action.type === 'getUserStepInfo') {
+          return nullHandler.handleAction(action);
+        }
+
         window?.top?.postMessage(
           {
             source: 'aitu-bridge',

@@ -16,12 +16,10 @@ import { nullHandler } from './handlers/null';
 declare const VERSION: string;
 
 export const buildBridge = (): AituBridge => {
-  const copyToClipboardMethod = 'copyToClipboard';
   const vibrateMethod = 'vibrate';
   const setHeaderMenuItemsMethod = 'setHeaderMenuItems';
   const openPaymentMethod = 'openPayment';
   const openExternalUrlMethod = 'openExternalUrl';
-  const getUserStepInfoMethod = 'getUserStepInfo';
 
   const MAX_HEADER_MENU_ITEMS_COUNT = 3;
   const isBrowserEnv = isBrowser();
@@ -131,21 +129,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const getUserStepInfo = (reqId: string) => {
-    const isAndroid = android && android[getUserStepInfoMethod];
-    const isIos = ios && ios[getUserStepInfoMethod];
-
-    if (isAndroid) {
-      android[getUserStepInfoMethod](reqId);
-    } else if (isIos) {
-      ios[getUserStepInfoMethod].postMessage({ reqId });
-    } else if (web) {
-      console.log('--getUserStepInfo-isWeb');
-    } else if (typeof window !== 'undefined') {
-      console.log('--getUserStepInfo-isUnknown');
-    }
-  };
-
   const vibratePromise = promisifyMethod<BridgeMethodResult<'vibrate'>>(vibrate, vibrateMethod, sub);
 
   const setHeaderMenuItemsPromise = promisifyMethod<BridgeMethodResult<'setHeaderMenuItems'>>(
@@ -155,7 +138,6 @@ export const buildBridge = (): AituBridge => {
   );
   const openPaymentPromise = promisifyMethod<BridgeMethodResult<'openPayment'>>(openPayment, openPaymentMethod, sub);
   const openExternalUrlPromise = promisifyMethod<BridgeMethodResult<'openExternalUrl'>>(openExternalUrl, openExternalUrlMethod, sub);
-  const getUserStepInfoPromise = promisifyMethod<BridgeMethodResult<'getUserStepInfo'>>(getUserStepInfo, getUserStepInfoMethod, sub);
 
   const createAction = createActionFactory(handler);
 
@@ -236,6 +218,8 @@ export const buildBridge = (): AituBridge => {
 
   const checkBiometry = createAction('checkBiometry');
 
+  const getUserStepInfo = createAction('getUserStepInfo');
+
   return {
     version: VERSION,
     copyToClipboard,
@@ -285,7 +269,7 @@ export const buildBridge = (): AituBridge => {
     disableSwipeBack,
     setNavigationItemMode: setNavigationItemMode as AituBridge['setNavigationItemMode'],
     getNavigationItemMode,
-    getUserStepInfo: getUserStepInfoPromise,
+    getUserStepInfo,
     isESimSupported,
     activateESim,
     readNFCData,

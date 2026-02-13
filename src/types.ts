@@ -890,7 +890,8 @@ export type InvokableAction =
   | AsyncAction<'copyToClipboard', [text: string], SuccessResponse>
   | AsyncAction<'checkBiometry', never, BiometryResponse>
   | AsyncAction<'getUserStepInfo', never, UserStepInfoResponse>
-  | AsyncAction<'openExternalUrl', [url: string], SuccessResponse>;
+  | AsyncAction<'openExternalUrl', [url: string], SuccessResponse>
+  | AsyncAction<'openPayment', [transactionId: string], SuccessResponse>;
 
 /**
  * @internal

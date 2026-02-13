@@ -18,7 +18,6 @@ declare const VERSION: string;
 export const buildBridge = (): AituBridge => {
   const vibrateMethod = 'vibrate';
   const setHeaderMenuItemsMethod = 'setHeaderMenuItems';
-  const openPaymentMethod = 'openPayment';
 
   const MAX_HEADER_MENU_ITEMS_COUNT = 3;
   const isBrowserEnv = isBrowser();
@@ -102,19 +101,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const openPayment = (reqId: string, transactionId: string) => {
-    const isAndroid = android && android[openPaymentMethod];
-    const isIos = ios && ios[openPaymentMethod];
-
-    if (isAndroid) {
-      android[openPaymentMethod](reqId, transactionId);
-    } else if (isIos) {
-      ios[openPaymentMethod].postMessage({ reqId, transactionId });
-    } else {
-      console.log('--openPayment-isUnknown');
-    }
-  };
-
   const vibratePromise = promisifyMethod<BridgeMethodResult<'vibrate'>>(vibrate, vibrateMethod, sub);
 
   const setHeaderMenuItemsPromise = promisifyMethod<BridgeMethodResult<'setHeaderMenuItems'>>(
@@ -122,7 +108,6 @@ export const buildBridge = (): AituBridge => {
     setHeaderMenuItemsMethod,
     sub,
   );
-  const openPaymentPromise = promisifyMethod<BridgeMethodResult<'openPayment'>>(openPayment, openPaymentMethod, sub);
 
   const createAction = createActionFactory(handler);
 
@@ -207,6 +192,8 @@ export const buildBridge = (): AituBridge => {
 
   const openExternalUrl = createAction('openExternalUrl');
 
+  const openPayment = createAction('openPayment');
+
   return {
     version: VERSION,
     copyToClipboard,
@@ -248,7 +235,7 @@ export const buildBridge = (): AituBridge => {
     setCustomBackArrowMode,
     getCustomBackArrowMode,
     setCustomBackArrowVisible,
-    openPayment: openPaymentPromise,
+    openPayment,
     setCustomBackArrowOnClickHandler,
     checkBiometry,
     openExternalUrl,

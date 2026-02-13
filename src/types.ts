@@ -891,7 +891,8 @@ export type InvokableAction =
   | AsyncAction<'getSMSCode', never, string>
   | AsyncAction<'selectContact', never, SelectContactResponse>
   | AsyncAction<'setTitle', [title: string], SuccessResponse>
-  | AsyncAction<'copyToClipboard', [text: string], SuccessResponse>;
+  | AsyncAction<'copyToClipboard', [text: string], SuccessResponse>
+  | AsyncAction<'checkBiometry', never, BiometryResponse>;
 
 /**
  * @internal

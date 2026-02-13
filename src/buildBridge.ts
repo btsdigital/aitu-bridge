@@ -20,7 +20,6 @@ export const buildBridge = (): AituBridge => {
   const vibrateMethod = 'vibrate';
   const setHeaderMenuItemsMethod = 'setHeaderMenuItems';
   const openPaymentMethod = 'openPayment';
-  const checkBiometryMethod = 'checkBiometry';
   const openExternalUrlMethod = 'openExternalUrl';
   const getUserStepInfoMethod = 'getUserStepInfo';
 
@@ -112,21 +111,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const checkBiometry = (reqId: string) => {
-    const isAndroid = android && android[checkBiometryMethod];
-    const isIos = ios && ios[checkBiometryMethod];
-
-    if (isAndroid) {
-      android[checkBiometryMethod](reqId);
-    } else if (isIos) {
-      ios[checkBiometryMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(checkBiometryMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--checkBiometry-isUnknown');
-    }
-  };
-
   const openExternalUrl = (reqId: string, url: string) => {
     const isAndroid = android && android[openExternalUrlMethod];
     const isIos = ios && ios[openExternalUrlMethod];
@@ -163,7 +147,6 @@ export const buildBridge = (): AituBridge => {
     sub,
   );
   const openPaymentPromise = promisifyMethod<BridgeMethodResult<'openPayment'>>(openPayment, openPaymentMethod, sub);
-  const checkBiometryPromise = promisifyMethod<BridgeMethodResult<'checkBiometry'>>(checkBiometry, checkBiometryMethod, sub);
   const openExternalUrlPromise = promisifyMethod<BridgeMethodResult<'openExternalUrl'>>(openExternalUrl, openExternalUrlMethod, sub);
   const getUserStepInfoPromise = promisifyMethod<BridgeMethodResult<'getUserStepInfo'>>(getUserStepInfo, getUserStepInfoMethod, sub);
 
@@ -244,6 +227,8 @@ export const buildBridge = (): AituBridge => {
 
   const copyToClipboard = createAction('copyToClipboard');
 
+  const checkBiometry = createAction('checkBiometry');
+
   return {
     version: VERSION,
     copyToClipboard,
@@ -287,7 +272,7 @@ export const buildBridge = (): AituBridge => {
     setCustomBackArrowVisible,
     openPayment: openPaymentPromise,
     setCustomBackArrowOnClickHandler,
-    checkBiometry: checkBiometryPromise,
+    checkBiometry,
     openExternalUrl: openExternalUrlPromise,
     enableSwipeBack,
     disableSwipeBack,

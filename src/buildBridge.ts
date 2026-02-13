@@ -19,7 +19,6 @@ export const buildBridge = (): AituBridge => {
   const vibrateMethod = 'vibrate';
   const setHeaderMenuItemsMethod = 'setHeaderMenuItems';
   const openPaymentMethod = 'openPayment';
-  const openExternalUrlMethod = 'openExternalUrl';
 
   const MAX_HEADER_MENU_ITEMS_COUNT = 3;
   const isBrowserEnv = isBrowser();
@@ -116,19 +115,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const openExternalUrl = (reqId: string, url: string) => {
-    const isAndroid = android && android[openExternalUrlMethod];
-    const isIos = ios && ios[openExternalUrlMethod];
-
-    if (isAndroid) {
-      android[openExternalUrlMethod](reqId, url);
-    } else if (isIos) {
-      ios[openExternalUrlMethod].postMessage({ reqId, url });
-    } else {
-      console.log('--openExternalUrl-isUnknown');
-    }
-  };
-
   const vibratePromise = promisifyMethod<BridgeMethodResult<'vibrate'>>(vibrate, vibrateMethod, sub);
 
   const setHeaderMenuItemsPromise = promisifyMethod<BridgeMethodResult<'setHeaderMenuItems'>>(
@@ -137,7 +123,6 @@ export const buildBridge = (): AituBridge => {
     sub,
   );
   const openPaymentPromise = promisifyMethod<BridgeMethodResult<'openPayment'>>(openPayment, openPaymentMethod, sub);
-  const openExternalUrlPromise = promisifyMethod<BridgeMethodResult<'openExternalUrl'>>(openExternalUrl, openExternalUrlMethod, sub);
 
   const createAction = createActionFactory(handler);
 
@@ -220,6 +205,8 @@ export const buildBridge = (): AituBridge => {
 
   const getUserStepInfo = createAction('getUserStepInfo');
 
+  const openExternalUrl = createAction('openExternalUrl');
+
   return {
     version: VERSION,
     copyToClipboard,
@@ -264,7 +251,7 @@ export const buildBridge = (): AituBridge => {
     openPayment: openPaymentPromise,
     setCustomBackArrowOnClickHandler,
     checkBiometry,
-    openExternalUrl: openExternalUrlPromise,
+    openExternalUrl,
     enableSwipeBack,
     disableSwipeBack,
     setNavigationItemMode: setNavigationItemMode as AituBridge['setNavigationItemMode'],

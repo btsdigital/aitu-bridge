@@ -884,7 +884,8 @@ export type InvokableAction =
   | AsyncAction<'shareFile', [text: string, filename: string, base64Data: string], SuccessResponse>
   | AsyncAction<'getGeo', never, GetGeoResponse>
   | AsyncAction<'getQr', never, string>
-  | AsyncAction<'getSMSCode', never, string>;
+  | AsyncAction<'getSMSCode', never, string>
+  | AsyncAction<'selectContact', never, SelectContactResponse>;
 
 /**
  * @internal

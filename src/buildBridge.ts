@@ -16,7 +16,6 @@ import { nullHandler } from './handlers/null';
 declare const VERSION: string;
 
 export const buildBridge = (): AituBridge => {
-  const selectContactMethod = 'selectContact';
   const setTitleMethod = 'setTitle';
   const copyToClipboardMethod = 'copyToClipboard';
   const vibrateMethod = 'vibrate';
@@ -46,21 +45,6 @@ export const buildBridge = (): AituBridge => {
     });
   }
 
-
-  const selectContact = (reqId: string) => {
-    const isAndroid = android && android[selectContactMethod];
-    const isIos = ios && ios[selectContactMethod];
-
-    if (isAndroid) {
-      android[selectContactMethod](reqId);
-    } else if (isIos) {
-      ios[selectContactMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(selectContactMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--selectContact-isUnknown');
-    }
-  };
 
   const setTitle = (reqId: string, text: string) => {
     const isAndroid = android && android[setTitleMethod];
@@ -210,7 +194,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const selectContactPromise = promisifyMethod<BridgeMethodResult<'selectContact'>>(selectContact, selectContactMethod, sub);
   const setTitlePromise = promisifyMethod<BridgeMethodResult<'setTitle'>>(setTitle, setTitleMethod, sub);
   const copyToClipboardPromise = promisifyMethod<BridgeMethodResult<'copyToClipboard'>>(copyToClipboard, copyToClipboardMethod, sub);
   const vibratePromise = promisifyMethod<BridgeMethodResult<'vibrate'>>(vibrate, vibrateMethod, sub);
@@ -296,6 +279,8 @@ export const buildBridge = (): AituBridge => {
 
   const getSMSCode = createAction('getSMSCode');
 
+  const selectContact = createAction('selectContact');
+
   return {
     version: VERSION,
     copyToClipboard: copyToClipboardPromise,
@@ -313,7 +298,7 @@ export const buildBridge = (): AituBridge => {
     getUserProfile: (id: string) => invoke(EInvokeRequest.getUserProfile, { id }),
     getSMSCode,
     openUserProfile,
-    selectContact: selectContactPromise,
+    selectContact,
     enableNotifications: () => invoke(EInvokeRequest.enableNotifications),
     disableNotifications: () => invoke(EInvokeRequest.disableNotifications),
     enablePrivateMessaging: (appId: string) => invoke(EInvokeRequest.enablePrivateMessaging, { appId }) as any,

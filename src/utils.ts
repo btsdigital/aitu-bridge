@@ -50,19 +50,6 @@ function handleSubscribe(subscribe: (handler: AituEventHandler) => void, request
     })
 }
 
-export function promisifyInvoke(invoke: (reqId: string, methodName: string, props: any) => void, subscribe: (fn: AituEventHandler) => void) {
-    const requestResolver = createRequestResolver('invoke:');
-
-    handleSubscribe(subscribe, requestResolver)
-
-    return function promisifiedFunc(invokeMethodName: string, props: any = {}): Promise<any | void> {
-        return new Promise((resolve, reject) => {
-            const reqId = requestResolver.add({ resolve, reject }, invokeMethodName + ':');
-
-            invoke(reqId, invokeMethodName, props);
-        });
-    };
-}
 
 export function promisifyMethod<Result, Fn extends (...args: any[]) => any = (...args: any) => any>(method: Fn, methodName: string, subscribe: (fn: AituEventHandler) => void) {
     const requestResolver = createRequestResolver(methodName + ':');

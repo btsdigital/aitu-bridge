@@ -1,4 +1,8 @@
-export function createCounter(prefix = 'm:') {
+export type Counter = {
+    next(): string;
+}
+
+export function createCounter(prefix = 'm:'): Counter {
     let current = 0;
 
     return {

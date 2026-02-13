@@ -1,9 +1,18 @@
 import { isBrowser } from '../lib/isBrowser';
 import { isIframe } from '../lib/isIframe';
-import type { ActionResult, InvokableAction, ActionHandlerFactory } from '../types';
+import type { ActionResult, InvokableAction, ActionHandlerFactory, BridgeAction } from '../types';
 import { waitResponse } from '../waitResponse';
 import { callbacksHandler, isHandlerMethods } from './callbacks';
 import { nullHandler } from './null';
+
+const makeArgs = (action: BridgeAction) => {
+  if (action.type === 'storage' || action.type === 'invoke') {
+    const [method, data = {}] = action.payload;
+    return [method, data];
+  }
+
+  return action.payload;
+};
 
 export const webHandlerFactory: ActionHandlerFactory = {
   isSupported: () => isBrowser() && isIframe(),
@@ -35,7 +44,7 @@ export const webHandlerFactory: ActionHandlerFactory = {
             source: 'aitu-bridge',
             method: action.type,
             reqId: action.id,
-            payload: [...action.payload],
+            payload: [...makeArgs(action)],
           },
           aituOrigin,
         );

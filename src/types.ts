@@ -85,7 +85,7 @@ export type AndroidBridge = AndroidBridgeShape<
     disableScreenCapture: [];
     vibrate: [pattern: string];
     setHeaderMenuItems: [itemsJsonArray: string];
-    shareFile: [text: string, filename: string, base64Data: string];
+    shareFile: [text: string, filename: string, base64Data: string]; 
     getUserStepInfo: [];
     getCustomBackArrowMode: [];
     setCustomBackArrowMode: [enabled: boolean];
@@ -832,6 +832,11 @@ type SelectActionByType<T> = Extract<BridgeAction, { type: T }>;
 /**
  * @internal
  */
+export type EmptyResponse = Record<string, never>;
+
+/**
+ * @internal
+ */
 export type ActionResult<T> = SelectActionByType<T>['__result'];
 
 /**
@@ -846,13 +851,17 @@ export type SetHandlerAction =
   | Action<'setShakeHandler', Parameters<AituBridge['setShakeHandler']>, void>;
 
 export type InvokableAction =
-  | AsyncAction<
-      'storage',
-      | [operation: 'getItem', data: { keyName: string }]
-      | [operation: 'setItem', data: { keyName: string; keyValue: string }]
-      | [operation: 'clear', data: Record<string, never>],
-      SuccessResponse | string
-    >
+  | AsyncAction<'storage', [operation: 'getItem', data: { keyName: string }], string | null>
+  | AsyncAction<'storage', [operation: 'setItem', data: { keyName: string; keyValue: string }], SuccessResponse>
+  | AsyncAction<'storage', [operation: 'clear'], SuccessResponse>
+  | AsyncAction<'invoke', [method: EInvokeRequest.getMe], GetMeResponse>
+  | AsyncAction<'invoke', [method: EInvokeRequest.getPhone], GetPhoneResponse>
+  | AsyncAction<'invoke', [method: EInvokeRequest.getContacts], GetContactsResponse>
+  | AsyncAction<'invoke', [method: EInvokeRequest.getUserProfile, data: { id: string }], GetUserProfileResponse>
+  | AsyncAction<'invoke', [method: EInvokeRequest.enableNotifications], EmptyResponse>
+  | AsyncAction<'invoke', [method: EInvokeRequest.disableNotifications], EmptyResponse>
+  | AsyncAction<'invoke', [method: EInvokeRequest.enablePrivateMessaging, data: { appId: string }], EmptyResponse>
+  | AsyncAction<'invoke', [method: EInvokeRequest.disablePrivateMessaging, data: { appId: string }], EmptyResponse>
   | AsyncAction<'activateESim', [activationCode: string], SuccessResponse>
   | AsyncAction<'readNFCData', never, string>
   | AsyncAction<'openUserProfile', never, SuccessResponse>

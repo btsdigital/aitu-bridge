@@ -16,7 +16,6 @@ import { nullHandler } from './handlers/null';
 declare const VERSION: string;
 
 export const buildBridge = (): AituBridge => {
-  const getSMSCodeMethod = 'getSMSCode';
   const selectContactMethod = 'selectContact';
   const setTitleMethod = 'setTitle';
   const copyToClipboardMethod = 'copyToClipboard';
@@ -47,21 +46,6 @@ export const buildBridge = (): AituBridge => {
     });
   }
 
-
-  const getSMSCode = (reqId: string) => {
-    const isAndroid = android && android[getSMSCodeMethod];
-    const isIos = ios && ios[getSMSCodeMethod];
-
-    if (isAndroid) {
-      android[getSMSCodeMethod](reqId);
-    } else if (isIos) {
-      ios[getSMSCodeMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(getSMSCodeMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--getSMSCode-isUnknown');
-    }
-  };
 
   const selectContact = (reqId: string) => {
     const isAndroid = android && android[selectContactMethod];
@@ -226,7 +210,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const getSMSCodePromise = promisifyMethod<BridgeMethodResult<'getSMSCode'>>(getSMSCode, getSMSCodeMethod, sub);
   const selectContactPromise = promisifyMethod<BridgeMethodResult<'selectContact'>>(selectContact, selectContactMethod, sub);
   const setTitlePromise = promisifyMethod<BridgeMethodResult<'setTitle'>>(setTitle, setTitleMethod, sub);
   const copyToClipboardPromise = promisifyMethod<BridgeMethodResult<'copyToClipboard'>>(copyToClipboard, copyToClipboardMethod, sub);
@@ -311,6 +294,8 @@ export const buildBridge = (): AituBridge => {
 
   const getQr = createAction('getQr');
 
+  const getSMSCode = createAction('getSMSCode');
+
   return {
     version: VERSION,
     copyToClipboard: copyToClipboardPromise,
@@ -325,8 +310,8 @@ export const buildBridge = (): AituBridge => {
     getContacts: () => invoke(EInvokeRequest.getContacts),
     getGeo,
     getQr,
-    getSMSCode: getSMSCodePromise,
     getUserProfile: (id: string) => invoke(EInvokeRequest.getUserProfile, { id }),
+    getSMSCode,
     openUserProfile,
     selectContact: selectContactPromise,
     enableNotifications: () => invoke(EInvokeRequest.enableNotifications),

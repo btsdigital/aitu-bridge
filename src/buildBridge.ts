@@ -16,7 +16,6 @@ import { nullHandler } from './handlers/null';
 declare const VERSION: string;
 
 export const buildBridge = (): AituBridge => {
-  const getQrMethod = 'getQr';
   const getSMSCodeMethod = 'getSMSCode';
   const selectContactMethod = 'selectContact';
   const setTitleMethod = 'setTitle';
@@ -48,21 +47,6 @@ export const buildBridge = (): AituBridge => {
     });
   }
 
-
-  const getQr = (reqId: string) => {
-    const isAndroid = android && android[getQrMethod];
-    const isIos = ios && ios[getQrMethod];
-
-    if (isAndroid) {
-      android[getQrMethod](reqId);
-    } else if (isIos) {
-      ios[getQrMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(getQrMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--getQr-isUnknown');
-    }
-  };
 
   const getSMSCode = (reqId: string) => {
     const isAndroid = android && android[getSMSCodeMethod];
@@ -234,7 +218,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const getQrPromise = promisifyMethod<BridgeMethodResult<'getQr'>>(getQr, getQrMethod, sub);
   const getSMSCodePromise = promisifyMethod<BridgeMethodResult<'getSMSCode'>>(getSMSCode, getSMSCodeMethod, sub);
   const selectContactPromise = promisifyMethod<BridgeMethodResult<'selectContact'>>(selectContact, selectContactMethod, sub);
   const setTitlePromise = promisifyMethod<BridgeMethodResult<'setTitle'>>(setTitle, setTitleMethod, sub);
@@ -318,6 +301,8 @@ export const buildBridge = (): AituBridge => {
 
   const getGeo = createAction('getGeo');
 
+  const getQr = createAction('getQr');
+
   return {
     version: VERSION,
     copyToClipboard: copyToClipboardPromise,
@@ -331,7 +316,7 @@ export const buildBridge = (): AituBridge => {
     getPhone: () => invoke(EInvokeRequest.getPhone),
     getContacts: () => invoke(EInvokeRequest.getContacts),
     getGeo,
-    getQr: getQrPromise,
+    getQr,
     getSMSCode: getSMSCodePromise,
     getUserProfile: (id: string) => invoke(EInvokeRequest.getUserProfile, { id }),
     openUserProfile,

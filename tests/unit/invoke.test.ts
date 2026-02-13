@@ -119,8 +119,6 @@ describe('Android Bridge', () => {
 
     vi.advanceTimersByTime(250);
 
-    console.log(androidBridge.invoke.mock.calls);
-
     expect(androidBridge.invoke).toHaveBeenNthCalledWith(1, `${EInvokeRequest.getMe}:invoke:1`, EInvokeRequest.getMe, JSON.stringify({}));
 
     await expect(result).resolves.toEqual(getMeEvent.data);

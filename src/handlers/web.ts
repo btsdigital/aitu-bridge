@@ -67,7 +67,7 @@ export const webHandlerFactory: ActionHandlerFactory = {
           return setCallbacks(action);
         }
 
-        if(action.type === 'getUserStepInfo') {
+        if (action.type === 'getUserStepInfo' || action.type === 'openExternalUrl') {
           return nullHandler.handleAction(action);
         }
 

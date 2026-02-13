@@ -68,6 +68,14 @@ const makeArgs = (action: BridgeAction): { [key: string]: unknown } => {
     };
   }
 
+  if (action.type === 'openExternalUrl') {
+    const [url] = action.payload;
+
+    return {
+      url,
+    };
+  }
+
   return {};
 };
 

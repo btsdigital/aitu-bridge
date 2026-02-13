@@ -16,7 +16,6 @@ import { nullHandler } from './handlers/null';
 declare const VERSION: string;
 
 export const buildBridge = (): AituBridge => {
-  const setTitleMethod = 'setTitle';
   const copyToClipboardMethod = 'copyToClipboard';
   const vibrateMethod = 'vibrate';
   const setHeaderMenuItemsMethod = 'setHeaderMenuItems';
@@ -45,21 +44,6 @@ export const buildBridge = (): AituBridge => {
     });
   }
 
-
-  const setTitle = (reqId: string, text: string) => {
-    const isAndroid = android && android[setTitleMethod];
-    const isIos = ios && ios[setTitleMethod];
-
-    if (isAndroid) {
-      android[setTitleMethod](reqId, text);
-    } else if (isIos) {
-      ios[setTitleMethod].postMessage({ reqId, text });
-    } else if (web) {
-      web.execute(setTitleMethod, reqId, text);
-    } else if (typeof window !== 'undefined') {
-      console.log('--setTitle-isUnknown');
-    }
-  };
 
   const copyToClipboard = (reqId: string, text: string) => {
     const isAndroid = android && android[copyToClipboardMethod];
@@ -194,7 +178,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const setTitlePromise = promisifyMethod<BridgeMethodResult<'setTitle'>>(setTitle, setTitleMethod, sub);
   const copyToClipboardPromise = promisifyMethod<BridgeMethodResult<'copyToClipboard'>>(copyToClipboard, copyToClipboardMethod, sub);
   const vibratePromise = promisifyMethod<BridgeMethodResult<'vibrate'>>(vibrate, vibrateMethod, sub);
 
@@ -281,6 +264,8 @@ export const buildBridge = (): AituBridge => {
 
   const selectContact = createAction('selectContact');
 
+  const setTitle = createAction('setTitle');
+
   return {
     version: VERSION,
     copyToClipboard: copyToClipboardPromise,
@@ -305,7 +290,7 @@ export const buildBridge = (): AituBridge => {
     disablePrivateMessaging: (appId: string) => invoke(EInvokeRequest.disablePrivateMessaging, { appId }) as any,
     openSettings,
     closeApplication,
-    setTitle: setTitlePromise,
+    setTitle,
     share,
     shareImage,
     shareFile,

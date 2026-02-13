@@ -52,7 +52,7 @@ const makeArgs = (action: BridgeAction): { [key: string]: unknown } => {
     return { mode };
   }
 
-  if (action.type === 'share') {
+  if (action.type === 'share' || action.type === 'setTitle') {
     const [text] = action.payload;
 
     return { text };

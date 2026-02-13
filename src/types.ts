@@ -885,7 +885,8 @@ export type InvokableAction =
   | AsyncAction<'getGeo', never, GetGeoResponse>
   | AsyncAction<'getQr', never, string>
   | AsyncAction<'getSMSCode', never, string>
-  | AsyncAction<'selectContact', never, SelectContactResponse>;
+  | AsyncAction<'selectContact', never, SelectContactResponse>
+  | AsyncAction<'setTitle', [title: string], SuccessResponse>;
 
 /**
  * @internal

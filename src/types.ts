@@ -885,7 +885,8 @@ export type InvokableAction =
   | AsyncAction<'getNavigationItemMode', never, NavigationItemMode>
   | AsyncAction<'setNavigationItemMode', [mode: NavigationItemMode], SuccessResponse>
   | AsyncAction<'share', [text: string], SuccessResponse>
-  | AsyncAction<'shareFile', [text: string, filename: string, base64Data: string], SuccessResponse>;
+  | AsyncAction<'shareFile', [text: string, filename: string, base64Data: string], SuccessResponse>
+  | AsyncAction<'getGeo', never, GetGeoResponse>;
 
 /**
  * @internal

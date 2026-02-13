@@ -16,7 +16,6 @@ import { nullHandler } from './handlers/null';
 declare const VERSION: string;
 
 export const buildBridge = (): AituBridge => {
-  const getGeoMethod = 'getGeo';
   const getQrMethod = 'getQr';
   const getSMSCodeMethod = 'getSMSCode';
   const selectContactMethod = 'selectContact';
@@ -49,20 +48,6 @@ export const buildBridge = (): AituBridge => {
     });
   }
 
-  const getGeo = (reqId: string) => {
-    const isAndroid = android && android[getGeoMethod];
-    const isIos = ios && ios[getGeoMethod];
-
-    if (isAndroid) {
-      android[getGeoMethod](reqId);
-    } else if (isIos) {
-      ios[getGeoMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(getGeoMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--getGeo-isUnknown');
-    }
-  };
 
   const getQr = (reqId: string) => {
     const isAndroid = android && android[getQrMethod];
@@ -257,7 +242,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const getGeoPromise = promisifyMethod<BridgeMethodResult<'getGeo'>>(getGeo, getGeoMethod, sub);
   const getQrPromise = promisifyMethod<BridgeMethodResult<'getQr'>>(getQr, getQrMethod, sub);
   const getSMSCodePromise = promisifyMethod<BridgeMethodResult<'getSMSCode'>>(getSMSCode, getSMSCodeMethod, sub);
   const selectContactPromise = promisifyMethod<BridgeMethodResult<'selectContact'>>(selectContact, selectContactMethod, sub);
@@ -340,6 +324,8 @@ export const buildBridge = (): AituBridge => {
     return shareFile(text, filename, base64Data);
   };
 
+  const getGeo = createAction('getGeo');
+
   return {
     version: VERSION,
     copyToClipboard: copyToClipboardPromise,
@@ -352,7 +338,7 @@ export const buildBridge = (): AituBridge => {
     getMe: () => invoke(EInvokeRequest.getMe),
     getPhone: () => invoke(EInvokeRequest.getPhone),
     getContacts: () => invoke(EInvokeRequest.getContacts),
-    getGeo: getGeoPromise,
+    getGeo,
     getQr: getQrPromise,
     getSMSCode: getSMSCodePromise,
     getUserProfile: (id: string) => invoke(EInvokeRequest.getUserProfile, { id }),

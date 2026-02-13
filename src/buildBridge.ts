@@ -16,18 +16,8 @@ import { nullHandler } from './handlers/null';
 declare const VERSION: string;
 
 export const buildBridge = (): AituBridge => {
-  const getGeoMethod = 'getGeo';
-  const getQrMethod = 'getQr';
-  const getSMSCodeMethod = 'getSMSCode';
-  const selectContactMethod = 'selectContact';
-  const setTitleMethod = 'setTitle';
-  const copyToClipboardMethod = 'copyToClipboard';
   const vibrateMethod = 'vibrate';
   const setHeaderMenuItemsMethod = 'setHeaderMenuItems';
-  const openPaymentMethod = 'openPayment';
-  const checkBiometryMethod = 'checkBiometry';
-  const openExternalUrlMethod = 'openExternalUrl';
-  const getUserStepInfoMethod = 'getUserStepInfo';
 
   const MAX_HEADER_MENU_ITEMS_COUNT = 3;
   const isBrowserEnv = isBrowser();
@@ -48,96 +38,6 @@ export const buildBridge = (): AituBridge => {
       [...subs].map((fn) => fn.call(null, e));
     });
   }
-
-  const getGeo = (reqId: string) => {
-    const isAndroid = android && android[getGeoMethod];
-    const isIos = ios && ios[getGeoMethod];
-
-    if (isAndroid) {
-      android[getGeoMethod](reqId);
-    } else if (isIos) {
-      ios[getGeoMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(getGeoMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--getGeo-isUnknown');
-    }
-  };
-
-  const getQr = (reqId: string) => {
-    const isAndroid = android && android[getQrMethod];
-    const isIos = ios && ios[getQrMethod];
-
-    if (isAndroid) {
-      android[getQrMethod](reqId);
-    } else if (isIos) {
-      ios[getQrMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(getQrMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--getQr-isUnknown');
-    }
-  };
-
-  const getSMSCode = (reqId: string) => {
-    const isAndroid = android && android[getSMSCodeMethod];
-    const isIos = ios && ios[getSMSCodeMethod];
-
-    if (isAndroid) {
-      android[getSMSCodeMethod](reqId);
-    } else if (isIos) {
-      ios[getSMSCodeMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(getSMSCodeMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--getSMSCode-isUnknown');
-    }
-  };
-
-  const selectContact = (reqId: string) => {
-    const isAndroid = android && android[selectContactMethod];
-    const isIos = ios && ios[selectContactMethod];
-
-    if (isAndroid) {
-      android[selectContactMethod](reqId);
-    } else if (isIos) {
-      ios[selectContactMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(selectContactMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--selectContact-isUnknown');
-    }
-  };
-
-  const setTitle = (reqId: string, text: string) => {
-    const isAndroid = android && android[setTitleMethod];
-    const isIos = ios && ios[setTitleMethod];
-
-    if (isAndroid) {
-      android[setTitleMethod](reqId, text);
-    } else if (isIos) {
-      ios[setTitleMethod].postMessage({ reqId, text });
-    } else if (web) {
-      web.execute(setTitleMethod, reqId, text);
-    } else if (typeof window !== 'undefined') {
-      console.log('--setTitle-isUnknown');
-    }
-  };
-
-  const copyToClipboard = (reqId: string, text: string) => {
-    const isAndroid = android && android[copyToClipboardMethod];
-    const isIos = ios && ios[copyToClipboardMethod];
-
-    if (isAndroid) {
-      android[copyToClipboardMethod](reqId, text);
-    } else if (isIos) {
-      ios[copyToClipboardMethod].postMessage({ reqId, text });
-    } else if (web) {
-      web.execute(copyToClipboardMethod, reqId, text);
-    } else if (typeof window !== 'undefined') {
-      console.log('--copyToClipboard-isUnknown');
-    }
-  };
 
 
   const vibrate = (reqId: string, pattern: number[]) => {
@@ -201,79 +101,13 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const openPayment = (reqId: string, transactionId: string) => {
-    const isAndroid = android && android[openPaymentMethod];
-    const isIos = ios && ios[openPaymentMethod];
-
-    if (isAndroid) {
-      android[openPaymentMethod](reqId, transactionId);
-    } else if (isIos) {
-      ios[openPaymentMethod].postMessage({ reqId, transactionId });
-    } else {
-      console.log('--openPayment-isUnknown');
-    }
-  };
-
-  const checkBiometry = (reqId: string) => {
-    const isAndroid = android && android[checkBiometryMethod];
-    const isIos = ios && ios[checkBiometryMethod];
-
-    if (isAndroid) {
-      android[checkBiometryMethod](reqId);
-    } else if (isIos) {
-      ios[checkBiometryMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(checkBiometryMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--checkBiometry-isUnknown');
-    }
-  };
-
-  const openExternalUrl = (reqId: string, url: string) => {
-    const isAndroid = android && android[openExternalUrlMethod];
-    const isIos = ios && ios[openExternalUrlMethod];
-
-    if (isAndroid) {
-      android[openExternalUrlMethod](reqId, url);
-    } else if (isIos) {
-      ios[openExternalUrlMethod].postMessage({ reqId, url });
-    } else {
-      console.log('--openExternalUrlMethod-isUnknown');
-    }
-  };
-
-  const getUserStepInfo = (reqId: string) => {
-    const isAndroid = android && android[getUserStepInfoMethod];
-    const isIos = ios && ios[getUserStepInfoMethod];
-
-    if (isAndroid) {
-      android[getUserStepInfoMethod](reqId);
-    } else if (isIos) {
-      ios[getUserStepInfoMethod].postMessage({ reqId });
-    } else if (web) {
-      console.log('--getUserStepInfo-isWeb');
-    } else if (typeof window !== 'undefined') {
-      console.log('--getUserStepInfo-isUnknown');
-    }
-  };
-
-  const getGeoPromise = promisifyMethod<BridgeMethodResult<'getGeo'>>(getGeo, getGeoMethod, sub);
-  const getQrPromise = promisifyMethod<BridgeMethodResult<'getQr'>>(getQr, getQrMethod, sub);
-  const getSMSCodePromise = promisifyMethod<BridgeMethodResult<'getSMSCode'>>(getSMSCode, getSMSCodeMethod, sub);
-  const selectContactPromise = promisifyMethod<BridgeMethodResult<'selectContact'>>(selectContact, selectContactMethod, sub);
-  const setTitlePromise = promisifyMethod<BridgeMethodResult<'setTitle'>>(setTitle, setTitleMethod, sub);
-  const copyToClipboardPromise = promisifyMethod<BridgeMethodResult<'copyToClipboard'>>(copyToClipboard, copyToClipboardMethod, sub);
   const vibratePromise = promisifyMethod<BridgeMethodResult<'vibrate'>>(vibrate, vibrateMethod, sub);
 
   const setHeaderMenuItemsPromise = promisifyMethod<BridgeMethodResult<'setHeaderMenuItems'>>(
     setHeaderMenuItems,
     setHeaderMenuItemsMethod,
-    sub
+    sub,
   );
-  const openPaymentPromise = promisifyMethod<BridgeMethodResult<'openPayment'>>(openPayment, openPaymentMethod, sub);
-  const checkBiometryPromise = promisifyMethod<BridgeMethodResult<'checkBiometry'>>(checkBiometry, checkBiometryMethod, sub);
-  const openExternalUrlPromise = promisifyMethod<BridgeMethodResult<'openExternalUrl'>>(openExternalUrl, openExternalUrlMethod, sub);
-  const getUserStepInfoPromise = promisifyMethod<BridgeMethodResult<'getUserStepInfo'>>(getUserStepInfo, getUserStepInfoMethod, sub);
 
   const createAction = createActionFactory(handler);
 
@@ -326,7 +160,7 @@ export const buildBridge = (): AituBridge => {
   const getNavigationItemMode = createAction('getNavigationItemMode');
 
   const setNavigationItemMode = createAction('setNavigationItemMode');
-  
+
   const share = createAction('share');
 
   const shareFile = createAction('shareFile');
@@ -340,9 +174,29 @@ export const buildBridge = (): AituBridge => {
     return shareFile(text, filename, base64Data);
   };
 
+  const getGeo = createAction('getGeo');
+
+  const getQr = createAction('getQr');
+
+  const getSMSCode = createAction('getSMSCode');
+
+  const selectContact = createAction('selectContact');
+
+  const setTitle = createAction('setTitle');
+
+  const copyToClipboard = createAction('copyToClipboard');
+
+  const checkBiometry = createAction('checkBiometry');
+
+  const getUserStepInfo = createAction('getUserStepInfo');
+
+  const openExternalUrl = createAction('openExternalUrl');
+
+  const openPayment = createAction('openPayment');
+
   return {
     version: VERSION,
-    copyToClipboard: copyToClipboardPromise,
+    copyToClipboard,
     invoke: invoke as BridgeInvoke<EInvokeRequest, ResponseObject>,
     storage: {
       getItem: (keyName: string) => storage('getItem', { keyName }),
@@ -352,19 +206,19 @@ export const buildBridge = (): AituBridge => {
     getMe: () => invoke(EInvokeRequest.getMe),
     getPhone: () => invoke(EInvokeRequest.getPhone),
     getContacts: () => invoke(EInvokeRequest.getContacts),
-    getGeo: getGeoPromise,
-    getQr: getQrPromise,
-    getSMSCode: getSMSCodePromise,
+    getGeo,
+    getQr,
     getUserProfile: (id: string) => invoke(EInvokeRequest.getUserProfile, { id }),
+    getSMSCode,
     openUserProfile,
-    selectContact: selectContactPromise,
+    selectContact,
     enableNotifications: () => invoke(EInvokeRequest.enableNotifications),
     disableNotifications: () => invoke(EInvokeRequest.disableNotifications),
     enablePrivateMessaging: (appId: string) => invoke(EInvokeRequest.enablePrivateMessaging, { appId }) as any,
     disablePrivateMessaging: (appId: string) => invoke(EInvokeRequest.disablePrivateMessaging, { appId }) as any,
     openSettings,
     closeApplication,
-    setTitle: setTitlePromise,
+    setTitle,
     share,
     shareImage,
     shareFile,
@@ -381,15 +235,15 @@ export const buildBridge = (): AituBridge => {
     setCustomBackArrowMode,
     getCustomBackArrowMode,
     setCustomBackArrowVisible,
-    openPayment: openPaymentPromise,
+    openPayment,
     setCustomBackArrowOnClickHandler,
-    checkBiometry: checkBiometryPromise,
-    openExternalUrl: openExternalUrlPromise,
+    checkBiometry,
+    openExternalUrl,
     enableSwipeBack,
     disableSwipeBack,
     setNavigationItemMode: setNavigationItemMode as AituBridge['setNavigationItemMode'],
     getNavigationItemMode,
-    getUserStepInfo: getUserStepInfoPromise,
+    getUserStepInfo,
     isESimSupported,
     activateESim,
     readNFCData,

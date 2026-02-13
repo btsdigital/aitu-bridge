@@ -653,7 +653,7 @@ export interface AituBridge {
 
   /**
    * Enables or disables custom back arrow handling.
-   * 
+   *
    * @deprecated Use {@link AituBridge.setNavigationItemMode} instead.
    * @param enabled - Whether custom handling is enabled
    * @returns A promise resolving to a SuccessResponse indicating the result of the operation.
@@ -662,7 +662,7 @@ export interface AituBridge {
 
   /**
    * Returns whether custom back arrow mode is enabled.
-   * 
+   *
    * @deprecated Use {@link AituBridge.getNavigationItemMode} instead.
    * @returns A promise resolving to a boolean indicating the current mode.
    */
@@ -670,7 +670,7 @@ export interface AituBridge {
 
   /**
    * Controls the visibility of the custom back arrow.
-   * 
+   *
    * @deprecated Use {@link AituBridge.setNavigationItemMode} instead.
    * @param visible - Arrow visibility state
    * @returns A promise resolving to a {@link SuccessResponse} indicating the result of the operation.
@@ -881,7 +881,17 @@ export type InvokableAction =
   | AsyncAction<'getNavigationItemMode', never, NavigationItemMode>
   | AsyncAction<'setNavigationItemMode', [mode: NavigationItemMode], SuccessResponse>
   | AsyncAction<'share', [text: string], SuccessResponse>
-  | AsyncAction<'shareFile', [text: string, filename: string, base64Data: string], SuccessResponse>;
+  | AsyncAction<'shareFile', [text: string, filename: string, base64Data: string], SuccessResponse>
+  | AsyncAction<'getGeo', never, GetGeoResponse>
+  | AsyncAction<'getQr', never, string>
+  | AsyncAction<'getSMSCode', never, string>
+  | AsyncAction<'selectContact', never, SelectContactResponse>
+  | AsyncAction<'setTitle', [title: string], SuccessResponse>
+  | AsyncAction<'copyToClipboard', [text: string], SuccessResponse>
+  | AsyncAction<'checkBiometry', never, BiometryResponse>
+  | AsyncAction<'getUserStepInfo', never, UserStepInfoResponse>
+  | AsyncAction<'openExternalUrl', [url: string], SuccessResponse>
+  | AsyncAction<'openPayment', [transactionId: string], SuccessResponse>;
 
 /**
  * @internal

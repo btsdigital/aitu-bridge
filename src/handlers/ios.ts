@@ -52,7 +52,7 @@ const makeArgs = (action: BridgeAction): { [key: string]: unknown } => {
     return { mode };
   }
 
-  if (action.type === 'share') {
+  if (action.type === 'share' || action.type === 'setTitle' || action.type === 'copyToClipboard') {
     const [text] = action.payload;
 
     return { text };
@@ -65,6 +65,22 @@ const makeArgs = (action: BridgeAction): { [key: string]: unknown } => {
       text,
       filename,
       base64Data,
+    };
+  }
+
+  if (action.type === 'openExternalUrl') {
+    const [url] = action.payload;
+
+    return {
+      url,
+    };
+  }
+
+  if (action.type === 'openPayment') {
+    const [transactionId] = action.payload;
+
+    return {
+      transactionId,
     };
   }
 

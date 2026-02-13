@@ -1,6 +1,7 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setupAndroidFixture } from '../fixtures/setupAndroidFixture';
 import { setupIosFixture } from '../fixtures/setupIosBridgeFixture';
+import { setupWebFixture } from '../fixtures/setupWebFixture';
 import type { AituBridge } from '../../src/types';
 
 const openExternalUrlEvent = { reqId: `openExternalUrl:1`, data: 'success', error: null } as const;
@@ -90,6 +91,26 @@ describe('iOS Bridge', () => {
     expect(iosBridge.openExternalUrl.postMessage).toHaveBeenCalledWith({ reqId: 'openExternalUrl:1', url: 'https://example.com' });
 
     await expect(result).resolves.toStrictEqual(openExternalUrlEvent.data);
+  });
+});
+
+describe('Web Bridge', () => {
+  it('should log an error message to the console when openExternalUrl is called in web environment', async () => {
+    const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const fixture = await setupWebFixture();
+
+    const aituBridge = await import('../../src/buildBridge').then((mod) => mod.buildBridge());
+
+    const result = aituBridge.openExternalUrl('https://example.com');
+
+    await expect(result).toBeInstanceOf(Promise);
+
+    expect(consoleLogSpy).toHaveBeenCalledWith(`--openExternalUrl-isUnknown`);
+
+    consoleLogSpy.mockRestore();
+    
+    fixture.cleanup();
   });
 });
 

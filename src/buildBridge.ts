@@ -238,7 +238,7 @@ export const buildBridge = (): AituBridge => {
     } else if (isIos) {
       ios[openExternalUrlMethod].postMessage({ reqId, url });
     } else {
-      console.log('--openExternalUrlMethod-isUnknown');
+      console.log('--openExternalUrl-isUnknown');
     }
   };
 

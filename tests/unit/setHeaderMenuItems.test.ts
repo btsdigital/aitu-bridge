@@ -54,6 +54,25 @@ describe('Android Bridge', () => {
 
     await expect(result).resolves.toStrictEqual(setHeaderMenuItemsEvent.data);
   });
+
+  it('should reject more than 3 items and log error to console', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const fourItems: HeaderMenuItem[] = [
+      { id: '1', icon: HeaderMenuIcon.Menu },
+      { id: '2', icon: HeaderMenuIcon.Person },
+      { id: '3', icon: HeaderMenuIcon.Close },
+      { id: '4', icon: HeaderMenuIcon.Search },
+    ];
+
+    const result = aituBridge.setHeaderMenuItems(fourItems);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('SetHeaderMenuItems: items count should not be more than 3');
+
+    expect(result).toBeInstanceOf(Promise);
+
+    consoleErrorSpy.mockRestore();
+  });
 });
 
 describe('iOS Bridge', () => {
@@ -100,6 +119,25 @@ describe('iOS Bridge', () => {
     });
 
     await expect(result).resolves.toStrictEqual(setHeaderMenuItemsEvent.data);
+  });
+
+  it('should reject more than 3 items and log error to console', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const fourItems: HeaderMenuItem[] = [
+      { id: '1', icon: HeaderMenuIcon.Menu },
+      { id: '2', icon: HeaderMenuIcon.Person },
+      { id: '3', icon: HeaderMenuIcon.Close },
+      { id: '4', icon: HeaderMenuIcon.Search },
+    ];
+
+    const result = aituBridge.setHeaderMenuItems(fourItems);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('SetHeaderMenuItems: items count should not be more than 3');
+
+    expect(result).toBeInstanceOf(Promise);
+
+    consoleErrorSpy.mockRestore();
   });
 });
 
@@ -153,6 +191,25 @@ describe('Web Bridge', () => {
 
     await expect(result).resolves.toStrictEqual(setHeaderMenuItemsEvent.data);
   });
+
+  it('should reject more than 3 items and log error to console', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const fourItems: HeaderMenuItem[] = [
+      { id: '1', icon: HeaderMenuIcon.Menu },
+      { id: '2', icon: HeaderMenuIcon.Person },
+      { id: '3', icon: HeaderMenuIcon.Close },
+      { id: '4', icon: HeaderMenuIcon.Search },
+    ];
+
+    const result = aituBridge.setHeaderMenuItems(fourItems);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('SetHeaderMenuItems: items count should not be more than 3');
+
+    expect(result).toBeInstanceOf(Promise);
+
+    consoleErrorSpy.mockRestore();
+  });
 });
 
 describe('Unsupported environment', () => {
@@ -168,5 +225,26 @@ describe('Unsupported environment', () => {
     expect(consoleLogSpy).toHaveBeenCalledWith(`--setHeaderMenuItems-isUnknown`);
 
     consoleLogSpy.mockRestore();
+  });
+
+  it('should reject more than 3 items and log error to console', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const aituBridge = await import('../../src/buildBridge').then((mod) => mod.buildBridge());
+
+    const fourItems: HeaderMenuItem[] = [
+      { id: '1', icon: HeaderMenuIcon.Menu },
+      { id: '2', icon: HeaderMenuIcon.Person },
+      { id: '3', icon: HeaderMenuIcon.Close },
+      { id: '4', icon: HeaderMenuIcon.Search },
+    ];
+
+    const result = aituBridge.setHeaderMenuItems(fourItems);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('SetHeaderMenuItems: items count should not be more than 3');
+
+    expect(result).toBeInstanceOf(Promise);
+
+    consoleErrorSpy.mockRestore();
   });
 });

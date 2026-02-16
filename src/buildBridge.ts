@@ -1,12 +1,7 @@
-import { promisifyMethod } from './utils';
-
-import { createWebBridge } from './webBridge';
-
-import type { AituEventHandler, AituBridge,  BridgeMethodResult, BridgeInvoke, ResponseObject } from './types';
+import type { AituEventHandler, AituBridge, BridgeInvoke, ResponseObject } from './types';
 
 import { EInvokeRequest } from './types';
 import { isBrowser } from './lib/isBrowser';
-import { isIframe } from './lib/isIframe';
 import { createActionFactories } from './createActionFactories';
 import { androidHandlerFactory } from './handlers/android';
 import { iosHandlerFactory } from './handlers/ios';
@@ -17,12 +12,7 @@ import { createIdGenerator } from './createIdGenerator';
 declare const VERSION: string;
 
 export const buildBridge = (): AituBridge => {
-  const vibrateMethod = 'vibrate';
   const isBrowserEnv = isBrowser();
-  const android = isBrowserEnv && window.AndroidBridge;
-  const ios = isBrowserEnv && window.webkit && window.webkit.messageHandlers;
-  const web = isBrowserEnv && isIframe() && createWebBridge();
-
   const handlerFactories = [androidHandlerFactory, iosHandlerFactory, webHandlerFactory];
 
   const targetHandlerFactory = handlerFactories.find((adapter) => adapter.isSupported());
@@ -46,30 +36,6 @@ export const buildBridge = (): AituBridge => {
     });
   }
 
-  const vibrate = (reqId: string, pattern: number[]) => {
-    if (
-      !Array.isArray(pattern) ||
-      pattern.some((timing) => timing < 1 || timing !== Math.floor(timing)) ||
-      pattern.reduce((total, timing) => total + timing) > 10000
-    ) {
-      console.error('Pattern should be an array of positive integers no longer than 10000ms total');
-      return;
-    }
-
-    const isAndroid = android && android[vibrateMethod];
-    const isIos = ios && ios[vibrateMethod];
-
-    if (isAndroid) {
-      android[vibrateMethod](reqId, JSON.stringify(pattern));
-    } else if (isIos) {
-      ios[vibrateMethod].postMessage({ reqId, pattern });
-    } else if (web) {
-      web.execute(vibrateMethod, reqId, pattern);
-    } else if (typeof window !== 'undefined') {
-      console.log('--vibrate-isUnknown');
-    }
-  };
-
   const isSupported = () => handler !== nullHandler;
 
   const supports = handler.supports;
@@ -77,8 +43,6 @@ export const buildBridge = (): AituBridge => {
   const sub = (listener: AituEventHandler) => {
     subs.push(listener);
   };
-
-  const vibratePromise = promisifyMethod<BridgeMethodResult<'vibrate'>>(vibrate, vibrateMethod, sub);
 
   const isESimSupported = createAction('isESimSupported');
 
@@ -117,7 +81,7 @@ export const buildBridge = (): AituBridge => {
   const disableScreenCapture = createAction('disableScreenCapture');
 
   const invoke = createAction('invoke', {
-    generateId: ([method]) => idGenerator(`${method}:invoke`),
+    generateId: (method, ..._) => idGenerator(`${method}:invoke`),
   });
 
   const setCustomBackArrowMode = createAction('setCustomBackArrowMode');
@@ -175,6 +139,20 @@ export const buildBridge = (): AituBridge => {
     },
   });
 
+  const vibrate = createAction('vibrate', {
+    validate: (pattern) => {
+      if (
+        !Array.isArray(pattern) ||
+        pattern.some((timing) => timing < 1 || timing !== Math.floor(timing)) ||
+        pattern.reduce((total, timing) => total + timing) > 10000
+      ) {
+        return 'Pattern should be an array of positive integers no longer than 10000ms total';
+      }
+
+      return true;
+    },
+  });
+
   return {
     version: VERSION,
     copyToClipboard,
@@ -205,7 +183,7 @@ export const buildBridge = (): AituBridge => {
     shareFile,
     setShakeHandler,
     setTabActiveHandler,
-    vibrate: vibratePromise,
+    vibrate,
     isSupported,
     supports,
     sub,

@@ -1,53 +1,81 @@
-import type { Action, ActionHandler, BridgeAction, InvokableAction, SetHandlerAction } from './types';
+import type { Action, ActionHandler, AsyncAction, InvokableAction, SetHandlerAction } from './types';
 import { waitResponse } from './waitResponse';
 
 type Options<T extends Action> = {
   validate?: (...payload: T['payload']) => string | true;
-  generateId?: (payload: T['payload']) => string;
+  generateId?: (...payload: T['payload']) => string;
 };
 
-export const createActionFactories = <T extends BridgeAction>(env: { handler: ActionHandler<T>; generateId: (type: string) => string }) => {
-  const createHandlerAction = <T extends SetHandlerAction['type'], A extends SetHandlerAction = Extract<SetHandlerAction, { type: T }>>(
-    type: T,
+type ActionState =
+  | {
+      type: 'invalid';
+      reason: string;
+    }
+  | {
+      type: 'done';
+      actionId: string;
+    };
+
+type SelectSyncAction<T> = T extends { __result: any } ? never : T;
+
+type SelectAsyncAction<T> = T extends { __result: any } ? T : never;
+
+export const createActionFactories = <T extends Action | AsyncAction>(env: {
+  handler: ActionHandler<T>;
+  generateId: (type: string) => string;
+}) => {
+  const dispatchAction = <Type extends T['type'], A extends T = Extract<T, { type: Type }>>(
+    type: Type,
+    payload: A['payload'],
     options?: Options<A>,
-  ) => {
+  ): ActionState => {
     const generateId = options?.generateId ?? (() => env.generateId(type));
     const validate = options?.validate ?? (() => true);
 
-    return (...payload: A['payload']) => {
-      const actionId = generateId(payload);
-      const validationResult = validate(...payload);
+    const actionId = generateId(...payload);
+    const validationResult = validate(...payload);
 
-      if (typeof validationResult === 'string') {
-        console.error(validationResult);
+    if (typeof validationResult === 'string') {
+      console.error(validationResult);
 
-        return;
-      }
+      return {
+        type: 'invalid',
+        reason: validationResult,
+      };
+    }
 
-      env.handler.handleAction({ type, payload, id: actionId } as any);
+    env.handler.handleAction({ type, payload, id: actionId } as any);
+
+    return {
+      type: 'done',
+      actionId,
     };
   };
 
-  const createAction = <T extends InvokableAction['type'], A extends InvokableAction = Extract<InvokableAction, { type: T }>>(
-    type: T,
+  const createAction = <Type extends SelectAsyncAction<T>['type'], A extends AsyncAction = Extract<SelectAsyncAction<T>, { type: Type }>>(
+    type: Type,
     options?: Options<A>,
   ) => {
-    const generateId = options?.generateId ?? (() => env.generateId(type));
-    const validate = options?.validate ?? (() => true);
-
     return <Payload extends A['payload'], Result = Extract<A, { payload: Payload }>['__result']>(...payload: Payload): Promise<Result> => {
-      const actionId = generateId(payload);
-      const validationResult = validate(...payload);
+      const state = dispatchAction(type, payload, options);
 
-      if (typeof validationResult === 'string') {
-        console.error(validationResult);
-
+      if (state.type === 'invalid') {
         return new Promise(() => {});
       }
 
-      env.handler.handleAction({ type, payload, id: actionId } as any);
+      return waitResponse(state.actionId);
+    };
+  };
 
-      return waitResponse<Result>(actionId);
+  const createHandlerAction = <
+    Type extends SelectSyncAction<T>['type'],
+    Action extends SelectSyncAction<T> = Extract<SelectSyncAction<T>, { type: Type }>,
+  >(
+    type: Type,
+    options?: Options<Action>,
+  ) => {
+    return <Payload extends Action['payload']>(...payload: Payload): void => {
+      dispatchAction(type, payload, options);
     };
   };
 

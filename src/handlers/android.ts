@@ -12,10 +12,11 @@ const makeArgs = (action: BridgeAction): unknown[] => {
     return [method, JSON.stringify(data)];
   }
 
-  if (action.type === 'setHeaderMenuItems') {
-    const [items] = action.payload;
-    return [JSON.stringify(items)];
+  if (action.type === 'setHeaderMenuItems' || action.type === 'vibrate') {
+    const [data] = action.payload;
+    return [JSON.stringify(data)];
   }
+
 
   return Array.isArray(action.payload) ? action.payload : [];
 };

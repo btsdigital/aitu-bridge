@@ -72,6 +72,12 @@ const makeArgs = ({ type, payload }: InvokableAction): { [key: string]: unknown 
         itemsJsonArray: JSON.stringify(items),
       };
     }
+    case 'vibrate': {
+      const [pattern] = payload;
+      return {
+        pattern,
+      };
+    }
     default:
       return {};
   }

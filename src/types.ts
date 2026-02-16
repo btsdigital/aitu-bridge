@@ -815,21 +815,14 @@ export interface AituBridge {
  */
 export type PublicApiMethods = Exclude<keyof Pick<AituBridge, RequestMethods>, 'storage'>;
 
-/**
- * @internal
- */
-export type BridgeMethodResult<T extends PublicApiMethods> = Awaited<ReturnType<AituBridge[T]>>;
-
-export type Action<Type extends string = string, Payload extends unknown[] = unknown[], Result = unknown> = {
+export type Action<Type extends string = string, Payload extends unknown[] = unknown[]> = {
   type: Type;
   payload: Payload;
-} & { id: string; __result: Result };
+} & { id: string };
 
-export type AsyncAction<Type extends string = string, Payload extends unknown[] = unknown[], Result = unknown> = Action<
-  Type,
-  Payload,
-  Result
->;
+export type AsyncAction<Type extends string = string, Payload extends unknown[] = unknown[], Result = unknown> = Action<Type, Payload> & {
+  __result: Result;
+};
 
 type SelectActionByType<T> = Extract<BridgeAction, { type: T }>;
 
@@ -844,10 +837,10 @@ export type EmptyResponse = Record<string, never>;
 export type ActionPayload<T> = SelectActionByType<T>['payload'];
 
 export type SetHandlerAction =
-  | Action<'setHeaderMenuItemClickHandler', Parameters<AituBridge['setHeaderMenuItemClickHandler']>, void>
-  | Action<'setCustomBackArrowOnClickHandler', Parameters<AituBridge['setCustomBackArrowOnClickHandler']>, void>
-  | Action<'setTabActiveHandler', Parameters<AituBridge['setTabActiveHandler']>, void>
-  | Action<'setShakeHandler', Parameters<AituBridge['setShakeHandler']>, void>;
+  | Action<'setHeaderMenuItemClickHandler', Parameters<AituBridge['setHeaderMenuItemClickHandler']>>
+  | Action<'setCustomBackArrowOnClickHandler', Parameters<AituBridge['setCustomBackArrowOnClickHandler']>>
+  | Action<'setTabActiveHandler', Parameters<AituBridge['setTabActiveHandler']>>
+  | Action<'setShakeHandler', Parameters<AituBridge['setShakeHandler']>>;
 
 export type InvokableAction =
   | AsyncAction<'storage', [operation: 'getItem', data: { keyName: string }], string | null>
@@ -891,7 +884,8 @@ export type InvokableAction =
   | AsyncAction<'getUserStepInfo', never, UserStepInfoResponse>
   | AsyncAction<'openExternalUrl', [url: string], SuccessResponse>
   | AsyncAction<'openPayment', [transactionId: string], SuccessResponse>
-  | AsyncAction<'setHeaderMenuItems', [items: HeaderMenuItem[]], SuccessResponse>;
+  | AsyncAction<'setHeaderMenuItems', [items: HeaderMenuItem[]], SuccessResponse>
+  | AsyncAction<'vibrate', [pattern: number[]], SuccessResponse>;
 
 /**
  * @internal

@@ -49,6 +49,42 @@ describe('Android Bridge', () => {
 
     await expect(result).resolves.toStrictEqual(vibrateEvent.data);
   });
+
+  it('should reject if it is not array', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const result = aituBridge.vibrate('not array' as any);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Pattern should be an array of positive integers no longer than 10000ms total');
+
+    expect(result).toBeInstanceOf(Promise);
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it(`should reject if it contains nonpositive number`, async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const result = aituBridge.vibrate([0]);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Pattern should be an array of positive integers no longer than 10000ms total');
+
+    expect(result).toBeInstanceOf(Promise);
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it(`should reject if it is longer than 10000 ms`, async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const result = aituBridge.vibrate([5000, 5001]);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Pattern should be an array of positive integers no longer than 10000ms total');
+
+    expect(result).toBeInstanceOf(Promise);
+
+    consoleErrorSpy.mockRestore();
+  });
 });
 
 describe('iOS Bridge', () => {
@@ -93,6 +129,42 @@ describe('iOS Bridge', () => {
     expect(iosBridge.vibrate.postMessage).toHaveBeenCalledWith({ reqId: 'vibrate:1', pattern });
 
     await expect(result).resolves.toStrictEqual(vibrateEvent.data);
+  });
+
+  it('should reject if it is not array', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const result = aituBridge.vibrate('not array' as any);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Pattern should be an array of positive integers no longer than 10000ms total');
+
+    expect(result).toBeInstanceOf(Promise);
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it(`should reject if it contains nonpositive number`, async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const result = aituBridge.vibrate([0]);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Pattern should be an array of positive integers no longer than 10000ms total');
+
+    expect(result).toBeInstanceOf(Promise);
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it(`should reject if it is longer than 10000 ms`, async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const result = aituBridge.vibrate([5000, 5001]);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Pattern should be an array of positive integers no longer than 10000ms total');
+
+    expect(result).toBeInstanceOf(Promise);
+
+    consoleErrorSpy.mockRestore();
   });
 });
 
@@ -147,6 +219,42 @@ describe('Web Bridge', () => {
 
     await expect(result).resolves.toStrictEqual(vibrateEvent.data);
   });
+
+  it('should reject if it is not array', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const result = aituBridge.vibrate('not array' as any);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Pattern should be an array of positive integers no longer than 10000ms total');
+
+    expect(result).toBeInstanceOf(Promise);
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it(`should reject if it contains nonpositive number`, async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const result = aituBridge.vibrate([0]);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Pattern should be an array of positive integers no longer than 10000ms total');
+
+    expect(result).toBeInstanceOf(Promise);
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it(`should reject if it is longer than 10000 ms`, async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const result = aituBridge.vibrate([5000, 5001]);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Pattern should be an array of positive integers no longer than 10000ms total');
+
+    expect(result).toBeInstanceOf(Promise);
+
+    consoleErrorSpy.mockRestore();
+  });
 });
 
 describe('Unsupported environment', () => {
@@ -162,5 +270,47 @@ describe('Unsupported environment', () => {
     expect(consoleLogSpy).toHaveBeenCalledWith(`--vibrate-isUnknown`);
 
     consoleLogSpy.mockRestore();
+  });
+
+  it('should reject if it is not array', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const aituBridge = await import('../../src/buildBridge').then((mod) => mod.buildBridge());
+
+    const result = aituBridge.vibrate('not array' as any);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Pattern should be an array of positive integers no longer than 10000ms total');
+
+    expect(result).toBeInstanceOf(Promise);
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it(`should reject if it contains nonpositive number`, async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const aituBridge = await import('../../src/buildBridge').then((mod) => mod.buildBridge());
+
+    const result = aituBridge.vibrate([0]);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Pattern should be an array of positive integers no longer than 10000ms total');
+
+    expect(result).toBeInstanceOf(Promise);
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it(`should reject if it is longer than 10000 ms`, async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const aituBridge = await import('../../src/buildBridge').then((mod) => mod.buildBridge());
+
+    const result = aituBridge.vibrate([5000, 5001]);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Pattern should be an array of positive integers no longer than 10000ms total');
+
+    expect(result).toBeInstanceOf(Promise);
+
+    consoleErrorSpy.mockRestore();
   });
 });

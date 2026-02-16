@@ -1,4 +1,4 @@
-import type { Action, ActionHandler, AsyncAction, InvokableAction, SetHandlerAction } from './types';
+import type { Action, ActionHandler, AsyncAction } from './types';
 import { waitResponse } from './waitResponse';
 
 type Options<T extends Action> = {

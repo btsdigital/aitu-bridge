@@ -7,7 +7,7 @@ import { androidHandlerFactory } from './handlers/android';
 import { iosHandlerFactory } from './handlers/ios';
 import { webHandlerFactory } from './handlers/web';
 import { nullHandler } from './handlers/null';
-import { createIdGenerator } from './createIdGenerator';
+import { createIdGenerator } from './lib/createIdGenerator';
 
 declare const VERSION: string;
 

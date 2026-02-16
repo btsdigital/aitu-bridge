@@ -828,7 +828,7 @@ export type Action<Type extends string = string, Payload extends unknown[] = unk
 export type AsyncAction<Type extends string = string, Payload extends unknown[] = unknown[], Result = unknown> = Action<
   Type,
   Payload,
-  Promise<Result>
+  Result
 >;
 
 type SelectActionByType<T> = Extract<BridgeAction, { type: T }>;
@@ -837,11 +837,6 @@ type SelectActionByType<T> = Extract<BridgeAction, { type: T }>;
  * @internal
  */
 export type EmptyResponse = Record<string, never>;
-
-/**
- * @internal
- */
-export type ActionResult<T> = SelectActionByType<T>['__result'];
 
 /**
  * @internal
@@ -895,7 +890,8 @@ export type InvokableAction =
   | AsyncAction<'checkBiometry', never, BiometryResponse>
   | AsyncAction<'getUserStepInfo', never, UserStepInfoResponse>
   | AsyncAction<'openExternalUrl', [url: string], SuccessResponse>
-  | AsyncAction<'openPayment', [transactionId: string], SuccessResponse>;
+  | AsyncAction<'openPayment', [transactionId: string], SuccessResponse>
+  | AsyncAction<'setHeaderMenuItems', [items: HeaderMenuItem[]], SuccessResponse>;
 
 /**
  * @internal
@@ -905,7 +901,7 @@ export type BridgeAction = InvokableAction | SetHandlerAction;
 /**
  * @internal
  */
-export type ActionHandler<T extends BridgeAction = BridgeAction> = {
+export type ActionHandler<T extends Action = Action> = {
   supports: (methodName: string) => boolean;
   handleAction: (action: T) => T['__result'];
 };

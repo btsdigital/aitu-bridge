@@ -1,14 +1,19 @@
 import { isBrowser } from '../lib/isBrowser';
 import { isIframe } from '../lib/isIframe';
-import type { ActionResult, InvokableAction, ActionHandlerFactory, BridgeAction } from '../types';
-import { waitResponse } from '../waitResponse';
 import { setCallbacks, isHandlerMethods } from './callbacks';
+import type { InvokableAction, ActionHandlerFactory } from '../types';
 import { nullHandler } from './null';
 
-const makeArgs = (action: BridgeAction) => {
+const makeArgs = (action: InvokableAction) => {
   if (action.type === 'storage' || action.type === 'invoke') {
     const [method, data = {}] = action.payload;
     return [method, data];
+  }
+
+  if (action.type === 'setHeaderMenuItems') {
+    const [items] = action.payload;
+
+    return [JSON.stringify(items)];
   }
 
   return action.payload;
@@ -80,7 +85,6 @@ export const webHandlerFactory: ActionHandlerFactory = {
           },
           aituOrigin,
         );
-        return waitResponse<ActionResult<InvokableAction>>(action.id);
       },
     };
   },

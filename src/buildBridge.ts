@@ -2,24 +2,22 @@ import { promisifyMethod } from './utils';
 
 import { createWebBridge } from './webBridge';
 
-import type { AituEventHandler, AituBridge, HeaderMenuItem, BridgeMethodResult, BridgeInvoke, ResponseObject } from './types';
+import type { AituEventHandler, AituBridge,  BridgeMethodResult, BridgeInvoke, ResponseObject } from './types';
 
 import { EInvokeRequest } from './types';
 import { isBrowser } from './lib/isBrowser';
 import { isIframe } from './lib/isIframe';
-import { createActionFactory } from './createActionFactory';
+import { createActionFactories } from './createActionFactories';
 import { androidHandlerFactory } from './handlers/android';
 import { iosHandlerFactory } from './handlers/ios';
 import { webHandlerFactory } from './handlers/web';
 import { nullHandler } from './handlers/null';
+import { createIdGenerator } from './createIdGenerator';
 
 declare const VERSION: string;
 
 export const buildBridge = (): AituBridge => {
   const vibrateMethod = 'vibrate';
-  const setHeaderMenuItemsMethod = 'setHeaderMenuItems';
-
-  const MAX_HEADER_MENU_ITEMS_COUNT = 3;
   const isBrowserEnv = isBrowser();
   const android = isBrowserEnv && window.AndroidBridge;
   const ios = isBrowserEnv && window.webkit && window.webkit.messageHandlers;
@@ -31,6 +29,15 @@ export const buildBridge = (): AituBridge => {
 
   const handler = targetHandlerFactory?.makeActionHandler() ?? nullHandler;
 
+  const idGenerator = createIdGenerator();
+
+  const env = {
+    handler,
+    generateId: idGenerator,
+  };
+
+  const { createAction, createHandlerAction } = createActionFactories(env);
+
   const subs: AituEventHandler[] = [];
 
   if (isBrowserEnv) {
@@ -38,7 +45,6 @@ export const buildBridge = (): AituBridge => {
       [...subs].map((fn) => fn.call(null, e));
     });
   }
-
 
   const vibrate = (reqId: string, pattern: number[]) => {
     if (
@@ -72,37 +78,7 @@ export const buildBridge = (): AituBridge => {
     subs.push(listener);
   };
 
-  const setHeaderMenuItems = (reqId: string, items: Array<HeaderMenuItem>) => {
-    if (items.length > MAX_HEADER_MENU_ITEMS_COUNT) {
-      console.error('SetHeaderMenuItems: items count should not be more than ' + MAX_HEADER_MENU_ITEMS_COUNT);
-      return;
-    }
-
-    const isAndroid = android && android[setHeaderMenuItemsMethod];
-    const isIos = ios && ios[setHeaderMenuItemsMethod];
-
-    const itemsJsonArray = JSON.stringify(items);
-
-    if (isAndroid) {
-      android[setHeaderMenuItemsMethod](reqId, itemsJsonArray);
-    } else if (isIos) {
-      ios[setHeaderMenuItemsMethod].postMessage({ reqId, itemsJsonArray });
-    } else if (web) {
-      web.execute(setHeaderMenuItemsMethod, reqId, itemsJsonArray);
-    } else if (typeof window !== 'undefined') {
-      console.log('--setHeaderMenuItems-isUnknown');
-    }
-  };
-
   const vibratePromise = promisifyMethod<BridgeMethodResult<'vibrate'>>(vibrate, vibrateMethod, sub);
-
-  const setHeaderMenuItemsPromise = promisifyMethod<BridgeMethodResult<'setHeaderMenuItems'>>(
-    setHeaderMenuItems,
-    setHeaderMenuItemsMethod,
-    sub,
-  );
-
-  const createAction = createActionFactory(handler);
 
   const isESimSupported = createAction('isESimSupported');
 
@@ -128,20 +104,20 @@ export const buildBridge = (): AituBridge => {
 
   const storage = createAction('storage');
 
-  const setShakeHandler = createAction('setShakeHandler');
+  const setShakeHandler = createHandlerAction('setShakeHandler');
 
-  const setTabActiveHandler = createAction('setTabActiveHandler');
+  const setTabActiveHandler = createHandlerAction('setTabActiveHandler');
 
-  const setHeaderMenuItemClickHandler = createAction('setHeaderMenuItemClickHandler');
+  const setHeaderMenuItemClickHandler = createHandlerAction('setHeaderMenuItemClickHandler');
 
-  const setCustomBackArrowOnClickHandler = createAction('setCustomBackArrowOnClickHandler');
+  const setCustomBackArrowOnClickHandler = createHandlerAction('setCustomBackArrowOnClickHandler');
 
   const enableScreenCapture = createAction('enableScreenCapture');
 
   const disableScreenCapture = createAction('disableScreenCapture');
 
   const invoke = createAction('invoke', {
-    generateId: ({ counter, payload: [method] }) => `${method}:${counter.next()}`,
+    generateId: ([method]) => idGenerator(`${method}:invoke`),
   });
 
   const setCustomBackArrowMode = createAction('setCustomBackArrowMode');
@@ -187,14 +163,26 @@ export const buildBridge = (): AituBridge => {
 
   const openPayment = createAction('openPayment');
 
+  const setHeaderMenuItems = createAction('setHeaderMenuItems', {
+    validate: (headerMenuItems) => {
+      const MAX_HEADER_MENU_ITEMS_COUNT = 3;
+
+      if (headerMenuItems.length > MAX_HEADER_MENU_ITEMS_COUNT) {
+        return 'SetHeaderMenuItems: items count should not be more than ' + MAX_HEADER_MENU_ITEMS_COUNT;
+      }
+
+      return true;
+    },
+  });
+
   return {
     version: VERSION,
     copyToClipboard,
     invoke: invoke as BridgeInvoke<EInvokeRequest, ResponseObject>,
     storage: {
       getItem: (keyName: string) => storage('getItem', { keyName }),
-      setItem: (keyName: string, keyValue: string) => storage('setItem', { keyName, keyValue }) as any,
-      clear: () => storage('clear') as any,
+      setItem: (keyName: string, keyValue: string) => storage('setItem', { keyName, keyValue }),
+      clear: () => storage('clear'),
     },
     getMe: () => invoke(EInvokeRequest.getMe),
     getPhone: () => invoke(EInvokeRequest.getPhone),
@@ -207,8 +195,8 @@ export const buildBridge = (): AituBridge => {
     selectContact,
     enableNotifications: () => invoke(EInvokeRequest.enableNotifications),
     disableNotifications: () => invoke(EInvokeRequest.disableNotifications),
-    enablePrivateMessaging: (appId: string) => invoke(EInvokeRequest.enablePrivateMessaging, { appId }) as any,
-    disablePrivateMessaging: (appId: string) => invoke(EInvokeRequest.disablePrivateMessaging, { appId }) as any,
+    enablePrivateMessaging: (appId: string) => invoke(EInvokeRequest.enablePrivateMessaging, { appId }),
+    disablePrivateMessaging: (appId: string) => invoke(EInvokeRequest.disablePrivateMessaging, { appId }),
     openSettings,
     closeApplication,
     setTitle,
@@ -223,7 +211,7 @@ export const buildBridge = (): AituBridge => {
     sub,
     enableScreenCapture,
     disableScreenCapture,
-    setHeaderMenuItems: setHeaderMenuItemsPromise,
+    setHeaderMenuItems,
     setHeaderMenuItemClickHandler,
     setCustomBackArrowMode,
     getCustomBackArrowMode,
@@ -234,7 +222,7 @@ export const buildBridge = (): AituBridge => {
     openExternalUrl,
     enableSwipeBack,
     disableSwipeBack,
-    setNavigationItemMode: setNavigationItemMode as AituBridge['setNavigationItemMode'],
+    setNavigationItemMode: setNavigationItemMode,
     getNavigationItemMode,
     getUserStepInfo,
     isESimSupported,

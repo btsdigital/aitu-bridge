@@ -1,17 +1,8 @@
-import type { ActionHandler, ActionResult, BridgeAction } from '../types';
-import { isHandlerMethods } from './callbacks';
+import type { ActionHandler, BridgeAction } from '../types';
 
 export const nullHandler: ActionHandler<BridgeAction> = {
   supports: () => false,
   handleAction: (action) => {
     console.log(`--${action.type}-isUnknown`);
-
-    if (isHandlerMethods(action)) {
-      return;
-    }
-
-    return new Promise<ActionResult<typeof action>>(() => {
-      // TODO: reject promise to prevent eternal pending state
-    });
   },
 };

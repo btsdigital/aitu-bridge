@@ -2,7 +2,15 @@ import { promisifyMethod } from './utils';
 
 import { type WebBridge, createWebBridge } from './webBridge';
 
-import type { AituEventHandler, RequestMethods, AituBridge, HeaderMenuItem, BridgeMethodResult, BridgeInvoke, ResponseObject } from './types';
+import type {
+  AituEventHandler,
+  RequestMethods,
+  AituBridge,
+  HeaderMenuItem,
+  BridgeMethodResult,
+  BridgeInvoke,
+  ResponseObject,
+} from './types';
 
 import { EInvokeRequest } from './types';
 import { isBrowser } from './lib/isBrowser';
@@ -139,7 +147,6 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-
   const vibrate = (reqId: string, pattern: number[]) => {
     if (
       !Array.isArray(pattern) ||
@@ -164,10 +171,7 @@ export const buildBridge = (): AituBridge => {
     }
   };
 
-  const isSupported = () => {
-    const iosSup = ios && window.webkit?.messageHandlers?.invoke;
-    return Boolean(android || iosSup || web);
-  };
+  const isSupported = () => handler !== nullHandler;
 
   // TODO: implement web support
   const supports = (method: string) =>
@@ -268,7 +272,7 @@ export const buildBridge = (): AituBridge => {
   const setHeaderMenuItemsPromise = promisifyMethod<BridgeMethodResult<'setHeaderMenuItems'>>(
     setHeaderMenuItems,
     setHeaderMenuItemsMethod,
-    sub
+    sub,
   );
   const openPaymentPromise = promisifyMethod<BridgeMethodResult<'openPayment'>>(openPayment, openPaymentMethod, sub);
   const checkBiometryPromise = promisifyMethod<BridgeMethodResult<'checkBiometry'>>(checkBiometry, checkBiometryMethod, sub);
@@ -312,7 +316,7 @@ export const buildBridge = (): AituBridge => {
   const enableScreenCapture = createAction('enableScreenCapture');
 
   const disableScreenCapture = createAction('disableScreenCapture');
-  
+
   const invoke = createAction('invoke', {
     generateId: ({ counter, payload: [method] }) => `${method}:${counter.next()}`,
   });
@@ -326,7 +330,7 @@ export const buildBridge = (): AituBridge => {
   const getNavigationItemMode = createAction('getNavigationItemMode');
 
   const setNavigationItemMode = createAction('setNavigationItemMode');
-  
+
   const share = createAction('share');
 
   const shareFile = createAction('shareFile');

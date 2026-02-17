@@ -1,10 +1,10 @@
-import type { ActionResult, InvokableAction, ActionHandlerFactory, UnsafeIosBridge } from '../types';
+import type { ActionResult, InvokableAction, ActionHandlerFactory, UnsafeIosBridge, RequestMethods, HandlerMethods } from '../types';
 import { waitResponse } from '../waitResponse';
 
 import type { BridgeAction } from '../types';
 import { isBrowser } from '../lib/isBrowser';
 import { nullHandler } from './null';
-import { isHandlerMethods, callbacksHandler } from './callbacks';
+import { isHandlerMethods, setCallbacks } from './callbacks';
 
 const makeArgs = (action: BridgeAction): { [key: string]: unknown } => {
   if (action.type === 'storage' || action.type === 'invoke') {
@@ -74,6 +74,8 @@ const makeArgs = (action: BridgeAction): { [key: string]: unknown } => {
 export const iosHandlerFactory: ActionHandlerFactory = {
   isSupported: () => isBrowser() && !!window.webkit && !!window.webkit.messageHandlers,
   makeActionHandler: () => ({
+    supports: (methodName: string) =>
+      typeof window.webkit?.messageHandlers?.[methodName as RequestMethods | HandlerMethods]?.postMessage === 'function',
     handleAction: (action) => {
       const bridge = window?.webkit?.messageHandlers as UnsafeIosBridge;
 
@@ -82,7 +84,7 @@ export const iosHandlerFactory: ActionHandlerFactory = {
       }
 
       if (isHandlerMethods(action)) {
-        return callbacksHandler.handleAction(action);
+        return setCallbacks(action);
       }
 
       bridge[action.type].postMessage({

@@ -896,6 +896,7 @@ export type BridgeAction = InvokableAction | SetHandlerAction;
  * @internal
  */
 export type ActionHandler<T extends BridgeAction = BridgeAction> = {
+  supports: (methodName: string) => boolean;
   handleAction: (action: T) => T['__result'];
 };
 

@@ -2,7 +2,7 @@ import { isBrowser } from '../lib/isBrowser';
 import { isIframe } from '../lib/isIframe';
 import type { ActionResult, InvokableAction, ActionHandlerFactory, BridgeAction } from '../types';
 import { waitResponse } from '../waitResponse';
-import { callbacksHandler, isHandlerMethods } from './callbacks';
+import { setCallbacks, isHandlerMethods } from './callbacks';
 import { nullHandler } from './null';
 
 const makeArgs = (action: BridgeAction) => {
@@ -34,9 +34,11 @@ export const webHandlerFactory: ActionHandlerFactory = {
     }
 
     return {
+      // TODO: implement supports method
+      supports: () => false,
       handleAction: (action) => {
         if (isHandlerMethods(action)) {
-          return callbacksHandler.handleAction(action);
+          return setCallbacks(action);
         }
 
         window?.top?.postMessage(

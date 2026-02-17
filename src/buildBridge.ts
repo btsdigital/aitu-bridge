@@ -173,11 +173,7 @@ export const buildBridge = (): AituBridge => {
 
   const isSupported = () => handler !== nullHandler;
 
-  // TODO: implement web support
-  const supports = (method: string) =>
-    (!!android && typeof android[method as RequestMethods] === 'function') ||
-    (!!ios && !!ios[method as RequestMethods] && typeof ios[method as RequestMethods].postMessage === 'function') ||
-    (!!web && typeof web[method as keyof WebBridge] === 'function');
+  const supports = handler.supports;
 
   const sub = (listener: AituEventHandler) => {
     subs.push(listener);

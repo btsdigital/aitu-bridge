@@ -2,6 +2,7 @@ import type { ActionHandler, ActionResult, BridgeAction } from '../types';
 import { isHandlerMethods } from './callbacks';
 
 export const nullHandler: ActionHandler<BridgeAction> = {
+  supports: () => false,
   handleAction: (action) => {
     console.log(`--${action.type}-isUnknown`);
 

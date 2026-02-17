@@ -43,7 +43,7 @@ export const setupIosFixture = () => {
     openUserProfile: createMessageHandlerMock<'openUserProfile'>(),
     setShakeHandler: createMessageHandlerMock<'setShakeHandler'>(),
     setTabActiveHandler: createMessageHandlerMock<'setTabActiveHandler'>(),
-    setCustomBackArrowOnClickHandler: createMessageHandlerMock<'setTabActiveHandler'>(),
+    setCustomBackArrowOnClickHandler: createMessageHandlerMock<'setCustomBackArrowOnClickHandler'>(),
     setHeaderMenuItemClickHandler: createMessageHandlerMock<'setHeaderMenuItemClickHandler'>(),
   };
 

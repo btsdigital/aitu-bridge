@@ -60,15 +60,14 @@ type IosBridgeShape<Methods extends string, T extends Record<Methods, Record<str
   [P in keyof T]: PostMessageMethod<T[P]>;
 };
 
-type HandlerMethodsMap = {
-  setShakeHandler: AituBridge['setShakeHandler'];
-  setTabActiveHandler: AituBridge['setTabActiveHandler'];
-  setCustomBackArrowOnClickHandler: AituBridge['setCustomBackArrowOnClickHandler'];
-  setHeaderMenuItemClickHandler: AituBridge['setHeaderMenuItemClickHandler'];
-};
+export type HandlerMethods =
+  | 'setShakeHandler'
+  | 'setTabActiveHandler'
+  | 'setCustomBackArrowOnClickHandler'
+  | 'setHeaderMenuItemClickHandler';
 
 export type AndroidBridge = AndroidBridgeShape<
-  RequestMethods,
+  RequestMethods | HandlerMethods,
   {
     copyToClipboard: [text: string];
     invoke: [method: string, data: string];
@@ -85,7 +84,7 @@ export type AndroidBridge = AndroidBridgeShape<
     disableScreenCapture: [];
     vibrate: [pattern: string];
     setHeaderMenuItems: [itemsJsonArray: string];
-    shareFile: [text: string, filename: string, base64Data: string]; 
+    shareFile: [text: string, filename: string, base64Data: string];
     getUserStepInfo: [];
     getCustomBackArrowMode: [];
     setCustomBackArrowMode: [enabled: boolean];
@@ -104,9 +103,12 @@ export type AndroidBridge = AndroidBridgeShape<
     subscribeUserStepInfo: [];
     unsubscribeUserStepInfo: [];
     openUserProfile: [];
+    setShakeHandler: [];
+    setCustomBackArrowOnClickHandler: [];
+    setHeaderMenuItemClickHandler: [];
+    setTabActiveHandler: [];
   }
-> &
-  HandlerMethodsMap;
+>;
 
 type IosBridgeParamsMap = {
   copyToClipboard: { text: string };
@@ -151,15 +153,17 @@ type IosBridgeParamsMap = {
 
 export type IosParams<F extends RequestMethods> = IosBridgeParamsMap[F];
 
-export type IosBridge = IosBridgeShape<RequestMethods, IosBridgeParamsMap> & HandlerMethodsMap;
+export type IosBridge = IosBridgeShape<RequestMethods, IosBridgeParamsMap> & {
+  [P in HandlerMethods]: PostMessageMethod;
+};
 
 export type UnsafeAndroidBridge = {
-  [K in RequestMethods]: (reqId: string, ...args: unknown[]) => void;
-} & HandlerMethodsMap;
+  [K in RequestMethods | HandlerMethods]: (reqId: string, ...args: unknown[]) => void;
+};
 
 export type UnsafeIosBridge = {
-  [key in RequestMethods]: PostMessageMethod<{ [key: string]: unknown }>;
-} & HandlerMethodsMap;
+  [key in RequestMethods | HandlerMethods]: PostMessageMethod<{ [key: string]: unknown }>;
+};
 
 /**
  * @public
@@ -653,7 +657,7 @@ export interface AituBridge {
 
   /**
    * Enables or disables custom back arrow handling.
-   * 
+   *
    * @deprecated Use {@link AituBridge.setNavigationItemMode} instead.
    * @param enabled - Whether custom handling is enabled
    * @returns A promise resolving to a SuccessResponse indicating the result of the operation.
@@ -662,7 +666,7 @@ export interface AituBridge {
 
   /**
    * Returns whether custom back arrow mode is enabled.
-   * 
+   *
    * @deprecated Use {@link AituBridge.getNavigationItemMode} instead.
    * @returns A promise resolving to a boolean indicating the current mode.
    */
@@ -670,7 +674,7 @@ export interface AituBridge {
 
   /**
    * Controls the visibility of the custom back arrow.
-   * 
+   *
    * @deprecated Use {@link AituBridge.setNavigationItemMode} instead.
    * @param visible - Arrow visibility state
    * @returns A promise resolving to a {@link SuccessResponse} indicating the result of the operation.

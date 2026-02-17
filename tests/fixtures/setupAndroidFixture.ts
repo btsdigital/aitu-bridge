@@ -1,10 +1,8 @@
-import type { AndroidBridge, RequestMethods, HandlerMethodsMap } from '../../src/types';
+import type { AndroidBridge, RequestMethods, HandlerMethods } from '../../src/types';
 import { createFnMock, BridgeFnMock } from './createFnMock';
 
 type AndroidBridgeStub = {
-  [P in RequestMethods]: BridgeFnMock<AndroidBridge[P]>;
-} & {
-  [P in keyof HandlerMethodsMap]: BridgeFnMock<HandlerMethodsMap[P]>;
+  [P in RequestMethods | HandlerMethods]: BridgeFnMock<AndroidBridge[P]>;
 };
 
 export const setupAndroidFixture = () => {

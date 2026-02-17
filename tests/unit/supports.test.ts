@@ -167,7 +167,7 @@ describe('Web Bridge', () => {
 });
 
 describe('Unsupported environment', () => {
-  it.each(supportedMethods)('should return true for %s method', async (methodName) => {
+  it.each(supportedMethods)('should return false for %s method', async (methodName) => {
     const aituBridge = await import('../../src/buildBridge').then((mod) => mod.buildBridge());
     const result = aituBridge.supports(methodName);
 

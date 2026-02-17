@@ -2,7 +2,7 @@ import { isBrowser } from '../lib/isBrowser';
 import { isIframe } from '../lib/isIframe';
 import type { ActionResult, InvokableAction, ActionHandlerFactory, BridgeAction } from '../types';
 import { waitResponse } from '../waitResponse';
-import { callbacksHandler, isHandlerMethods } from './callbacks';
+import { setCallbacks, isHandlerMethods } from './callbacks';
 import { nullHandler } from './null';
 
 const makeArgs = (action: BridgeAction) => {
@@ -33,10 +33,38 @@ export const webHandlerFactory: ActionHandlerFactory = {
       return nullHandler;
     }
 
+    window.addEventListener('message', (event) => {
+      if (event.origin === aituOrigin && event.data) {
+        // dispatch aitu events
+        window.dispatchEvent(new CustomEvent('aituEvents', { detail: event.data }));
+
+        // try to detect handler call
+        if (typeof event.data !== 'string' || event.data === '') {
+          return;
+        }
+
+        try {
+          const message = JSON.parse(event.data);
+
+          if (message && message['method']) {
+            if (message.method === 'setCustomBackArrowOnClickHandler') {
+              window.onAituBridgeBackArrowClick?.();
+            } else if (message.method === 'setHeaderMenuItemClickHandler') {
+              window.onAituBridgeHeaderMenuItemClick?.(message.param);
+            }
+          }
+        } catch (e) {
+          console.log('Error parsing message data: ' + e);
+        }
+      }
+    });
+
     return {
+      // TODO: implement supports method
+      supports: () => false,
       handleAction: (action) => {
         if (isHandlerMethods(action)) {
-          return callbacksHandler.handleAction(action);
+          return setCallbacks(action);
         }
 
         window?.top?.postMessage(

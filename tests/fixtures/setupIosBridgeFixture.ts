@@ -1,10 +1,8 @@
-import type { HandlerMethodsMap, IosBridge, RequestMethods } from '../../src/types';
-import { createFnMock, createMessageHandlerMock, type BridgeFnMock } from './createFnMock';
+import type { HandlerMethods, IosBridge, RequestMethods } from '../../src/types';
+import { createMessageHandlerMock, type BridgeFnMock } from './createFnMock';
 
 type IosBridgeStub = {
-  [P in RequestMethods]: { postMessage: BridgeFnMock<IosBridge[P]['postMessage']> };
-} & {
-  [P in keyof HandlerMethodsMap]: BridgeFnMock<HandlerMethodsMap[P]>;
+  [P in RequestMethods | HandlerMethods]: { postMessage: BridgeFnMock<IosBridge[P]['postMessage']> };
 };
 
 export const setupIosFixture = () => {
@@ -43,10 +41,10 @@ export const setupIosFixture = () => {
     subscribeUserStepInfo: createMessageHandlerMock<'subscribeUserStepInfo'>(),
     unsubscribeUserStepInfo: createMessageHandlerMock<'unsubscribeUserStepInfo'>(),
     openUserProfile: createMessageHandlerMock<'openUserProfile'>(),
-    setShakeHandler: createFnMock<IosBridge['setShakeHandler']>(),
-    setTabActiveHandler: createFnMock<IosBridge['setTabActiveHandler']>(),
-    setCustomBackArrowOnClickHandler: createFnMock<IosBridge['setCustomBackArrowOnClickHandler']>(),
-    setHeaderMenuItemClickHandler: createFnMock<IosBridge['setHeaderMenuItemClickHandler']>(),
+    setShakeHandler: createMessageHandlerMock<'setShakeHandler'>(),
+    setTabActiveHandler: createMessageHandlerMock<'setTabActiveHandler'>(),
+    setCustomBackArrowOnClickHandler: createMessageHandlerMock<'setCustomBackArrowOnClickHandler'>(),
+    setHeaderMenuItemClickHandler: createMessageHandlerMock<'setHeaderMenuItemClickHandler'>(),
   };
 
   if (!window?.webkit) {

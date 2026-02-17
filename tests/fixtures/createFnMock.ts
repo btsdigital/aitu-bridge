@@ -22,6 +22,6 @@ export const createFnMock = <T extends Constructable | Procedure>() => {
 
 export type BridgeFnMock<T extends Constructable | Procedure> = ReturnType<typeof createFnMock<T>>;
 
-export const createMessageHandlerMock = <T extends RequestMethods>() => ({
+export const createMessageHandlerMock = <T extends keyof IosBridge>() => ({
   postMessage: createFnMock<IosBridge[T]['postMessage']>(),
 });

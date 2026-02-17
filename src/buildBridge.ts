@@ -1,16 +1,8 @@
 import { promisifyMethod } from './utils';
 
-import { type WebBridge, createWebBridge } from './webBridge';
+import { createWebBridge } from './webBridge';
 
-import type {
-  AituEventHandler,
-  RequestMethods,
-  AituBridge,
-  HeaderMenuItem,
-  BridgeMethodResult,
-  BridgeInvoke,
-  ResponseObject,
-} from './types';
+import type { AituEventHandler, AituBridge, HeaderMenuItem, BridgeMethodResult, BridgeInvoke, ResponseObject } from './types';
 
 import { EInvokeRequest } from './types';
 import { isBrowser } from './lib/isBrowser';

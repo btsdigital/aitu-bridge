@@ -12,6 +12,7 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
+    "noUnusedLocals": true,
     "noPropertyAccessFromIndexSignature": true,
     "verbatimModuleSyntax": true,
     "noUncheckedSideEffectImports": true,

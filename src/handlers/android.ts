@@ -1,5 +1,4 @@
-import type { ActionResult, InvokableAction, ActionHandlerFactory, UnsafeAndroidBridge, RequestMethods, HandlerMethods } from '../types';
-import { waitResponse } from '../waitResponse';
+import type { ActionHandlerFactory, UnsafeAndroidBridge, RequestMethods, HandlerMethods } from '../types';
 
 import type { BridgeAction } from '../types';
 import { isBrowser } from '../lib/isBrowser';
@@ -12,6 +11,12 @@ const makeArgs = (action: BridgeAction): unknown[] => {
 
     return [method, JSON.stringify(data)];
   }
+
+  if (action.type === 'setHeaderMenuItems' || action.type === 'vibrate') {
+    const [data] = action.payload;
+    return [JSON.stringify(data)];
+  }
+
 
   return Array.isArray(action.payload) ? action.payload : [];
 };
@@ -32,8 +37,6 @@ export const androidHandlerFactory: ActionHandlerFactory = {
       }
 
       bridge[action.type](action.id, ...makeArgs(action));
-
-      return waitResponse<ActionResult<InvokableAction>>(action.id);
     },
   }),
 };

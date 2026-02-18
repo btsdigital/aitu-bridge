@@ -1,45 +1,32 @@
-import { promisifyMethod } from './utils';
-
-import { createWebBridge } from './webBridge';
-
-import type { AituEventHandler, AituBridge, HeaderMenuItem, BridgeMethodResult, BridgeInvoke, ResponseObject } from './types';
+import type { AituEventHandler, AituBridge, BridgeInvoke, ResponseObject } from './types';
 
 import { EInvokeRequest } from './types';
 import { isBrowser } from './lib/isBrowser';
-import { isIframe } from './lib/isIframe';
-import { createActionFactory } from './createActionFactory';
+import { createActionFactories } from './createActionFactories';
 import { androidHandlerFactory } from './handlers/android';
 import { iosHandlerFactory } from './handlers/ios';
 import { webHandlerFactory } from './handlers/web';
 import { nullHandler } from './handlers/null';
+import { createIdGenerator } from './lib/createIdGenerator';
 
 declare const VERSION: string;
 
 export const buildBridge = (): AituBridge => {
-  const getGeoMethod = 'getGeo';
-  const getQrMethod = 'getQr';
-  const getSMSCodeMethod = 'getSMSCode';
-  const selectContactMethod = 'selectContact';
-  const setTitleMethod = 'setTitle';
-  const copyToClipboardMethod = 'copyToClipboard';
-  const vibrateMethod = 'vibrate';
-  const setHeaderMenuItemsMethod = 'setHeaderMenuItems';
-  const openPaymentMethod = 'openPayment';
-  const checkBiometryMethod = 'checkBiometry';
-  const openExternalUrlMethod = 'openExternalUrl';
-  const getUserStepInfoMethod = 'getUserStepInfo';
-
-  const MAX_HEADER_MENU_ITEMS_COUNT = 3;
   const isBrowserEnv = isBrowser();
-  const android = isBrowserEnv && window.AndroidBridge;
-  const ios = isBrowserEnv && window.webkit && window.webkit.messageHandlers;
-  const web = isBrowserEnv && isIframe() && createWebBridge();
-
   const handlerFactories = [androidHandlerFactory, iosHandlerFactory, webHandlerFactory];
 
   const targetHandlerFactory = handlerFactories.find((adapter) => adapter.isSupported());
 
   const handler = targetHandlerFactory?.makeActionHandler() ?? nullHandler;
+
+  const idGenerator = createIdGenerator();
+
+  const env = {
+    handler,
+    generateId: idGenerator,
+  };
+
+  const { createAction, createHandlerAction } = createActionFactories(env);
 
   const subs: AituEventHandler[] = [];
 
@@ -49,120 +36,6 @@ export const buildBridge = (): AituBridge => {
     });
   }
 
-  const getGeo = (reqId: string) => {
-    const isAndroid = android && android[getGeoMethod];
-    const isIos = ios && ios[getGeoMethod];
-
-    if (isAndroid) {
-      android[getGeoMethod](reqId);
-    } else if (isIos) {
-      ios[getGeoMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(getGeoMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--getGeo-isUnknown');
-    }
-  };
-
-  const getQr = (reqId: string) => {
-    const isAndroid = android && android[getQrMethod];
-    const isIos = ios && ios[getQrMethod];
-
-    if (isAndroid) {
-      android[getQrMethod](reqId);
-    } else if (isIos) {
-      ios[getQrMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(getQrMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--getQr-isUnknown');
-    }
-  };
-
-  const getSMSCode = (reqId: string) => {
-    const isAndroid = android && android[getSMSCodeMethod];
-    const isIos = ios && ios[getSMSCodeMethod];
-
-    if (isAndroid) {
-      android[getSMSCodeMethod](reqId);
-    } else if (isIos) {
-      ios[getSMSCodeMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(getSMSCodeMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--getSMSCode-isUnknown');
-    }
-  };
-
-  const selectContact = (reqId: string) => {
-    const isAndroid = android && android[selectContactMethod];
-    const isIos = ios && ios[selectContactMethod];
-
-    if (isAndroid) {
-      android[selectContactMethod](reqId);
-    } else if (isIos) {
-      ios[selectContactMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(selectContactMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--selectContact-isUnknown');
-    }
-  };
-
-  const setTitle = (reqId: string, text: string) => {
-    const isAndroid = android && android[setTitleMethod];
-    const isIos = ios && ios[setTitleMethod];
-
-    if (isAndroid) {
-      android[setTitleMethod](reqId, text);
-    } else if (isIos) {
-      ios[setTitleMethod].postMessage({ reqId, text });
-    } else if (web) {
-      web.execute(setTitleMethod, reqId, text);
-    } else if (typeof window !== 'undefined') {
-      console.log('--setTitle-isUnknown');
-    }
-  };
-
-  const copyToClipboard = (reqId: string, text: string) => {
-    const isAndroid = android && android[copyToClipboardMethod];
-    const isIos = ios && ios[copyToClipboardMethod];
-
-    if (isAndroid) {
-      android[copyToClipboardMethod](reqId, text);
-    } else if (isIos) {
-      ios[copyToClipboardMethod].postMessage({ reqId, text });
-    } else if (web) {
-      web.execute(copyToClipboardMethod, reqId, text);
-    } else if (typeof window !== 'undefined') {
-      console.log('--copyToClipboard-isUnknown');
-    }
-  };
-
-  const vibrate = (reqId: string, pattern: number[]) => {
-    if (
-      !Array.isArray(pattern) ||
-      pattern.some((timing) => timing < 1 || timing !== Math.floor(timing)) ||
-      pattern.reduce((total, timing) => total + timing) > 10000
-    ) {
-      console.error('Pattern should be an array of positive integers no longer than 10000ms total');
-      return;
-    }
-
-    const isAndroid = android && android[vibrateMethod];
-    const isIos = ios && ios[vibrateMethod];
-
-    if (isAndroid) {
-      android[vibrateMethod](reqId, JSON.stringify(pattern));
-    } else if (isIos) {
-      ios[vibrateMethod].postMessage({ reqId, pattern });
-    } else if (web) {
-      web.execute(vibrateMethod, reqId, pattern);
-    } else if (typeof window !== 'undefined') {
-      console.log('--vibrate-isUnknown');
-    }
-  };
-
   const isSupported = () => handler !== nullHandler;
 
   const supports = handler.supports;
@@ -170,104 +43,6 @@ export const buildBridge = (): AituBridge => {
   const sub = (listener: AituEventHandler) => {
     subs.push(listener);
   };
-
-  const setHeaderMenuItems = (reqId: string, items: Array<HeaderMenuItem>) => {
-    if (items.length > MAX_HEADER_MENU_ITEMS_COUNT) {
-      console.error('SetHeaderMenuItems: items count should not be more than ' + MAX_HEADER_MENU_ITEMS_COUNT);
-      return;
-    }
-
-    const isAndroid = android && android[setHeaderMenuItemsMethod];
-    const isIos = ios && ios[setHeaderMenuItemsMethod];
-
-    const itemsJsonArray = JSON.stringify(items);
-
-    if (isAndroid) {
-      android[setHeaderMenuItemsMethod](reqId, itemsJsonArray);
-    } else if (isIos) {
-      ios[setHeaderMenuItemsMethod].postMessage({ reqId, itemsJsonArray });
-    } else if (web) {
-      web.execute(setHeaderMenuItemsMethod, reqId, itemsJsonArray);
-    } else if (typeof window !== 'undefined') {
-      console.log('--setHeaderMenuItems-isUnknown');
-    }
-  };
-
-  const openPayment = (reqId: string, transactionId: string) => {
-    const isAndroid = android && android[openPaymentMethod];
-    const isIos = ios && ios[openPaymentMethod];
-
-    if (isAndroid) {
-      android[openPaymentMethod](reqId, transactionId);
-    } else if (isIos) {
-      ios[openPaymentMethod].postMessage({ reqId, transactionId });
-    } else {
-      console.log('--openPayment-isUnknown');
-    }
-  };
-
-  const checkBiometry = (reqId: string) => {
-    const isAndroid = android && android[checkBiometryMethod];
-    const isIos = ios && ios[checkBiometryMethod];
-
-    if (isAndroid) {
-      android[checkBiometryMethod](reqId);
-    } else if (isIos) {
-      ios[checkBiometryMethod].postMessage({ reqId });
-    } else if (web) {
-      web.execute(checkBiometryMethod, reqId);
-    } else if (typeof window !== 'undefined') {
-      console.log('--checkBiometry-isUnknown');
-    }
-  };
-
-  const openExternalUrl = (reqId: string, url: string) => {
-    const isAndroid = android && android[openExternalUrlMethod];
-    const isIos = ios && ios[openExternalUrlMethod];
-
-    if (isAndroid) {
-      android[openExternalUrlMethod](reqId, url);
-    } else if (isIos) {
-      ios[openExternalUrlMethod].postMessage({ reqId, url });
-    } else {
-      console.log('--openExternalUrlMethod-isUnknown');
-    }
-  };
-
-  const getUserStepInfo = (reqId: string) => {
-    const isAndroid = android && android[getUserStepInfoMethod];
-    const isIos = ios && ios[getUserStepInfoMethod];
-
-    if (isAndroid) {
-      android[getUserStepInfoMethod](reqId);
-    } else if (isIos) {
-      ios[getUserStepInfoMethod].postMessage({ reqId });
-    } else if (web) {
-      console.log('--getUserStepInfo-isWeb');
-    } else if (typeof window !== 'undefined') {
-      console.log('--getUserStepInfo-isUnknown');
-    }
-  };
-
-  const getGeoPromise = promisifyMethod<BridgeMethodResult<'getGeo'>>(getGeo, getGeoMethod, sub);
-  const getQrPromise = promisifyMethod<BridgeMethodResult<'getQr'>>(getQr, getQrMethod, sub);
-  const getSMSCodePromise = promisifyMethod<BridgeMethodResult<'getSMSCode'>>(getSMSCode, getSMSCodeMethod, sub);
-  const selectContactPromise = promisifyMethod<BridgeMethodResult<'selectContact'>>(selectContact, selectContactMethod, sub);
-  const setTitlePromise = promisifyMethod<BridgeMethodResult<'setTitle'>>(setTitle, setTitleMethod, sub);
-  const copyToClipboardPromise = promisifyMethod<BridgeMethodResult<'copyToClipboard'>>(copyToClipboard, copyToClipboardMethod, sub);
-  const vibratePromise = promisifyMethod<BridgeMethodResult<'vibrate'>>(vibrate, vibrateMethod, sub);
-
-  const setHeaderMenuItemsPromise = promisifyMethod<BridgeMethodResult<'setHeaderMenuItems'>>(
-    setHeaderMenuItems,
-    setHeaderMenuItemsMethod,
-    sub,
-  );
-  const openPaymentPromise = promisifyMethod<BridgeMethodResult<'openPayment'>>(openPayment, openPaymentMethod, sub);
-  const checkBiometryPromise = promisifyMethod<BridgeMethodResult<'checkBiometry'>>(checkBiometry, checkBiometryMethod, sub);
-  const openExternalUrlPromise = promisifyMethod<BridgeMethodResult<'openExternalUrl'>>(openExternalUrl, openExternalUrlMethod, sub);
-  const getUserStepInfoPromise = promisifyMethod<BridgeMethodResult<'getUserStepInfo'>>(getUserStepInfo, getUserStepInfoMethod, sub);
-
-  const createAction = createActionFactory(handler);
 
   const isESimSupported = createAction('isESimSupported');
 
@@ -293,20 +68,20 @@ export const buildBridge = (): AituBridge => {
 
   const storage = createAction('storage');
 
-  const setShakeHandler = createAction('setShakeHandler');
+  const setShakeHandler = createHandlerAction('setShakeHandler');
 
-  const setTabActiveHandler = createAction('setTabActiveHandler');
+  const setTabActiveHandler = createHandlerAction('setTabActiveHandler');
 
-  const setHeaderMenuItemClickHandler = createAction('setHeaderMenuItemClickHandler');
+  const setHeaderMenuItemClickHandler = createHandlerAction('setHeaderMenuItemClickHandler');
 
-  const setCustomBackArrowOnClickHandler = createAction('setCustomBackArrowOnClickHandler');
+  const setCustomBackArrowOnClickHandler = createHandlerAction('setCustomBackArrowOnClickHandler');
 
   const enableScreenCapture = createAction('enableScreenCapture');
 
   const disableScreenCapture = createAction('disableScreenCapture');
 
   const invoke = createAction('invoke', {
-    generateId: ({ counter, payload: [method] }) => `${method}:${counter.next()}`,
+    generateId: (method, ..._) => idGenerator(`${method}:invoke`),
   });
 
   const setCustomBackArrowMode = createAction('setCustomBackArrowMode');
@@ -332,56 +107,102 @@ export const buildBridge = (): AituBridge => {
     return shareFile(text, filename, base64Data);
   };
 
+  const getGeo = createAction('getGeo');
+
+  const getQr = createAction('getQr');
+
+  const getSMSCode = createAction('getSMSCode');
+
+  const selectContact = createAction('selectContact');
+
+  const setTitle = createAction('setTitle');
+
+  const copyToClipboard = createAction('copyToClipboard');
+
+  const checkBiometry = createAction('checkBiometry');
+
+  const getUserStepInfo = createAction('getUserStepInfo');
+
+  const openExternalUrl = createAction('openExternalUrl');
+
+  const openPayment = createAction('openPayment');
+
+  const setHeaderMenuItems = createAction('setHeaderMenuItems', {
+    validate: (headerMenuItems) => {
+      const MAX_HEADER_MENU_ITEMS_COUNT = 3;
+
+      if (headerMenuItems.length > MAX_HEADER_MENU_ITEMS_COUNT) {
+        return 'SetHeaderMenuItems: items count should not be more than ' + MAX_HEADER_MENU_ITEMS_COUNT;
+      }
+
+      return true;
+    },
+  });
+
+  const vibrate = createAction('vibrate', {
+    validate: (pattern) => {
+      if (
+        !Array.isArray(pattern) ||
+        pattern.some((timing) => timing < 1 || timing !== Math.floor(timing)) ||
+        pattern.reduce((total, timing) => total + timing) > 10000
+      ) {
+        return 'Pattern should be an array of positive integers no longer than 10000ms total';
+      }
+
+      return true;
+    },
+  });
+
   return {
     version: VERSION,
-    copyToClipboard: copyToClipboardPromise,
+    copyToClipboard,
     invoke: invoke as BridgeInvoke<EInvokeRequest, ResponseObject>,
     storage: {
       getItem: (keyName: string) => storage('getItem', { keyName }),
-      setItem: (keyName: string, keyValue: string) => storage('setItem', { keyName, keyValue }) as any,
-      clear: () => storage('clear') as any,
+      setItem: (keyName: string, keyValue: string) => storage('setItem', { keyName, keyValue }),
+      clear: () => storage('clear'),
     },
     getMe: () => invoke(EInvokeRequest.getMe),
     getPhone: () => invoke(EInvokeRequest.getPhone),
     getContacts: () => invoke(EInvokeRequest.getContacts),
-    getGeo: getGeoPromise,
-    getQr: getQrPromise,
-    getSMSCode: getSMSCodePromise,
+    getGeo,
+    getQr,
     getUserProfile: (id: string) => invoke(EInvokeRequest.getUserProfile, { id }),
+    getSMSCode,
     openUserProfile,
-    selectContact: selectContactPromise,
+    selectContact,
     enableNotifications: () => invoke(EInvokeRequest.enableNotifications),
     disableNotifications: () => invoke(EInvokeRequest.disableNotifications),
-    enablePrivateMessaging: (appId: string) => invoke(EInvokeRequest.enablePrivateMessaging, { appId }) as any,
-    disablePrivateMessaging: (appId: string) => invoke(EInvokeRequest.disablePrivateMessaging, { appId }) as any,
+    enablePrivateMessaging: (appId: string) => invoke(EInvokeRequest.enablePrivateMessaging, { appId }),
+    disablePrivateMessaging: (appId: string) => invoke(EInvokeRequest.disablePrivateMessaging, { appId }),
     openSettings,
     closeApplication,
-    setTitle: setTitlePromise,
+    setTitle,
     share,
     shareImage,
     shareFile,
     setShakeHandler,
     setTabActiveHandler,
-    vibrate: vibratePromise,
+    vibrate,
     isSupported,
     supports,
     sub,
     enableScreenCapture,
     disableScreenCapture,
-    setHeaderMenuItems: setHeaderMenuItemsPromise,
+    setHeaderMenuItems,
     setHeaderMenuItemClickHandler,
     setCustomBackArrowMode,
     getCustomBackArrowMode,
     setCustomBackArrowVisible,
-    openPayment: openPaymentPromise,
+    openPayment,
     setCustomBackArrowOnClickHandler,
-    checkBiometry: checkBiometryPromise,
-    openExternalUrl: openExternalUrlPromise,
+    checkBiometry,
+    openExternalUrl,
     enableSwipeBack,
     disableSwipeBack,
-    setNavigationItemMode: setNavigationItemMode as AituBridge['setNavigationItemMode'],
+    setNavigationItemMode: setNavigationItemMode,
     getNavigationItemMode,
-    getUserStepInfo: getUserStepInfoPromise,
+    getUserStepInfo,
     isESimSupported,
     activateESim,
     readNFCData,

@@ -1,74 +1,86 @@
-import type { ActionResult, InvokableAction, ActionHandlerFactory, UnsafeIosBridge, RequestMethods, HandlerMethods } from '../types';
-import { waitResponse } from '../waitResponse';
+import type { InvokableAction, ActionHandlerFactory, UnsafeIosBridge, RequestMethods, HandlerMethods } from '../types';
 
-import type { BridgeAction } from '../types';
 import { isBrowser } from '../lib/isBrowser';
 import { nullHandler } from './null';
 import { isHandlerMethods, setCallbacks } from './callbacks';
 
-const makeArgs = (action: BridgeAction): { [key: string]: unknown } => {
-  if (action.type === 'storage' || action.type === 'invoke') {
-    const [method, data = {}] = action.payload;
-
-    return {
-      method,
-      data,
-    };
+const makeArgs = ({ type, payload }: InvokableAction): { [key: string]: unknown } => {
+  switch (type) {
+    case 'storage':
+    case 'invoke': {
+      const [method, data = {}] = payload;
+      return {
+        method,
+        data,
+      };
+    }
+    case 'activateESim': {
+      const [activationCode] = payload;
+      return {
+        activationCode,
+      };
+    }
+    case 'readNFCPassport': {
+      const [passportNumber, dateOfBirth, expirationDate] = payload;
+      return {
+        passportNumber,
+        dateOfBirth,
+        expirationDate,
+      };
+    }
+    case 'setCustomBackArrowMode': {
+      const [enabled] = payload;
+      return { enabled };
+    }
+    case 'setCustomBackArrowVisible': {
+      const [visible] = payload;
+      return { visible };
+    }
+    case 'setNavigationItemMode': {
+      const [mode] = payload;
+      return { mode };
+    }
+    case 'share':
+    case 'setTitle':
+    case 'copyToClipboard': {
+      const [text] = payload;
+      return { text };
+    }
+    case 'shareFile': {
+      const [text, filename, base64Data] = payload;
+      return {
+        text,
+        filename,
+        base64Data,
+      };
+    }
+    case 'openExternalUrl': {
+      const [url] = payload;
+      return {
+        url,
+      };
+    }
+    case 'openPayment': {
+      const [transactionId] = payload;
+      return {
+        transactionId,
+      };
+    }
+    case 'setHeaderMenuItems': {
+      const [items] = payload;
+      return {
+        itemsJsonArray: JSON.stringify(items),
+      };
+    }
+    case 'vibrate': {
+      const [pattern] = payload;
+      return {
+        pattern,
+      };
+    }
+    default:
+      return {};
   }
-
-  if (action.type === 'activateESim') {
-    const [activationCode] = action.payload;
-
-    return {
-      activationCode,
-    };
-  }
-
-  if (action.type === 'readNFCPassport') {
-    const [passportNumber, dateOfBirth, expirationDate] = action.payload;
-
-    return {
-      passportNumber,
-      dateOfBirth,
-      expirationDate,
-    };
-  }
-
-  if (action.type === 'setCustomBackArrowMode') {
-    const [enabled] = action.payload;
-
-    return { enabled };
-  }
-
-  if (action.type === 'setCustomBackArrowVisible') {
-    const [visible] = action.payload;
-
-    return { visible };
-  }
-
-  if (action.type === 'setNavigationItemMode') {
-    const [mode] = action.payload;
-
-    return { mode };
-  }
-
-  if (action.type === 'share') {
-    const [text] = action.payload;
-
-    return { text };
-  }
-
-  if (action.type === 'shareFile') {
-    const [text, filename, base64Data] = action.payload;
-
-    return {
-      text,
-      filename,
-      base64Data,
-    };
-  }
-
-  return {};
 };
 
 export const iosHandlerFactory: ActionHandlerFactory = {
@@ -91,8 +103,6 @@ export const iosHandlerFactory: ActionHandlerFactory = {
         reqId: action.id,
         ...makeArgs(action),
       });
-
-      return waitResponse<ActionResult<InvokableAction>>(action.id);
     },
   }),
 };

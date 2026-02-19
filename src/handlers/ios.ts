@@ -3,6 +3,7 @@ import type { InvokableAction, ActionHandlerFactory, UnsafeIosBridge, RequestMet
 import { isBrowser } from '../lib/isBrowser';
 import { nullHandler } from './null';
 import { isHandlerMethods, setCallbacks } from './callbacks';
+import { awaitResponse } from './awaitResponse';
 
 const makeArgs = ({ type, payload }: InvokableAction): { [key: string]: unknown } => {
   switch (type) {
@@ -103,6 +104,8 @@ export const iosHandlerFactory: ActionHandlerFactory = {
         reqId: action.id,
         ...makeArgs(action),
       });
+
+      return awaitResponse(action.id);
     },
   }),
 };

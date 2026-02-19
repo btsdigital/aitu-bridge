@@ -3,6 +3,7 @@ import { isIframe } from '../lib/isIframe';
 import { setCallbacks, isHandlerMethods } from './callbacks';
 import type { InvokableAction, ActionHandlerFactory } from '../types';
 import { nullHandler } from './null';
+import { awaitResponse } from './awaitResponse';
 
 const makeArgs = (action: InvokableAction) => {
   if (action.type === 'storage' || action.type === 'invoke') {
@@ -85,6 +86,8 @@ export const webHandlerFactory: ActionHandlerFactory = {
           },
           aituOrigin,
         );
+
+        return awaitResponse(action.id);
       },
     };
   },

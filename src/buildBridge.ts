@@ -12,7 +12,6 @@ import { createIdGenerator } from './lib/createIdGenerator';
 declare const VERSION: string;
 
 export const buildBridge = (): AituBridge => {
-  const isBrowserEnv = isBrowser();
   const handlerFactories = [androidHandlerFactory, iosHandlerFactory, webHandlerFactory];
 
   const targetHandlerFactory = handlerFactories.find((adapter) => adapter.isSupported());
@@ -30,7 +29,7 @@ export const buildBridge = (): AituBridge => {
 
   const subs: AituEventHandler[] = [];
 
-  if (isBrowserEnv) {
+  if (isBrowser()) {
     window.addEventListener('aituEvents', (e) => {
       [...subs].map((fn) => fn.call(null, e));
     });

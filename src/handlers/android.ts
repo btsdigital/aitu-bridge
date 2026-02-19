@@ -4,6 +4,7 @@ import type { BridgeAction } from '../types';
 import { isBrowser } from '../lib/isBrowser';
 import { nullHandler } from './null';
 import { setCallbacks, isHandlerMethods } from './callbacks';
+import { awaitResponse } from './awaitResponse';
 
 const makeArgs = (action: BridgeAction): unknown[] => {
   if (action.type === 'storage' || action.type === 'invoke') {
@@ -37,6 +38,8 @@ export const androidHandlerFactory: ActionHandlerFactory = {
       }
 
       bridge[action.type](action.id, ...makeArgs(action));
+
+      return awaitResponse(action.id);
     },
   }),
 };

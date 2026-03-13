@@ -48,7 +48,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: npx @changesets/cli publish
         env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

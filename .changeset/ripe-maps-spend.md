@@ -1,5 +1,0 @@
----
-'@btsd/aitu-bridge': patch
----
-
-Enabled strict options in tsconfig

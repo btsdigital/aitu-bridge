@@ -32,6 +32,8 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
       - name: Bump version
         if: github.event_name == 'workflow_dispatch'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npx @changesets/cli version
           VERSION=$(node -p "require('./package.json').version")

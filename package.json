@@ -37,6 +37,7 @@
   },
   "homepage": "https://github.com/btsdigital/aitu-bridge#readme",
   "devDependencies": {
+    "@changesets/changelog-github": "^0.6.0",
     "@microsoft/api-extractor": "^7.55.2",
     "@vitest/coverage-v8": "^4.0.16",
     "jsdom": "^27.4.0",

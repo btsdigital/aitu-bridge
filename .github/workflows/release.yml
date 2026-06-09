@@ -7,6 +7,10 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  id-token: write    # for OIDC
+  contents: write    
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -47,11 +51,9 @@ jobs:
       - name: Publish package
         if: github.event_name == 'workflow_dispatch'
         run: npx @changesets/cli publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: artifact
           path: btsd-aitu-bridge-*.tgz  

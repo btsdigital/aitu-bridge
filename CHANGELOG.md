@@ -1,5 +1,11 @@
 # @btsd/aitu-bridge
 
+## 0.8.1
+
+### Patch Changes
+
+- ac9bcc4: Fixed isSupported method for Сhrome on iOS
+
 ## 0.8.0
 
 ### Minor Changes

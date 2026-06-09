@@ -1,5 +1,11 @@
 # @btsd/aitu-bridge
 
+## 0.8.3
+
+### Patch Changes
+
+- 6b57389: Docs: minor README update
+
 ## 0.8.2
 
 ### Patch Changes

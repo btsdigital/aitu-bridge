@@ -85,7 +85,10 @@ const makeArgs = ({ type, payload }: InvokableAction): { [key: string]: unknown 
 };
 
 export const iosHandlerFactory: ActionHandlerFactory = {
-  isSupported: () => isBrowser() && !!window.webkit && !!window.webkit.messageHandlers,
+  // Check for the iOS WebKit native bridge before attempting to communicate
+  // with the host application. Some iOS environments expose `window.webkit`
+  // and `window.webkit.messageHandlers`, while others do not.
+  isSupported: () => isBrowser() && !!window.webkit && !!window.webkit.messageHandlers?.invoke,
   makeActionHandler: () => ({
     supports: (methodName: string) =>
       typeof window.webkit?.messageHandlers?.[methodName as RequestMethods | HandlerMethods]?.postMessage === 'function',

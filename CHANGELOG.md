@@ -1,5 +1,11 @@
 # @btsd/aitu-bridge
 
+## 0.8.2
+
+### Patch Changes
+
+- 9e9855a: Switch publishing to OIDC trusted publishing
+
 ## 0.8.1
 
 ### Patch Changes

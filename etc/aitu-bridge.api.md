@@ -168,6 +168,8 @@ export interface GetMeResponse {
     private_messaging_enabled: boolean;
     // (undocumented)
     sign: string;
+    // (undocumented)
+    workspace_id?: string;
 }
 
 // @public

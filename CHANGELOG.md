@@ -1,5 +1,11 @@
 # @btsd/aitu-bridge
 
+## 0.9.0
+
+### Minor Changes
+
+- 103522a: Added workspace_id field to GetMe response
+
 ## 0.8.3
 
 ### Patch Changes

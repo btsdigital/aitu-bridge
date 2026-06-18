@@ -272,6 +272,7 @@ export interface GetMeResponse {
   notifications_allowed: boolean;
   private_messaging_enabled: boolean;
   sign: string;
+  workspace_id?: string;
 }
 
 /**

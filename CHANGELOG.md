@@ -1,5 +1,11 @@
 # @btsd/aitu-bridge
 
+## 0.10.0
+
+### Minor Changes
+
+- a16d055: add getDeviceContacts method
+
 ## 0.9.0
 
 ### Minor Changes

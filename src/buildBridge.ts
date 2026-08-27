@@ -93,6 +93,8 @@ export const buildBridge = (): AituBridge => {
 
   const setNavigationItemMode = createAction('setNavigationItemMode');
 
+  const getDeviceContacts = createAction('getDeviceContacts');
+
   const share = createAction('share');
 
   const shareFile = createAction('shareFile');
@@ -208,5 +210,6 @@ export const buildBridge = (): AituBridge => {
     subscribeUserStepInfo,
     unsubscribeUserStepInfo,
     readNFCPassport,
+    getDeviceContacts,
   };
 };

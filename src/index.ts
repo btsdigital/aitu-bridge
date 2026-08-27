@@ -18,6 +18,7 @@ export type {
   ResponseObject,
   GetGeoResponse,
   GetContactsResponse,
+  GetDeviceContactsResponse,
   SelectContactResponse,
   GetUserProfileResponse,
   HeaderMenuItem,

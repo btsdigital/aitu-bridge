@@ -50,7 +50,8 @@ export type RequestMethods =
   | 'readNFCPassport'
   | 'subscribeUserStepInfo'
   | 'unsubscribeUserStepInfo'
-  | 'openUserProfile';
+  | 'openUserProfile'
+  | 'getDeviceContacts';
 
 type AndroidBridgeShape<Methods extends string, T extends Record<Methods, unknown[]>> = {
   [P in keyof T]: (reqId: string, ...args: T[P]) => void;
@@ -107,6 +108,7 @@ export type AndroidBridge = AndroidBridgeShape<
     setCustomBackArrowOnClickHandler: [];
     setHeaderMenuItemClickHandler: [];
     setTabActiveHandler: [];
+    getDeviceContacts: [];
   }
 >;
 
@@ -149,6 +151,7 @@ type IosBridgeParamsMap = {
   subscribeUserStepInfo: {};
   unsubscribeUserStepInfo: {};
   openUserProfile: {};
+  getDeviceContacts: {};
 };
 
 export type IosParams<F extends RequestMethods> = IosBridgeParamsMap[F];
@@ -421,6 +424,18 @@ export interface PassportDataResponse {
 
 /**
  * @public
+ * Represents a device contacts list response.
+ */
+export interface GetDeviceContactsResponse {
+  contacts: Array<{
+    first_name: string;
+    last_name: string;
+    phone: string;
+  }>;
+}
+
+/**
+ * @public
  * Generic bridge invocation type.
  */
 export type BridgeInvoke<T extends EInvokeRequest, R> = (method: T, data?: {}) => Promise<R>;
@@ -474,6 +489,12 @@ export interface AituBridge {
    * @returns A promise resolving to a {@link GetContactsResponse} containing the contacts.
    */
   getContacts: () => Promise<GetContactsResponse>;
+
+  /**
+   * Requests access to the device contact list.
+   * @returns A promise resolving to a {@link GetDeviceContactsResponse} containing the contacts.
+   */
+  getDeviceContacts: () => Promise<GetDeviceContactsResponse>;
 
   /**
    * Retrieves the user's current geographic location.
@@ -886,7 +907,8 @@ export type InvokableAction =
   | AsyncAction<'openExternalUrl', [url: string], SuccessResponse>
   | AsyncAction<'openPayment', [transactionId: string], SuccessResponse>
   | AsyncAction<'setHeaderMenuItems', [items: HeaderMenuItem[]], SuccessResponse>
-  | AsyncAction<'vibrate', [pattern: number[]], SuccessResponse>;
+  | AsyncAction<'vibrate', [pattern: number[]], SuccessResponse>
+  | AsyncAction<'getDeviceContacts', never, GetDeviceContactsResponse>;
 
 /**
  * @internal

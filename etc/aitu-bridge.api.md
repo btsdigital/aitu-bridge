@@ -21,6 +21,7 @@ export interface AituBridge {
     getContacts: () => Promise<GetContactsResponse>;
     // @deprecated
     getCustomBackArrowMode: () => Promise<boolean>;
+    getDeviceContacts: () => Promise<GetDeviceContactsResponse>;
     getGeo: () => Promise<GetGeoResponse>;
     getMe: () => Promise<GetMeResponse>;
     getNavigationItemMode: () => Promise<NavigationItemMode>;
@@ -140,6 +141,16 @@ export interface GetContactsResponse {
     }>;
     // (undocumented)
     sign: string;
+}
+
+// @public
+export interface GetDeviceContactsResponse {
+    // (undocumented)
+    contacts: Array<{
+        first_name: string;
+        last_name: string;
+        phone: string;
+    }>;
 }
 
 // @public

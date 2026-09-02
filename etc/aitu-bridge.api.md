@@ -141,6 +141,8 @@ export interface GetContactsResponse {
     }>;
     // (undocumented)
     sign: string;
+    // (undocumented)
+    timestamp?: number;
 }
 
 // @public
@@ -180,6 +182,8 @@ export interface GetMeResponse {
     // (undocumented)
     sign: string;
     // (undocumented)
+    timestamp?: number;
+    // (undocumented)
     workspace_id?: string;
 }
 
@@ -189,6 +193,8 @@ export interface GetPhoneResponse {
     phone: string;
     // (undocumented)
     sign: string;
+    // (undocumented)
+    timestamp?: number;
 }
 
 // @public

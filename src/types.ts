@@ -260,6 +260,7 @@ export enum EInvokeRequest {
 export interface GetPhoneResponse {
   phone: string;
   sign: string;
+  timestamp?: number;
 }
 
 /**
@@ -276,6 +277,7 @@ export interface GetMeResponse {
   private_messaging_enabled: boolean;
   sign: string;
   workspace_id?: string;
+  timestamp?: number;
 }
 
 /**
@@ -308,6 +310,7 @@ export interface GetContactsResponse {
     phone: string;
   }>;
   sign: string;
+  timestamp?: number;
 }
 
 /**

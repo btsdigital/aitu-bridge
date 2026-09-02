@@ -1,5 +1,11 @@
 # @btsd/aitu-bridge
 
+## 0.11.0
+
+### Minor Changes
+
+- db52b1c: Add optional `timestamp` field to signed invoke responses: `GetMeResponse`, `GetPhoneResponse` and `GetContactsResponse`
+
 ## 0.10.0
 
 ### Minor Changes

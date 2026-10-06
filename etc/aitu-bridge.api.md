@@ -22,6 +22,8 @@ export interface AituBridge {
     // @deprecated
     getCustomBackArrowMode: () => Promise<boolean>;
     getDeviceContacts: () => Promise<GetDeviceContactsResponse>;
+    // Warning: (ae-forgotten-export) The symbol "GetEmailResponse" needs to be exported by the entry point index.d.ts
+    getEmail: () => Promise<GetEmailResponse>;
     getGeo: () => Promise<GetGeoResponse>;
     getMe: () => Promise<GetMeResponse>;
     getNavigationItemMode: () => Promise<NavigationItemMode>;
@@ -123,6 +125,8 @@ export enum EInvokeRequest {
     enablePrivateMessaging = "EnablePrivateMessaging",
     // (undocumented)
     getContacts = "GetContacts",
+    // (undocumented)
+    getEmail = "GetEmail",
     // (undocumented)
     getMe = "GetMe",
     // (undocumented)

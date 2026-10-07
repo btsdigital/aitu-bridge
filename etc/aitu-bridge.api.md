@@ -22,6 +22,7 @@ export interface AituBridge {
     // @deprecated
     getCustomBackArrowMode: () => Promise<boolean>;
     getDeviceContacts: () => Promise<GetDeviceContactsResponse>;
+    getEmail: () => Promise<GetEmailResponse>;
     getGeo: () => Promise<GetGeoResponse>;
     getMe: () => Promise<GetMeResponse>;
     getNavigationItemMode: () => Promise<NavigationItemMode>;
@@ -124,6 +125,8 @@ export enum EInvokeRequest {
     // (undocumented)
     getContacts = "GetContacts",
     // (undocumented)
+    getEmail = "GetEmail",
+    // (undocumented)
     getMe = "GetMe",
     // (undocumented)
     getPhone = "GetPhone",
@@ -153,6 +156,16 @@ export interface GetDeviceContactsResponse {
         last_name: string;
         phone: string;
     }>;
+}
+
+// @public
+export interface GetEmailResponse {
+    // (undocumented)
+    email: string;
+    // (undocumented)
+    sign: string;
+    // (undocumented)
+    timestamp: number;
 }
 
 // @public

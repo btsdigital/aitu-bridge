@@ -15,6 +15,7 @@ export type {
   AituEventHandler,
   GetPhoneResponse,
   GetMeResponse,
+  GetEmailResponse,
   ResponseObject,
   GetGeoResponse,
   GetContactsResponse,

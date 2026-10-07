@@ -251,6 +251,7 @@ export enum EInvokeRequest {
   disableNotifications = 'DisableNotifications',
   enablePrivateMessaging = 'EnablePrivateMessaging',
   disablePrivateMessaging = 'DisablePrivateMessaging',
+  getEmail = 'GetEmail',
 }
 
 /**
@@ -833,6 +834,12 @@ export interface AituBridge {
    * - `nfc_session_cancelled` — User cancelled the NFC session (iOS).
    */
   readNFCPassport: (passportNumber: string, dateOfBirth: string, expirationDate: string) => Promise<PassportDataResponse>;
+
+  /**
+   * Returns information about workspace user email.
+   * @returns A promise resolving to a {@link GetEmailResponse} containing user details.
+   */
+  getEmail: () => Promise<GetEmailResponse>;
 }
 
 /**
@@ -879,6 +886,7 @@ export type InvokableAction =
   | AsyncAction<'invoke', [method: EInvokeRequest.disableNotifications], EmptyResponse>
   | AsyncAction<'invoke', [method: EInvokeRequest.enablePrivateMessaging, data: { appId: string }], EmptyResponse>
   | AsyncAction<'invoke', [method: EInvokeRequest.disablePrivateMessaging, data: { appId: string }], EmptyResponse>
+  | AsyncAction<'invoke', [method: EInvokeRequest.getEmail], GetEmailResponse>
   | AsyncAction<'activateESim', [activationCode: string], SuccessResponse>
   | AsyncAction<'readNFCData', never, string>
   | AsyncAction<'openUserProfile', never, SuccessResponse>
@@ -940,4 +948,16 @@ export type ActionHandler<T extends Action = Action> = {
 export interface ActionHandlerFactory {
   isSupported: () => boolean;
   makeActionHandler(): ActionHandler<BridgeAction>;
+}
+
+/**
+ * @public
+ *
+ * Represents the response containing the user's email address, if available.
+ * If the user has no email address, the `email` field contains an empty string.
+ */
+export interface GetEmailResponse {
+  email: string;
+  timestamp: number;
+  sign: string;
 }

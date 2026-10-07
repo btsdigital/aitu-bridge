@@ -211,5 +211,6 @@ export const buildBridge = (): AituBridge => {
     unsubscribeUserStepInfo,
     readNFCPassport,
     getDeviceContacts,
+    getEmail: () => invoke(EInvokeRequest.getEmail),
   };
 };

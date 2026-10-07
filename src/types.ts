@@ -950,7 +950,13 @@ export interface ActionHandlerFactory {
   makeActionHandler(): ActionHandler<BridgeAction>;
 }
 
-export type GetEmailResponse = {
+/**
+ * @public
+ *
+ * Represents the response containing the user's email address, if available.
+ * If the user has no email address, the `email` field contains an empty string.
+ */
+export interface GetEmailResponse {
   email: string;
   timestamp: number;
   sign: string;

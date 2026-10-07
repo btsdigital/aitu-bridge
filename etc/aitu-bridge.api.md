@@ -22,7 +22,6 @@ export interface AituBridge {
     // @deprecated
     getCustomBackArrowMode: () => Promise<boolean>;
     getDeviceContacts: () => Promise<GetDeviceContactsResponse>;
-    // Warning: (ae-forgotten-export) The symbol "GetEmailResponse" needs to be exported by the entry point index.d.ts
     getEmail: () => Promise<GetEmailResponse>;
     getGeo: () => Promise<GetGeoResponse>;
     getMe: () => Promise<GetMeResponse>;
@@ -157,6 +156,16 @@ export interface GetDeviceContactsResponse {
         last_name: string;
         phone: string;
     }>;
+}
+
+// @public
+export interface GetEmailResponse {
+    // (undocumented)
+    email: string;
+    // (undocumented)
+    sign: string;
+    // (undocumented)
+    timestamp: number;
 }
 
 // @public

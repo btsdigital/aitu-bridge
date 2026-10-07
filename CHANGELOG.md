@@ -1,5 +1,11 @@
 # @btsd/aitu-bridge
 
+## 0.12.0
+
+### Minor Changes
+
+- 5b2071f: Add getEmail bridge method
+
 ## 0.11.0
 
 ### Minor Changes
